@@ -1,7 +1,7 @@
-# Delayed Bandits with Drifting State Losses
+# Pooling and Drift in Delayed Bandits
 
-Code and stored outputs for *Delayed Bandits with Drifting State Losses: Effective-Dimension
-Pooling and Representation Tradeoffs* (ML×OR 2026 workshop, non-archival).
+Code and stored outputs for *Pooling and Drift in Delayed Bandits* (ML×OR 2026 workshop,
+non-archival).
 
 Published at <https://github.com/melikabaghi/state-exp3>, which is the URL cited in Appendix I.
 
@@ -96,7 +96,7 @@ The distinction matters for reading any table.
 | `State-EXP3`, practical | known | 1 | no, Conjecture 4 | yes, most studies |
 | online plug-in | estimated each round | 1 | no | yes |
 | warm-start unknown-`P` | estimated, frozen, restart | `d+1` | yes, Appendix E, conservative | no |
-| Safe-Pool | estimated | `d+1` | yes, Appendix F | yes, study 4 |
+| Safe-Pool | estimated | `d+1` | yes, Appendix E | yes, study 4 |
 | best-state rule | known | n/a | no | yes, study 15 |
 
 Unless a column says `m = d+1`, an experiment runs the practical `m = 1` variant, which
@@ -111,3 +111,6 @@ paper states this in the study's own limitation paragraph.
 ## License
 
 MIT.
+
+The `mlxor-2026-submission` tag contains the code, stored experimental outputs, and paper
+source corresponding to the ML×OR 2026 submission "Pooling and Drift in Delayed Bandits".
