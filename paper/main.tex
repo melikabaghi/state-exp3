@@ -1,0 +1,1612 @@
+\documentclass{article}
+\usepackage[sglblindworkshop]{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts,amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{pifont}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{observation}[theorem]{Observation}
+
+\newcommand{\Ex}{\mathbb{E}}
+\newcommand{\Ot}{\widetilde{O}}
+\newcommand{\etwo}{E_2}
+\newcommand{\lamtwo}{\Lambda_2}
+\newcommand{\Sset}{\mathcal{S}}
+\newcommand{\cm}{\ding{51}}
+\newcommand{\xm}{\ding{55}}
+
+\workshoptitle{ML$\times$OR}
+
+\newcommand{\repourl}{https://github.com/melikabaghi/state-exp3}
+\title{Delayed Bandits with Drifting State Losses:\\
+\large Effective-Dimension Pooling and Representation Tradeoffs}
+\author{%
+  Melika Baghi \\
+  Georgia Institute of Technology \\
+  \texttt{mbaghi3@gatech.edu}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A learner chooses an action, sees an intermediate state at once, and learns the outcome only
+after a fixed delay. Because the outcome's conditional mean depends on the action only through the
+state it reached, every action that might have reached that state shares in what the outcome
+reveals, so one delayed observation can update the whole action set rather than the action
+played.
+\textsc{State-EXP3} does this and attains $\Ot(\sqrt{(d+1)V\log K})$ for known action-to-state
+matrix $P$, where $V=\sum_tv_t$ and each \emph{effective dimension} $v_t$ lies in $[1,|\Sset|]$
+and equals one plus the $\chi^2$ mutual information between action and state. This replaces the
+action count by an overlap-sensitive dimension, improving on the $\Ot(\sqrt{(K+d)T})$ available
+once the state-to-loss map is unrestricted whenever $\bar v(d+1)\log K\lesssim K+d$, when many
+actions are resolved by comparatively few shared states. Coarsening the states trades that dimension
+against the spread of losses inside a group, and unknown $P$ is estimable from the immediate
+observations, though that guarantee is conservative. On the reported synthetic instances the
+practical $m=1$ variant, which our theorem does not cover, improves on action-level
+\textsc{EXP3} by $5$ to $22$ per cent as $K$ grows from $8$ to $80$. Delay has a second and
+separate cost. We prove a drift-dependent lower bound surviving even an exactly supplied stale
+action-loss vector, matching on single-action-drift instances, to logarithmic factors, the drift
+term of an existing upper bound. \textsc{State-EXP3} does not adapt to that drift, so our bounds
+do not meet, and exploiting both channels at once is the problem this separation isolates.
+\end{abstract}
+
+\section{Introduction}
+
+Delay is what makes many sequential decisions hard. A recommendation is served now and the
+purchase it was meant to cause is recorded weeks later, so a learner that waits learns slowly and
+one that does not has nothing to learn from. The usual response is to act on a signal that
+arrives at once, and the question is what it is worth.
+
+Bandits with intermediate observations formalize this. An action produces a state at once and
+the loss attached to that state arrives after a fixed delay. \citet{esposito2023} show the
+state-to-loss map decides the complexity and that the extremes are far apart. Over $T$ rounds
+with $K$ actions and delay $d$, a stationary map yields $\Ot(\sqrt{(K+\min\{|\Sset|,d\})T})$ and
+an unrestricted one only the rate available with no intermediate observations at all.
+
+The immediate state carries structural information both extremes leave unused. Observing $s$
+tells the learner its action reached $s$, and $P$ says how likely every \emph{other} action was
+to reach $s$, so one delayed outcome can update the entire action set in proportion to each
+action's chance of having produced that state. We call this \emph{pooling through the state}, and
+its price is neither the number of actions nor of states but an \emph{effective dimension}
+measuring how much the rows of $P$ overlap.
+
+Drift is a separate consequence of delay. \citet{vernade2020} let the action-to-state map vary
+but hold the state-to-loss map fixed, the opposite of the component \citet{esposito2023} identify
+as decisive, whereas applications sit between. A click predicts a purchase and an engagement
+signal predicts retention, relationships that drift slowly without turning adversarial
+(Figure~\ref{fig:one}). What a learner would want is the stale action-loss vector $m_t=c_{t-d}$,
+whose usefulness is governed by $\etwo=\sum_t\|c_t-m_t\|_\infty^2$. For this regime
+\citet{baron2025} give a second-order upper bound but no lower bound.
+
+Delay therefore creates two orthogonal bottlenecks and this paper characterizes each on its own.
+The \emph{structural} channel is that immediate states reveal which actions share information,
+which makes pooling possible and which our algorithm exploits. The \emph{temporal} channel is
+that stale predictions go out of date, which sets a floor on regret and which our lower bound
+prices. Nothing here exploits both, so a method pooling through states while adapting to drift is
+the problem this work isolates rather than solves.
+
+\begin{itemize}\itemsep0pt \parskip0pt \topsep2pt
+\item \textbf{Effective-dimension pooling.} \textsc{State-EXP3} attains
+$\Ot(\sqrt{(d+1)V\log K})$ for known $P$ (Theorem~\ref{thm:sexp3}, proved), and unknown $P$ is
+estimable from the immediate observations, a warm-start version attaining $\Ot(T^{4/5})$
+(Appendix~\ref{app:unknown}, proved but conservative).
+\item \textbf{Representation trade-off.} The same algorithm on a fixed coarsening trades that
+dimension against the within-group spread of losses, making the state space a design choice
+(Theorem~\ref{thm:rep}, proved).
+\item \textbf{The cost of drift.} A lower bound $\Omega(\sqrt{d\,\etwo\min\{1+\log q,T/d\}})$ for
+$q$ drifting coordinates, surviving the exact stale vector and gaining $\sqrt{KT}$ without it
+(Theorem~\ref{thm:lower}, proved), the first for this model in $\etwo$ to our knowledge. We
+conjecture the delay is charged additively and some algorithm adapts to $\etwo$, with two natural
+routes ruled out (Conjecture~\ref{conj:add}) and a supporting grid
+(Appendix~\ref{app:num}, empirical).
+\end{itemize}
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig1.pdf}
+\caption{The two channels, both synthetic. \textbf{Left,} the temporal channel. $\theta_t$ moves
+while the sensor does not, so $s_1$ carries opposite losses at the marked rounds and the shaded
+area is the error $\etwo$ accumulates. \textbf{Right,} the
+structural channel. With the uniform-play regret held approximately fixed, the gain of the
+practical $m=1$ variant over action-level \textsc{EXP3} rises as $\bar v$ falls, at $K=40$,
+$|\Sset|=8$, $T=10000$, $d=50$, $20$ paired seeds, bars one standard error of the paired
+difference. Consistent with the mechanism of Theorem~\ref{thm:sexp3}, which does not cover
+$m=1$. Matching is approximate at the two smallest $\bar v$ (Appendix~\ref{app:num},
+study~10).}
+\label{fig:one}
+\end{figure}
+
+\section{Related work}
+
+Optimal rates under arbitrary delays are due to \citet{zimmert2020}, at
+$\Ot(\sqrt{KT}+\sqrt{D\log K})$ for total delay $D$. \citet{baron2025} obtain
+$\Ot(\sqrt{KT+\bar\Lambda})$ for a known inaccuracy budget, grading the accuracy of a changing
+observation where we grade the geometry of a fixed one, and \citet{esposito2023} allow an unknown
+and possibly adversarial action-to-state map where ours is fixed and, for the upper bounds,
+known. \citet{wang2026} give a lower bound in squared gradient prediction error with no delay, so
+the delay factor and its saturation are new here. \citet{zhang2026impatient} share the motivation,
+grading short-term indicators of a delayed outcome by an information measure and validating it in
+deployment, in a stochastic Bayesian model where ours is adversarial. The effective dimension itself is not new.
+Identifying an action with its distribution over outcomes makes $v_t-1$ the $\chi^2$ mutual
+information of \citet{eldowa2024}, whose policy-set capacity $\bar v-1$ controls \textsc{Exp4}
+regret under \emph{mediator feedback}, where the outcome and its loss are both seen at once. Our
+contributions beyond this correspondence are the delayed and noisy analysis, the coarsening
+trade-off, and the drift lower bound. Appendix~\ref{app:related} adds optimism under delay and structural feedback sharing,
+where off-policy coverage \citep{gabbianelli2023} is the closest analogue.
+
+\section{Problem formulation}\label{sec:setting}
+
+The base model comes first and the drift oracle afterwards, since only the lower bound uses it.
+Throughout, $T$ is the number of rounds, $K$ the number of actions, $\Sset$ a finite state space,
+$d$ a fixed known delay, and all logarithms are natural.
+
+Let $\mathcal F_{t-1}$ hold the outcomes of rounds $r\le t-d-1$, the states $S_r$ for $r<t$ and the past randomization. At round $t\le T$ the learner
+draws $A_t$ from an $\mathcal F_{t-1}$-measurable distribution $x_t$ on $\{1,\dots,K\}$, observes
+$S_t\in\Sset$ drawn from $P(\cdot\mid A_t)$, and at time $t+d$ observes $X_t\in[0,1]$ with
+$\Ex[X_t\mid\mathcal F_{t-1},A_t,S_t]=\theta_t(S_t)$, outcomes being conditionally independent
+across rounds given the states. Feedback generated at round $r$ is revealed after the action at round $r+d$ has been selected
+and is first usable at round $r+d+1$, so the learner acts on a $d$-round-old view of the
+losses.
+
+The conditional mean $\theta_t(S_t)$ does not depend on $A_t$, so the state is sufficient for
+the outcome and an action affects the loss only through the state it reaches. This is what
+licenses charging one action's outcome to another, and an action acting by a route the state
+does not record breaks it.
+
+Here $P\in[0,1]^{K\times|\Sset|}$ is the \emph{action-to-state matrix}, row-stochastic and fixed,
+and $\theta_t\in[0,1]^{|\Sset|}$ is an oblivious sequence of \emph{state-loss means}, so the
+\emph{induced action-loss vector} $c_t=P\theta_t\in[0,1]^K$ averages the current state-loss means
+over the states each action reaches. Performance is the static pseudo-regret
+$\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$, the expectation being over every source of
+randomness in the interaction, the learner's draws, the states and the outcomes. It is a \emph{pseudo}-regret because it scores the conditional mean loss $c_t$
+rather than the realized outcome $X_t$.
+
+For the lower bound only, we add a stronger \emph{oracle model} in which the learner also
+receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with
+$m_t=c_1$ for $t\le d$. Under unknown $P$ this is not a function of the observables, so a lower
+bound surviving it is stronger. \textsc{State-EXP3} does not use $m_t$.
+
+That model needs a measure of how misleading $m_t$ is. Write
+$\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which squares the largest per-round error the stale
+vector makes and so stays small when errors are small though frequent. It is controlled by the state-loss variation $W$ through $\etwo\le d^2W$, while no converse
+bound holds in general (Appendix~\ref{app:proofs}).
+
+\section{Pooling through the state}\label{sec:alg}
+
+In this section and the next, $P$ is known and the learner does not receive $m_t$. Because $P$
+records how likely every action was to reach the observed $s$, one outcome can be charged to all
+of them in proportion rather than spent on the action played.
+
+Write $q_t(s)=\sum_ax_t(a)P(s\mid a)$ and set $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$. This is
+unbiased for $c_t(a)$, and its play-weighted second moment is at most the \emph{effective
+dimension} $v_t=\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2$, which lies in $[1,|\Sset|]$
+(Appendix~\ref{app:pool}) and replaces $K$ below. Equivalently
+$v_t=1+\chi^2(P_{A_t,S_t}\,\|\,P_{A_t}\!\otimes\!P_{S_t})$, one plus the $\chi^2$ mutual
+information between the action and the state it induces under $x_t$, so $v_t=1$ exactly when the
+state carries no information about the action. \textsc{State-EXP3} runs $m$
+interleaved copies of exponential weights, copy $i$ taking the rounds congruent to $i$ modulo $m$,
+playing $x_t\propto\exp(-\eta L_i)$ and adding $\hat c_t$ to $L_i$ once $X_t$ is usable, which for
+$m=d+1$ is that copy's next round. The update has no optimization subproblem, costs $O(K)$ given
+$P$ and the scalar $q_r(S_r)$, and stores $m$ weight vectors (Appendix~\ref{app:pool},
+with pseudocode).
+
+\begin{theorem}\label{thm:sexp3}
+Let $P$ be known and $(\theta_t)$ oblivious. For every $\eta>0$, \textup{\textsc{State-EXP3}} with
+$m=d+1$ satisfies $\Ex[R_T]\le(d+1)\log K/\eta+\tfrac{\eta}{2}\Ex[\sum_tv_t]$, so any $V$ with
+$\sum_tv_t\le V$ surely and $\eta=\sqrt{2(d+1)\log K/V}$ give
+$\Ex[R_T]\le\sqrt{2(d+1)V\log K}$. Writing $\bar v$ for the largest $v_t$ over all play
+distributions, $V=\bar vT\le|\Sset|T$ is such a bound and depends on $P$ alone.
+\end{theorem}
+
+The effective dimension replaces the action count. It equals one when every action induces the
+same state distribution and reaches $|\Sset|$ when $P$ is deterministic and onto, which still
+leaves $v_t\ll K$ when many actions share a state. The advantage over action-level weighting
+disappears only in the stronger no-sharing case of a one-to-one deterministic map with
+$K=|\Sset|$, where $v_t=K$. Against $\Ot(\sqrt{(K+d)T})$, the rate available once the state-to-loss map is
+unrestricted \citep{esposito2023}, the guarantee improves when $\bar v(d+1)\log K\lesssim K+d$,
+that is when many actions are resolved by comparatively few shared states, and outside that
+regime it can be worse. Four limitations remain. The delay is charged multiplicatively. The bound carries $v_t$ where
+undelayed mediator feedback pays $v_t-1$, so it does not vanish when the rows of $P$ agree and
+the regret is zero. It carries no $\etwo$ and so cannot approach the drift term of
+Theorem~\ref{thm:lower}. And where the best action reaches the single best state a simple
+heuristic does better, at linear regret when it does not (Appendix~\ref{app:num}).
+
+$P$ need not be known, since $(A_t,S_t)$ arrives undelayed, and the difficulty there looks like
+certification rather than estimation (Appendix~\ref{app:unknown}).
+
+\section{Choosing the representation}\label{sec:rep}
+
+If the price of pooling is an effective dimension, the states become a design choice, finer ones
+raising it and coarser ones lowering it while blurring losses together. Fix
+$g:\Sset\to\mathcal Z$ and run the same algorithm on $g(S_t)$ with
+$P^g(z\mid a)=\sum_{s:g(s)=z}P(s\mid a)$. Coarsening never raises the dimension, $v_t(g)\le v_t$,
+but the grouped estimator tracks the group average of $\theta_t$ and so acquires a bias. Write
+$\delta_t(g)=\max_z\max_{s,s':g(s)=g(s')=z}|\theta_t(s)-\theta_t(s')|$ for the widest within-group
+spread.
+
+\begin{theorem}\label{thm:rep}
+Under the hypotheses of Theorem~\ref{thm:sexp3}, the algorithm run on $g$ with
+$\sum_tv_t(g)\le V(g)$ satisfies
+$\Ex[R_T]\le\sqrt{2(d+1)V(g)\log K}+2\sum_t\delta_t(g)$.
+\end{theorem}
+
+The terms move oppositely as groups coarsen, so the useful representations are the coarsest
+loss-homogeneous ones and the identity map recovers Theorem~\ref{thm:sexp3}. The representation
+is fixed before the run and the theorem gives no rule for choosing one.
+
+\section{The cost of drift}\label{sec:lower}
+
+The previous sections ask how the structural channel reduces the cost of estimation. We now ask
+how much drift costs even when the stale action losses are supplied for free.
+
+Give each of $q\le\min\{K-1,|\Sset|-1\}$ actions a private state, send the rest to one inert
+state, and drive the private states by independent Rademacher signs of amplitude $\varepsilon$
+held for blocks of $h$ rounds (Appendix~\ref{app:proofs}). Private states stop pooling from
+helping, forcing $q\le|\Sset|-1$.
+
+If $h\le d$ then $A_t$ is independent of the signs governing its own block, even when the learner
+holds $m_t$ exactly, since every usable outcome predates the block and a block never recurs
+(Lemma~\ref{lem:iso}, Appendix~\ref{app:proofs}).
+
+\begin{theorem}\label{thm:lower}
+Fix $T$, $1\le d\le T/2$, $E\le T/4$ and $1\le q\le\min\{K-1,|\Sset|-1\}$. There is an oblivious instance
+with $\etwo\le E$ on which every algorithm, including one given the exact stale vector,
+satisfies $\Ex[R_T]=\Omega(\sqrt{d\,E\min\{1+\log q,\,T/d\}})$. For a learner
+without that oracle and with $K\le T$, the model class additionally forces
+$\Ex[R_T]=\Omega(\sqrt{KT})$, so the unhinted rate is
+$\Omega(\sqrt{KT}+\sqrt{d\,E\min\{1+\log q,\,T/d\}})$.
+\end{theorem}
+
+The drift term is the extra cost of acting on stale predictions, with $d$ the rounds information
+is unavailable, $E$ the accumulated squared error and $q$ the coordinates the comparator can
+exploit. The $\sqrt{KT}$ term is the separate cost of finding a good action and is not
+oracle-robust, since $m_t$ collapses the instance forcing it. The two are proved on separate
+instances, so the sum holds up to a constant, and the bound describes the family rather than
+separating algorithms.
+
+\section{Discussion}\label{sec:conj}
+
+Two channels, two results, one gap. The structural channel has an algorithm, a rate in the
+effective dimension and a representation trade-off, all for known $P$. The temporal channel has a
+lower bound no algorithm avoids even given the exact stale vector. They do not meet because
+\textsc{State-EXP3} never reads $m_t$ and the lower bound says nothing about the rows of $P$. For
+each strengthening below the natural route is ruled out but not refuted
+(Appendices~\ref{app:counter}, \ref{app:additive}).
+
+\begin{conjecture}\label{conj:add}
+\textup{\textsc{State-EXP3}} at $m=1$ satisfies the first bound, and some algorithm the second.
+\[
+\Ex[R_T]=\Ot\bigl(\sqrt{V\log K}+\sqrt{dT\log K}\bigr),
+\qquad
+\Ex[R_T]=\Ot\bigl(\sqrt{KT}+\sqrt{d\,\etwo\log K}\bigr).
+\]
+\end{conjecture}
+
+\begin{thebibliography}{99}
+\bibitem[Bar-On and Mansour(2025)]{baron2025} Y.~Bar-On and Y.~Mansour. Non-stochastic bandits with evolving observations. \emph{ALT}, PMLR 272, 2025.
+\bibitem[Cesa-Bianchi and Lugosi(2006)]{cesabianchilugosi2006} N.~Cesa-Bianchi and G.~Lugosi. \emph{Prediction, Learning, and Games}. Cambridge University Press, 2006.
+\bibitem[Cesa-Bianchi et al.(2019)]{cesabianchi2019} N.~Cesa-Bianchi, C.~Gentile, and Y.~Mansour. Delay and cooperation in nonstochastic bandits. \emph{JMLR}, 20, 2019.
+\bibitem[Eldowa et al.(2024)]{eldowa2024} K.~Eldowa, N.~Cesa-Bianchi, A.~M.~Metelli, and M.~Restelli. Information capacity regret bounds for bandits with mediator feedback. \emph{JMLR}, 25(353), 2024.
+\bibitem[Esposito et al.(2023)]{esposito2023} E.~Esposito, S.~Masoudian, H.~Qiu, D.~van~der~Hoeven, N.~Cesa-Bianchi, and Y.~Seldin. Delayed bandits: When do intermediate observations help? \emph{ICML}, PMLR 202, 2023.
+\bibitem[Alon et al.(2015)]{alon2015} N.~Alon, N.~Cesa-Bianchi, O.~Dekel, and T.~Koren. Online learning with feedback graphs: beyond bandits. \emph{COLT}, PMLR 40, 2015.
+\bibitem[Esposito et al.(2022)]{esposito2022} E.~Esposito, F.~Fusco, D.~van~der~Hoeven, and N.~Cesa-Bianchi. Learning on the edge: online learning with stochastic feedback graphs. \emph{NeurIPS}, 35, 2022.
+\bibitem[Flaspohler et al.(2021)]{flaspohler2021} G.~E.~Flaspohler, F.~Orabona, J.~Cohen, S.~Mouatadid, M.~Oprescu, P.~Orenstein, and L.~Mackey. Online learning with optimism and delay. \emph{ICML}, PMLR 139, 2021.
+\bibitem[Gabbianelli et al.(2023)]{gabbianelli2023} G.~Gabbianelli, G.~Neu, and M.~Papini. Online learning with off-policy feedback. \emph{ALT}, PMLR 201, 2023.
+\bibitem[Hsieh et al.(2022)]{hsieh2022} Y.-G.~Hsieh, F.~Iutzeler, J.~Malick, and P.~Mertikopoulos. Multi-agent online optimization with delays. \emph{JMLR}, 23, 2022.
+\bibitem[Joulani et al.(2013)]{joulani2013} P.~Joulani, A.~Gy\"orgy, and C.~Szepesv\'ari. Online learning under delayed feedback. \emph{ICML}, 2013.
+\bibitem[Mussi et al.(2024)]{mussi2024} M.~Mussi, S.~Drago, M.~Restelli, and A.~M.~Metelli. Factored-reward bandits with intermediate observations. \emph{ICML}, PMLR 235, 2024.
+\bibitem[Vernade et al.(2020)]{vernade2020} C.~Vernade, A.~Gy\"orgy, and T.~Mann. Non-stationary delayed bandits with intermediate observations. \emph{ICML}, PMLR 119, 2020.
+\bibitem[Wang et al.(2026)]{wang2026} S.~Wang, A.~Barik, and V.~Y.~F.~Tan. Bandit convex optimization with gradient prediction adaptivity. \emph{arXiv:2605.22191}, 2026.
+\bibitem[Wei et al.(2020)]{wei2020} C.-Y.~Wei, H.~Luo, and A.~Agarwal. Taking a hint: How to leverage loss predictors in contextual bandits? \emph{COLT}, PMLR 125, 2020.
+\bibitem[Zhang et al.(2026)]{zhang2026impatient} K.~W.~Zhang, T.~Baldwin-McDonald, K.~Ciosek, L.~Maystre, and D.~Russo. Impatient bandits: optimizing for the long-term without delay. \emph{JMLR}, to appear, 2026.
+\bibitem[Zhang(2026)]{zhang2026} M.~Zhang. Toward optimal second-order path-length guarantee for adversarial multi-armed bandits. \emph{arXiv:2608.15996}, 2026.
+\bibitem[Zimmert and Seldin(2020)]{zimmert2020} J.~Zimmert and Y.~Seldin. An optimal algorithm for adversarial bandits with arbitrary delays. \emph{AISTATS}, PMLR 108, 2020.
+\end{thebibliography}
+
+\appendix
+
+\section{Extended related work}\label{app:related}
+
+The minimax characterization of delayed adversarial bandits traces to \citet{cesabianchi2019}, and
+\citet{joulani2013} give the additive form of the delay penalty in the stochastic case. On acting
+before the loss is known, \citet{flaspohler2021} study optimism under delay directly,
+\citet{wei2020} delimit when prediction error controls regret, \citet{hsieh2022} show that an
+optimistic step must run at a larger scale than the update, and \citet{zhang2026} gives
+second-order path-length bounds.
+
+Structure that lets one observation inform several actions is the other half of the picture.
+Feedback graphs \citep{alon2015} fix which actions are revealed together, and their stochastic
+version \citep{esposito2022} randomizes that set. Factored rewards with intermediate observations
+\citep{mussi2024} decompose the reward instead. Off-policy coverage \citep{gabbianelli2023} is the
+closest analogue of our effective dimension, since its mismatch coefficient measures the same
+kind of overlap between the distribution that generated the data and the one being evaluated. The
+distinction from all of these is that a feedback graph randomizes \emph{who} is observed, whereas
+our sensor randomizes \emph{what} is observed and the sharing is a consequence of $P$ rather than
+a modeling primitive.
+
+\section{Notation}\label{app:notation}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Symbols used in the paper. Every symbol is also defined at first use in the body, so
+this table is a reference rather than a dependency.}
+\label{tab:notation}
+\begin{tabular}{ll}
+\toprule
+Symbol & Meaning \\
+\midrule
+$T$, $K$, $d$ & rounds, actions, fixed feedback delay \\
+$\Sset$, $S_t$ & finite state space, state observed at round $t$ \\
+$P\in[0,1]^{K\times|\Sset|}$ & row-stochastic action-to-state matrix, fixed \\
+ & known in Theorems~\ref{thm:sexp3} and~\ref{thm:rep}, estimated in Appendix~\ref{app:unknown} \\
+$\theta_t\in[0,1]^{|\Sset|}$ & state-loss means at round $t$, oblivious \\
+$c_t=P\theta_t\in[0,1]^K$ & induced loss over actions \\
+$q_t(s)=\sum_ax_t(a)P(s\mid a)$ & state distribution induced by the play \\
+$X_t\in[0,1]$ & outcome at time $t+d$, $\Ex[X_t\mid\mathcal F_{t-1},A_t,S_t]=\theta_t(S_t)$ \\
+$x_t$, $A_t$ & action distribution at round $t$, action drawn from it \\
+$m_t=c_{t-d}$ & stale action-loss vector, given before the action, $m_t=c_1$ for $t\le d$ \\
+$\etwo$ & $\sum_t\|c_t-m_t\|_\infty^2$, accumulated squared prediction error \\
+$\lamtwo$ & $\sum_t\min\{1,\|c_t-m_t\|_2^2\}$, the measure of \citet{baron2025} \\
+$W$ & $\sum_t\|\theta_t-\theta_{t-1}\|_\infty^2$, state-loss variation \\
+$\hat c_t$, $\tilde c_t$, $\check c_t$ & state-pooled, action-level, centered loss estimates \\
+$\check g_t$ & the Safe-Pool blend $(1-\lambda_t)\tilde c_t+\lambda_t\hat c_t$, a distinct object \\
+$\bar c_t$, $c^g_t$, $b_t$ & conditional mean of $\hat c_t$, grouped surrogate loss, $\bar c_t-c_t$ \\
+$v_t$, $\bar v$, $V$ & effective dimension $\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2$, its supremum, its budget \\
+$g$, $\mathcal Z$, $\delta_t(g)$ & state grouping, its range, widest within-group loss spread \\
+$E$, $q$ & budget constraining $\etwo$, number of independently drifting coordinates \\
+$h$, $B$, $\varepsilon$, $\sigma_b^{(j)}$ & block length, block count, amplitude, Rademacher signs \\
+$\eta$, $\beta$, $C$ & learning rate, Tsallis parameter, residual scale \\
+$\alpha$ & smoothing pseudocount in $\hat P_t$ \\
+$\kappa$ & sensor balance, $\bar p(s)\ge1/(\kappa|\Sset|)$ for $\bar p=K^{-1}\sum_aP(\cdot\mid a)$ \\
+$m$, $L_i$, $G_r$ & interleaving factor, estimate of copy $i$, estimates outstanding at $r$ \\
+$D$, $d_{\max}$, $\bar\Lambda$, $\Gamma$ & total delay, maximal delay, inaccuracy bound, the measure of \citet{wang2026} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The state-pooled estimator}\label{app:pool}
+
+\paragraph{The algorithm.} Inputs are the action-to-state matrix $P$, the delay $d$, the number
+of copies $m$, and the rate $\eta>0$. The analyzed setting is $m=d+1$ and the practical variant
+is $m=1$. Round $r$'s outcome becomes usable at round $r+d+1$, which for $m=d+1$ is the next
+round belonging to the copy that played round $r$.
+
+\begin{enumerate}\itemsep1pt \parskip0pt \topsep3pt
+\item Set $L_i\leftarrow(0,\dots,0)\in\mathbb R^K$ for $i=0,\dots,m-1$, and let $\mathcal P$ be
+an empty table of rounds awaiting their outcome.
+\item For $t=1,\dots,T$:
+\begin{enumerate}\itemsep1pt \parskip0pt \topsep1pt
+\item \emph{Deliver.} If $r\triangleq t-d-1\ge1$, read $(i_r,q_r(S_r),S_r,X_r)$ from
+$\mathcal P$, remove it, and update only that copy,
+$L_{i_r}(a)\leftarrow L_{i_r}(a)+P(S_r\mid a)X_r/q_r(S_r)$ for every $a$. This is the pooled
+step, and it touches every action rather than the one played.
+\item \emph{Select the copy.} $i\leftarrow t\bmod m$.
+\item \emph{Play.} $x_t(a)\propto\exp(-\eta L_i(a))$, draw $A_t\sim x_t$, and observe $S_t$
+at once.
+\item \emph{Record.} Compute the scalar $q_t(S_t)=\sum_ax_t(a)P(S_t\mid a)$ and store
+$(i,q_t(S_t),S_t,\cdot)$ in $\mathcal P$, to be completed when $X_t$ arrives at time $t+d$.
+\end{enumerate}
+\end{enumerate}
+
+Steps (a), (c) and (d) are each $O(K)$ and there is no optimization subproblem, so a round costs
+$O(K)$ once $P$ is stored. The state is held in the $m$ vectors $L_i$, which is $mK$ numbers, the
+matrix $P$, which is $K|\Sset|$ numbers, and four scalars for each of the at most $d$ rounds in
+flight. Only the scalar $q_r(S_r)$ is needed from round $r$, not the vector $x_r$.
+
+
+\begin{remark}[The $\chi^2$ form]\label{rem:chi2}
+Under $x_t$ the pair $(A_t,S_t)$ has law $x_t(a)P(s\mid a)$ with marginals $x_t$ and $q_t$, so
+\begin{align*}
+\chi^2\bigl(P_{A_t,S_t}\,\big\|\,P_{A_t}\!\otimes\!P_{S_t}\bigr)
+&=\sum_{a,s}\frac{\bigl(x_t(a)P(s\mid a)-x_t(a)q_t(s)\bigr)^2}{x_t(a)q_t(s)}\\
+&=\sum_{a,s}\frac{x_t(a)P(s\mid a)^2}{q_t(s)}-2+1\ =\ v_t-1,
+\end{align*}
+the cross term summing to $\sum_{a,s}x_t(a)P(s\mid a)=1$ and the last to
+$\sum_{a,s}x_t(a)q_t(s)=1$. So $v_t=1$ exactly when $A_t$ and $S_t$ are independent, which is
+when the rows of $P$ agree, and the upper endpoint $|\Sset|$ is attained when $P$ is
+deterministic and onto. This is an identity, not a bound, and it is used here only for reading
+$v_t$, never in a proof.
+\end{remark}
+
+\begin{proposition}\label{prop:pool}
+Fix $t$, let $x_t$ be the play distribution, $q_t(s)=\sum_ax_t(a)P(s\mid a)$ the induced state
+distribution, and $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$, which is well defined because only
+states with $q_t(s)>0$ occur. Then $\hat c_t(a)\ge0$, $\hat c_t(a)\le1/x_t(a)$,
+$\Ex[\hat c_t(a)\mid\mathcal F_{t-1}]=c_t(a)$, and
+\[
+\sum_ax_t(a)\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]\ \le\ v_t
+:=\sum_{s:q_t(s)>0}\frac{\sum_ax_t(a)P(s\mid a)^2}{q_t(s)},\qquad 1\le v_t\le|\Sset| ,
+\]
+states of zero probability being omitted throughout, which is the convention $0/0=0$.
+The action-level $\tilde c_t(a)=\mathbf 1\{A_t=a\}X_t/x_t(a)$ has the same first three properties
+and weighted second moment at most $K$.
+\end{proposition}
+
+\begin{proof}
+Nonnegativity is immediate from $X_t\ge0$. Given $\mathcal F_{t-1}$ the state $S_t$ has
+distribution $q_t$, and $\Ex[X_t\mid\mathcal F_{t-1},S_t=s]=\theta_t(s)$ by the model, since that
+conditional mean does not depend on the action, so
+$\Ex[\hat c_t(a)\mid\mathcal F_{t-1}]=\sum_sq_t(s)P(s\mid a)\theta_t(s)/q_t(s)=c_t(a)$. For the
+range, $q_t(s)\ge x_t(a)P(s\mid a)$ for every $a$, so $P(s\mid a)/q_t(s)\le1/x_t(a)$ and
+$X_t\le1$. For the second moment, $X_t^2\le1$ gives
+$\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]\le\sum_sP(s\mid a)^2/q_t(s)$, and exchanging the sums
+gives $v_t$. Each summand of $v_t$ is at most $1$, since $P(s\mid a)\le1$ makes
+$\sum_ax_t(a)P(s\mid a)^2\le q_t(s)$, and at least $q_t(s)$, since Jensen applied to
+$a\mapsto P(s\mid a)$ under $x_t$ gives $\sum_ax_t(a)P(s\mid a)^2\ge q_t(s)^2$. Summing the two
+bounds gives $1\le v_t\le|\Sset|$. The action-level claims are the same computation with the
+state replaced by the played action, whose weighted second moment is $\sum_ax_t(a)/x_t(a)=K$.
+\end{proof}
+
+The two ends are attained. If every action induces the same state distribution then
+$v_t=\sum_sq_t(s)=1$, and if $P$ is deterministic, each action reaching a single state, then
+every $P(s\mid a)$ is $0$ or $1$ and each summand is exactly $1$, so $v_t$ counts the states
+reached and equals $|\Sset|$ when every state has an action reaching it. Disjoint row supports
+give $v_t=K$ rather than $|\Sset|$, since the summands over one action's private states add to
+$\sum_sP(s\mid a)=1$, so a sensor with many private states per action resolves few of them. So $v_t$ reads the
+overlap between the rows of $P$ rather than their length, and $\bar v=\sup_xv(x)$, the supremum
+over play distributions, depends on $P$ alone. An outcome observed at a state updates the estimate
+for every action that can reach it, which is why the construction of Section~\ref{sec:lower} gives
+each drifting coordinate a private state, forcing $v_t=|\Sset|$ there. The immediately observed
+pairs $(A_t,S_t)$ identify $P$ separately, though Theorem~\ref{thm:sexp3} assumes it known.
+
+\section{Proofs of Theorems~\ref{thm:sexp3} and \ref{thm:rep}}\label{app:etc}
+
+\begin{proof}[Proof of Theorem~\ref{thm:sexp3}]
+Fix a copy $i$ and let $T_i$ be the number of rounds it owns, so $\sum_iT_i=T$. Round $t$'s
+outcome is usable from round $t+d+1$, which with $m=d+1$ is exactly $t+m$, the copy's next round,
+so within a copy the feedback is undelayed and $L_i$ carries exactly the estimates of that copy's
+earlier rounds. Exponential weights on nonnegative losses give, for any action $a^\star$ and any
+$\eta>0$,
+\[
+\sum_{t\in i}\bigl(\langle x_t,\hat c_t\rangle-\hat c_t(a^\star)\bigr)
+\le\frac{\log K}{\eta}+\frac{\eta}{2}\sum_{t\in i}\sum_ax_t(a)\hat c_t(a)^2 ,
+\]
+by the usual potential telescoping with $e^{-z}\le1-z+z^2/2$, which needs $z\ge0$ and therefore
+$\hat c_t\ge0$, supplied by Proposition~\ref{prop:pool}. Each $x_t$ is
+$\mathcal F_{t-1}$-measurable, because $L_i$ then holds only rounds $r\le t-m=t-d-1$, so taking
+expectations turns the left side into $\sum_{t\in i}(\langle x_t,c_t\rangle-c_t(a^\star))$ by
+unbiasedness and the quadratic term into at most $\Ex[\sum_{t\in i}v_t]$, again by
+Proposition~\ref{prop:pool}. Summing over the $m=d+1$ copies and using
+$\sum_i\min_a\sum_{t\in i}c_t(a)\le\min_a\sum_tc_t(a)$, which is what lets the copies be compared
+against one common action, gives $\Ex[R_T]\le(d+1)\log K/\eta+\tfrac\eta2\Ex[\sum_tv_t]$. If
+$\sum_tv_t\le V$ surely then $\eta=\sqrt{2(d+1)\log K/V}$ balances the two terms and gives
+$\sqrt{2(d+1)V\log K}$, and $V=\bar vT$ is admissible by the definition of $\bar v$.
+\end{proof}
+
+The delay enters as a factor because the copies do not share their estimates, each paying
+$\log K/\eta$ over $T/(d+1)$ rounds. Sharing them is exactly the $m=1$ algorithm of
+Conjecture~\ref{conj:add}, whose analysis is open.
+
+\begin{lemma}[Coarsening]\label{lem:coarse}
+For every play distribution and every $g$, $v_t(g)\le v_t$.
+\end{lemma}
+
+\begin{proof}
+It suffices to merge two states, the general case following by induction on the merges, and a
+merged group of zero probability contributes nothing on either side by the convention above.
+Write $P_1,P_2$ for the two columns, $A_j=\sum_ax_t(a)P_j(a)^2$, $B_j=\sum_ax_t(a)P_j(a)$ and
+$\lambda=B_1/(B_1+B_2)$. By Cauchy--Schwarz,
+$(P_1+P_2)^2\le\lambda^{-1}P_1^2+(1-\lambda)^{-1}P_2^2$ pointwise in $a$, so
+$\sum_ax_t(a)(P_1+P_2)^2\le(B_1+B_2)(A_1/B_1+A_2/B_2)$, and dividing by the merged denominator
+$B_1+B_2$ shows the merged summand is at most $A_1/B_1+A_2/B_2$, the two it replaces.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:rep}]
+Running the algorithm on $g$ is running it on the sensor $(\mathcal Z,P^g)$. The surrogate
+losses below depend on $x_t$ and so are predictable rather than oblivious, but the proof of
+Theorem~\ref{thm:sexp3} uses obliviousness nowhere, only that each $c^g_t$ is
+$\mathcal F_{t-1}$-measurable given the play, so it applies unchanged and bounds regret measured
+in the surrogate losses
+$c^g_t(a)=\sum_zP^g(z\mid a)\bar\theta_t(z)$, where
+$\bar\theta_t(z)=\sum_{s:g(s)=z}q_t(s)\theta_t(s)/q_t^g(z)$ is the group mean the grouped
+estimator is unbiased for, by the same computation as in Proposition~\ref{prop:pool} with
+$S_t$ replaced by $g(S_t)$. Fix $a$ and $z$. Both $\{q_t(s)/q_t^g(z)\}$ and
+$\{P(s\mid a)/P^g(z\mid a)\}$ are probability vectors on $\{s:g(s)=z\}$, so their
+$\theta_t$-averages lie in a common interval of length $\delta_t(g)$ and differ by at most
+$\delta_t(g)$. Weighting by $P^g(z\mid a)$ and summing over $z$ gives
+$|c^g_t(a)-c_t(a)|\le\delta_t(g)$ for every $a$, hence
+$\langle x_t,c_t\rangle-c_t(a^\star)\le\langle x_t,c^g_t\rangle-c^g_t(a^\star)+2\delta_t(g)$.
+Summing over $t$ adds $2\sum_t\delta_t(g)$, and Lemma~\ref{lem:coarse} makes $V(g)$ no larger than
+a bound valid for the raw states.
+\end{proof}
+
+\section{An unknown action-to-state map}\label{app:unknown}
+
+\paragraph{The plug-in estimator.}
+The pairs $(A_t,S_t)$ arrive without delay, so $P$ is estimable from the learner's own play while
+the outcomes are still in flight. Let $N_a(t)$ count the rounds before $t$ that played $a$ and
+$N_{a,s}(t)$ those that also produced $s$, and set
+$\hat P_t(s\mid a)=(N_{a,s}(t)+\alpha)/(N_a(t)+\alpha|\Sset|)$ for a smoothing constant
+$\alpha\in(0,1]$ fixed independently of $T$, which is row-stochastic with every entry positive, so
+$\hat q_t=x_t^\top\hat P_t$ is positive too, and both are $\mathcal F_{t-1}$-measurable. Smoothing moves an entry
+from the empirical row by at most $\alpha(|\Sset|-1)/(N_a(t)+\alpha|\Sset|)$, attained when every
+observation of $a$ sits on one state, and moves the row in $\ell_1$ by at most twice that. Both
+are of lower order than the sampling term at fixed $\alpha$ and must be carried otherwise, and
+Appendix~\ref{app:num} shows the choice matters in practice. The plug-in estimate is
+$\hat c_t(a)=\hat P_t(S_t\mid a)X_t/\hat q_t(S_t)$. Write
+$\varepsilon_t=\max_a\|\hat P_t(\cdot\mid a)-P(\cdot\mid a)\|_1$ for its accuracy and
+$\rho_t=\max_{s:q_t(s)>0}|\hat q_t(s)-q_t(s)|/q_t(s)$ for the relative error it induces on the
+state distribution, states of zero probability under the play being omitted since the estimator
+never charges them.
+
+\begin{proposition}\label{prop:plugin}
+On $\{\rho_t\le\tfrac12\}$ the plug-in estimate satisfies $\hat c_t\ge0$ and
+$\sum_ax_t(a)\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]\le2\hat v_t\le2|\Sset|$, and its conditional
+mean $\bar c_t$ satisfies $\sum_ax_t(a)(\bar c_t(a)-c_t(a))=0$ exactly, for every $\hat P_t$
+and with no hypothesis at all, and $|\bar c_t(a)-c_t(a)|\le2\varepsilon_t(a)+2\rho_t$ for every $a$, where
+$\varepsilon_t(a)=\|\hat P_t(\cdot\mid a)-P(\cdot\mid a)\|_1$.
+\end{proposition}
+
+\begin{proof}
+Write $\Delta_t=\hat P_t-P$ and $\delta_t=\hat q_t-q_t=\sum_ax_t(a)\Delta_t(\cdot\mid a)$.
+Substituting these into $\bar c_t(a)=\sum_sq_t(s)\hat P_t(s\mid a)\theta_t(s)/\hat q_t(s)$ and
+cancelling gives
+$\bar c_t(a)-c_t(a)=\sum_s\theta_t(s)[q_t(s)\Delta_t(s\mid a)-P(s\mid a)\delta_t(s)]/\hat q_t(s)$,
+so with $\theta_t\in[0,1]^{|\Sset|}$,
+\[
+|\bar c_t(a)-c_t(a)|\ \le\ \sum_s\frac{q_t(s)|\Delta_t(s\mid a)|+P(s\mid a)|\delta_t(s)|}{\hat q_t(s)} .
+\]
+The play-weighted identity needs no hypothesis. By definition
+$\sum_ax_t(a)\hat P_t(s\mid a)=\hat q_t(s)$, so $\sum_ax_t(a)\hat c_t(a)=X_t$ whatever $\hat P_t$
+is, and taking conditional expectations gives
+$\sum_ax_t(a)\bar c_t(a)=\sum_sq_t(s)\theta_t(s)=\langle x_t,c_t\rangle$. On
+$\{\rho_t\le\tfrac12\}$ we have $q_t\le2\hat q_t$, and for the per-action bias the first sum of
+the display is at most $2\|\Delta_t(\cdot\mid a)\|_1=2\varepsilon_t(a)$ and the second at most
+$2\sum_sP(s\mid a)|\delta_t(s)|/q_t(s)\le2\rho_t$, because $P(\cdot\mid a)$ is a probability
+vector. The play-weighted identity does \emph{not} survive reweighting: at $x_t=(\tfrac12,\tfrac12)$,
+$P=I$, $\hat P=\bigl(\begin{smallmatrix}.9&.1\\.2&.8\end{smallmatrix}\bigr)$ and
+$\theta_t=(0,1)$ the bias is $(\tfrac19,-\tfrac19)$ with zero $x_t$-average, while weights
+$(1,0)$ leave $\tfrac1{18}$. For the second moment,
+$\sum_ax_t(a)\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]
+\le\sum_s\frac{q_t(s)}{\hat q_t(s)}\cdot\frac{\sum_ax_t(a)\hat P_t(s\mid a)^2}{\hat q_t(s)}
+\le2\hat v_t$, and $\hat v_t\le|\Sset|$ by Proposition~\ref{prop:pool} applied to $\hat P_t$.
+\end{proof}
+
+\paragraph{The warm-start guarantee.}
+\textsc{Warm-start State-EXP3} plays uniformly for $n_0$ rounds, forms $\hat P=\hat P_{n_0+1}$
+from those rounds alone, discards the cumulative estimates together with every outcome of a
+warm-start round that has not yet arrived, and then runs
+\textsc{State-EXP3} with $m=d+1$, that frozen $\hat P$, and each play mixed with the uniform
+action at rate $\gamma$. Freezing makes $\hat P$ measurable with respect to the first phase, so
+$\varepsilon$ and $\rho$ are fixed before the second phase begins, and discarding is what keeps
+the first phase's inaccurate updates out of every later distribution.
+
+\begin{theorem}\label{thm:unknown}
+Suppose $\bar p(s)\ge1/(\kappa|\Sset|)$ for every $s$, fix $0<\gamma\le\tfrac12$, and take
+$n_0\ge c\,\gamma^{-2}K\kappa^2|\Sset|^2\log(K|\Sset|T)$ for a universal $c$. Then
+\textup{\textsc{Warm-start State-EXP3}} satisfies, for every $\eta>0$,
+\[
+\Ex[R_T]\ \le\ n_0+1+\gamma T+\frac{(d+1)\log K}{\eta}+2\eta|\Sset|T+T\bigl(4\bar\varepsilon+4\bar\rho\bigr),
+\]
+where $\bar\varepsilon=\Ot(\sqrt{K|\Sset|/n_0})$ and
+$\bar\rho=\Ot(\kappa|\Sset|\sqrt{K/n_0}/\gamma)\le\tfrac12$ bound $\varepsilon$ and $\rho$ on an
+event of probability at least $1-1/T$. Tuning $\eta$ and then
+$\gamma\asymp(\kappa|\Sset|)^{1/2}(K/n_0)^{1/4}$ and
+$n_0\asymp T^{4/5}(\kappa|\Sset|)^{2/5}K^{1/5}$ gives
+$\Ex[R_T]=\Ot\bigl(\sqrt{d\,|\Sset|T\log K}+(\kappa|\Sset|)^{2/5}K^{1/5}T^{4/5}\bigr)$, provided
+$T=\widetilde\Omega(K(\kappa|\Sset|)^2)$, which is what makes that $n_0$ satisfy both
+$n_0\le T-d$ and the lower bound above with some $\gamma\le\tfrac12$. Outside that regime the
+tuning is vacuous and $R_T\le T$ is the statement.
+\end{theorem}
+
+\begin{proof}
+The first phase has losses in $[0,1]$, so it contributes at most $n_0$. Let $G$ be the event that
+$N_a(n_0+1)\ge n_0/(2K)$ for every $a$, that
+$\|\hat P(\cdot\mid a)-P(\cdot\mid a)\|_1\le\bar\varepsilon$ for every $a$, and that
+$\max_{s,a}|\hat P(s\mid a)-P(s\mid a)|\le\bar\rho\gamma/(\kappa|\Sset|)$. Uniform play gives
+$\Ex[N_a]=n_0/K$, so a multiplicative Chernoff bound, the $\ell_1$ deviation bound for a
+multinomial, Hoeffding, and a union bound over the $K|\Sset|$ entries put
+$\Pr(G^c)\le1/T$ at the stated $n_0$, the pseudo-counts adding
+$2\alpha(|\Sset|-1)/(N_a+\alpha|\Sset|)$ to each $\ell_1$ deviation and half that to each entry,
+of lower order at fixed $\alpha$. Off $G$ bound the second phase by $T$, contributing at most $1$.
+
+On $G$ the quantity $\hat P$ is measurable with respect to the first phase, and mixing gives
+$q_t(s)\ge\gamma\bar p(s)\ge\gamma/(\kappa|\Sset|)$ at every later round, so
+$\rho_t\le\kappa|\Sset|\max_{s,a}|\hat P(s\mid a)-P(s\mid a)|/\gamma\le\bar\rho\le\tfrac12$
+for every $t>n_0$ and every realization of the second phase. Proposition~\ref{prop:plugin}
+therefore applies at every such round, and conditionally on the first phase the second is exactly
+the algorithm of Theorem~\ref{thm:sexp3} driven by a nonnegative estimate with weighted second
+moment at most $2\hat v_t\le2|\Sset|$. Its proof gives
+$\Ex[\sum_{t>n_0}(\langle p_t,\bar c_t\rangle-\bar c_t(a^\star))]\le(d+1)\log K/\eta+2\eta|\Sset|T$,
+the extra factor of two coming from $p_t\le x_t/(1-\gamma)\le2x_t$. Playing $x_t$ rather than $p_t$ costs at most $\gamma$ per round since $c_t\in[0,1]^K$, so it
+remains to pass from $\bar c_t$ to $c_t$ under $p_t$. Proposition~\ref{prop:plugin} gives
+$\langle x_t,b_t\rangle=0$ for the per-action bias $b_t$, and $x_t=(1-\gamma)p_t+\gamma u$ for
+the uniform $u$, so $\langle p_t,b_t\rangle=-\tfrac{\gamma}{1-\gamma}\langle u,b_t\rangle$, which
+for $\gamma\le\tfrac12$ is at most $\max_a|b_t(a)|$ in absolute value. Each round therefore adds
+$|\langle p_t,b_t\rangle|+|b_t(a^\star)|\le2\max_a|b_t(a)|\le4\bar\varepsilon+4\bar\rho$. Collecting the four contributions gives
+the display. For the rate, balancing $\gamma T$ against $2T\bar\rho$ gives the stated $\gamma$ and
+a combined $\Ot(T(\kappa|\Sset|)^{1/2}(K/n_0)^{1/4})$, and balancing that against $n_0$ gives the
+stated $n_0$, under which $T\bar\varepsilon$ and the constraint on $n_0$ are of lower order.
+\end{proof}
+
+\paragraph{Safe blending.}
+Blending the plug-in with the action-level estimate makes the guarantee safe. Let
+$\lambda_t\in[0,1]^K$ be $\mathcal F_{t-1}$-measurable and put
+$\check g_t(a)=(1-\lambda_t(a))\tilde c_t(a)+\lambda_t(a)\hat c_t(a)$.
+
+\begin{proposition}\label{prop:blend}
+$\check g_t\ge0$, its conditional mean satisfies
+$\Ex[\check g_t(a)\mid\mathcal F_{t-1}]-c_t(a)=\lambda_t(a)\,(\bar c_t(a)-c_t(a))$
+for the plug-in's conditional mean $\bar c_t$ of Proposition~\ref{prop:plugin}, and
+\[
+\sum_ax_t(a)\Ex[\check g_t(a)^2\mid\mathcal F_{t-1}]\ \le\ (K-\Pi_t)+\hat V_t ,
+\]
+for $\Pi_t=\sum_a\lambda_t(a)$ and
+$\hat V_t=\sum_a\lambda_t(a)x_t(a)\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]$, which satisfies
+$\hat V_t\le2\hat v_t$ on $\{\rho_t\le\tfrac12\}$ and not in general, since the step
+$q_t/\hat q_t\le2$ behind it is exactly that event. We write $V^{\mathrm{ub}}_t(\tau)$ below for a
+computable upper bound on $\hat V_t$, reserving $\hat V_t$ for the conditional expectation
+itself.
+\end{proposition}
+
+\begin{proof}
+Both parts are nonnegative and $\lambda_t(a)\in[0,1]$. The mean identity is linearity together
+with $\Ex[\tilde c_t(a)\mid\mathcal F_{t-1}]=c_t(a)$. For the second moment, $u\mapsto u^2$ is
+convex, so $\check g_t(a)^2\le(1-\lambda_t(a))\tilde c_t(a)^2+\lambda_t(a)\hat c_t(a)^2$, and
+$x_t(a)\Ex[\tilde c_t(a)^2\mid\mathcal F_{t-1}]\le1$ by Proposition~\ref{prop:pool}.
+\end{proof}
+
+So a weight of $\lambda_t(a)$ on the plug-in buys a variance saving of $\lambda_t(a)$ and pays a
+bias of $\lambda_t(a)$ times the plug-in's, and both endpoints are exact. Let $r_t(a)$ and $\hat\rho_t$ be any sequences computable from the immediate pairs that are
+\emph{simultaneously valid}, meaning $\varepsilon_t(a)\le r_t(a)$ for every $a$ and
+$\rho_t\le\hat\rho_t$ at every $t\le T$, on an event of probability at least $1-1/T$. Write
+$V^{\mathrm{ub}}_t(\tau)=2\sum_{a:r_t(a)\le\tau}x_t(a)\sum_s\hat P_t(s\mid a)^2/\hat q_t(s)$,
+which the learner can evaluate and which dominates $\hat V_t$ on $\{\rho_t\le\tfrac12\}$. \textsc{Safe-Pool State-EXP3} sets $\lambda_t\equiv0$ when
+$\hat\rho_t>\tfrac12$, and otherwise picks the best member of the candidate set
+$\{\bot\}\cup\{r_t(a):a\le K\}$, where $\bot$ stands for $\lambda_t\equiv0$ and a numerical
+candidate $\tau$ stands for $\lambda_t(a)=\mathbf 1\{r_t(a)\le\tau\}$, best meaning smallest
+\[
+\Psi_t(\tau)=\tfrac\eta2\bigl[(K-\Pi_t(\tau))+V^{\mathrm{ub}}_t(\tau)\bigr]
++\bigl(4\tau+4\hat\rho_t\bigr)\mathbf 1\{\Pi_t(\tau)>0\},
+\qquad\Psi_t(\bot)=\tfrac\eta2K.
+\]
+Write $\Psi^\star_t$ for that smallest value. The candidate $\bot$ is listed apart from the
+numerical thresholds because a valid radius may equal zero, in which case $\tau=0$ pools the
+actions attaining it rather than abstaining, so $\bot$ rather than $\tau=0$ is what keeps
+$\tfrac\eta2K$ available on every round.
+
+\begin{theorem}\label{thm:safe}
+For every $\eta>0$, \textup{\textsc{Safe-Pool State-EXP3}} with $m=d+1$ satisfies
+\[
+\Ex[R_T]\ \le\ 1+\frac{(d+1)\log K}{\eta}
++\Ex\Bigl[\sum_{t=1}^T\Psi^\star_t\Bigr],
+\]
+so $\eta=\sqrt{2(d+1)\log K/(KT)}$ gives $\Ex[R_T]\le1+\sqrt{2(d+1)KT\log K}$ on every instance,
+which is the guarantee of action-level exponential weights, with an improvement on each round
+whose $\Psi^\star_t$ is strictly below $\tfrac\eta2K$. The certificate is computed from the
+learner's own observations and so is random, which is why the display carries an expectation.
+The tuned bound does not, because $\Psi^\star_t\le\tfrac\eta2K$ holds on every path.
+\end{theorem}
+
+\begin{proof}
+On the validity event, of probability at least $1-1/T$ and contributing at most $1$ off it,
+pooling happens only when $\hat\rho_t\le\tfrac12$ and hence only when $\rho_t\le\tfrac12$, which
+is what makes $V^{\mathrm{ub}}_t$ dominate the conditional second moment. Proposition~\ref{prop:blend}
+then supplies a nonnegative estimate whose weighted second moment is at most
+$(K-\Pi_t)+\hat V_t$, so the argument of Appendix~\ref{app:etc} applies to the surrogate
+losses. Passing to $c_t$ adds both the played bias
+$|\sum_ax_t(a)\lambda_t(a)b_t(a)|$ and the comparator bias $\lambda_t(a^\star)|b_t(a^\star)|$,
+for $b_t=\bar c_t-c_t$.
+The cancellation of Proposition~\ref{prop:plugin} is lost under per-action weights, as the
+counterexample there shows, so each is bounded separately. On a pooled action
+$\varepsilon_t(a)\le r_t(a)\le\tau$ gives $|b_t(a)|\le2\tau+2\hat\rho_t$, and since
+$\sum_ax_t(a)\lambda_t(a)\le1$ and $\lambda_t(a^\star)\le1$ the two together are at most $4\tau+4\hat\rho_t$, charged only when something is pooled. The
+second-moment bound and the two bias terms are all functions of the observations, so the
+per-round costs they assemble into are the random $\Psi^\star_t$ and the sum is taken in
+expectation. For the tuned bound, $\bot$ belongs to the candidate set and
+$\Psi_t(\bot)=\tfrac\eta2K$, so $\Psi^\star_t\le\tfrac\eta2K$ on every path whatever the radii
+are.
+\end{proof}
+
+\paragraph{Why certification stays conservative.}
+\textbf{The guarantee is safe and the algorithm is inert.} Pooling is certified when
+$4(\tau+\hat\rho_t)\le\tfrac\eta2(\Pi_t-V^{\mathrm{ub}}_t)$. At the tuned $\eta$ both sides
+fall as $T^{-1/2}$, the left through $\tau\asymp\sqrt{K\log(K|\Sset|T)/T}$ under uniform play and
+the right through $\eta\asymp\sqrt{\log K/(KT)}$. Their ratio is
+$\Theta(\sqrt{\log(K|\Sset|T)/\log K})$, which exceeds one and does not vanish with the horizon,
+growing slowly in $T$ through the logarithmic factors, so no horizon makes the certificate
+clear. Appendix~\ref{app:num} reports behavior consistent with
+this explanation, the algorithm reproducing action-level regret to the digit with a pooled
+fraction of zero.
+
+The obstruction is not the shape of the bias bound. Regret charges
+$\langle x_t,b_t\rangle-b_t(a^\star)$ for the per-action bias $b_t$, while
+Proposition~\ref{prop:plugin} charges $\max_a|b_t(a)|$. Measured against the budget itself at
+$K=40$, $|\Sset|=8$, $T=8000$ and $d=50$, the first is $0.42$ times it and the second $1.67$ times
+it, so on that trajectory the realized bias lies below the best-case variance budget and a tighter
+bias bound would close the analytical gap. Two exact refinements fail to deliver one. Both
+$\sum_s\Delta_t(s\mid a)$ and $\sum_s\delta_t(s)$ vanish, so a constant may be subtracted and a
+maximum replaced by an oscillation, and Cauchy--Schwarz against $q_t$ replaces the comparator term
+by $\sqrt{\nu_t(a^\star)}\,\chi_t$ for its own effective dimension $\nu_t$ and a chi-square
+$\chi_t$ between $\hat q_t$ and $q_t$. Measured, these are $6.1$ and $63$ times the truth against
+$3.9$ for the maximum they replace.
+
+What the algorithm can verify from its own counts is $104$ times the budget, and Bernstein radii do
+not improve on Hoeffding ones (Appendix~\ref{app:num}), so the barrier is certifying $\rho_t$, the
+relative error the estimate induces on the state distribution. The play-weighted identity of
+Proposition~\ref{prop:plugin} says the whole charge is the comparator's, and it routes through
+$\rho_t$ only because $\hat q_t=x_t^\top\hat P_t$ predicts the state distribution out of every row
+of $P$. Predicting is expensive for that reason, needing
+$t=\Omega(K|\Sset|\log(K|\Sset|T)/\rho^2)$ rounds, and the resulting certificate clears for no
+$K\le T$, since it would need $\log K\ge16c|\Sset|$ for $c=\log(2|\Sset|T)$, which $\log K\le\log
+T$ cannot meet.
+
+Counting the states costs less and still buys nothing. With $x_t$ frozen over a window the
+empirical state frequency is a plain multinomial estimate of $q_t$, needing
+$n=\Omega(|\Sset|\log(|\Sset|T)/\rho^2)$ samples, a factor $K$ fewer than predicting and free of
+$P$, and the certificate does clear once $K\log K\ge64c|\Sset|$, about $K\ge10^3$ at $|\Sset|=8$.
+The window that buys it must satisfy $n\ge32c|\Sset|T/(K\log K)$, a constant fraction of the
+horizon, and freezing the play over blocks of length $B$ costs $\sqrt{2TBK\log K}$, which at that
+$B$ is $T\sqrt{128c|\Sset|}$ and so linear in $T$. Both routes fail for one reason: the certificate
+must resolve $q_t$ to relative accuracy $\Theta(\sqrt{K\log K/T})$, finer than either estimate
+delivers from the data the learner has.
+
+In words, an unknown action-to-state matrix costs a bias in two accuracies, the $\ell_1$ error of $\hat P$ and the
+relative error it induces on the state distribution, and only the second needs forced
+exploration, which is what sets the rate. \textbf{The bound does not justify the channel it
+analyzes.} Its second term exceeds $\sqrt{KT}$ at every horizon with $T>K$, by a factor
+$(T/K)^{3/10}$, so a learner holding this guarantee alone should run action-level exponential
+weights instead. The experiments suggest the analysis is conservative rather than the
+algorithm weak, since Appendix~\ref{app:num} shows it tracking known $P$ closely, and sharpening
+it is the natural next result.
+
+\section{Feedback models, and what transfers}\label{app:transfer}
+
+Write $\lamtwo=\sum_t\min\{1,\|c_t-m_t\|_2^2\}$ for the inaccuracy measure of
+\citet{baron2025}. Unlike $\etwo$, which charges only the worst action in a round, $\lamtwo$
+grows with how many actions are predicted wrongly, and since
+$\|v\|_\infty\le\|v\|_2\le\sqrt q\|v\|_\infty$ for a vector $v$ with $q$ nonzero
+coordinates, $\etwo\le\lamtwo\le q\,\etwo$ with both ends attained.
+
+\citet{baron2025} analyze a model in which the played coordinate of the loss vector is observed
+exactly. Section~\ref{sec:setting} instead observes a random outcome whose conditional mean is
+the loss. The following records precisely what survives the substitution.
+
+\begin{proposition}\label{prop:moments}
+Take the action-level $\tilde c_t(a)=\mathbf 1\{A_t=a\}X_t/x_t(a)$ of
+Proposition~\ref{prop:pool} under the model of Section~\ref{sec:setting}. Then for every action
+$a$, (i) $\Ex[\tilde c_t(a)\mid\mathcal F_{t-1}]=c_t(a)$, (ii) $0\le\tilde c_t(a)\le 1/x_t(a)$,
+and (iii) $\Ex[\tilde c_t(a)^2\mid\mathcal F_{t-1}]\le 1/x_t(a)$. The centered estimator
+$\check c_t(a)=m_t(a)+\mathbf 1\{A_t=a\}(X_t-m_t(a))/x_t(a)$ also satisfies (i), and its residual
+obeys $\Ex[(\check c_t(a)-m_t(a))^2\mid\mathcal F_{t-1}]\le 1/x_t(a)$.
+\end{proposition}
+
+\begin{proof}
+For (i), by the tower rule $\Ex[\mathbf 1\{A_t=a\}X_t\mid\mathcal F_{t-1}]
+=x_t(a)\,\Ex[X_t\mid A_t=a]=x_t(a)c_t(a)$, and dividing by $x_t(a)$ gives the claim.
+Item (ii) holds because $X_t\in[0,1]$. For (iii),
+$\Ex[\tilde c_t(a)^2\mid\mathcal F_{t-1}]=\Ex[X_t^2\mathbf 1\{A_t=a\}]/x_t(a)^2
+=\Ex[X_t^2\mid A_t=a]/x_t(a)\le 1/x_t(a)$ because $X_t\le1$. The statements for $\check c_t$ follow the same computation with $X_t$ replaced by $X_t-m_t(a)$,
+using $|X_t-m_t(a)|\le1$.
+\end{proof}
+
+In words, replacing an exactly observed loss by a bounded unbiased draw of it changes neither the
+mean of the estimator nor the moment bounds an analysis consumes.
+
+Under exact feedback the corresponding estimator satisfies (i) to (iii) with identical
+bounds, since $c_t(a)\le1$. Consequently any step of an exact-feedback analysis that uses the
+observation only through unbiasedness and these two moment bounds is unchanged under noisy
+outcomes. What this does not cover is the comparison between the estimate built from the stale
+action-loss vector and the estimate built from the true loss. Under exact feedback that difference is
+determined by the played action. Under noisy outcomes it carries an additional mean-zero term of
+magnitude up to $1/x_t(A_t)$, and bounding its cumulative effect over a window of $d$ rounds is
+what requires the stability property falsified in Appendix~\ref{app:counter}. An upper bound for
+the noisy model is Theorem~\ref{thm:sexp3}. What remains open is one adaptive to $\etwo$.
+
+\section{Proofs}\label{app:proofs}
+
+\begin{lemma}[Delay window]\label{lem:window}
+$\etwo\le d^2W$ for $W=\sum_t\|\theta_t-\theta_{t-1}\|_\infty^2$. The ratio $\etwo/(d^2W)$ tends to one when $\theta$ drifts monotonically in one coordinate at a
+constant rate and $T/d\to\infty$, the first
+$d$ rounds contributing $\sum_{j<d}j^2$ rather than $d^2$ each under the convention $m_t=c_1$.
+\end{lemma}
+
+In words, accumulated squared prediction error is at most the state-loss variation inflated by
+the square of the delay, and no better bound in $W$ alone is available.
+
+\begin{proof}[Proof of Lemma~\ref{lem:window}]
+Throughout write $\Delta_j=\theta_j-\theta_{j-1}$, set $\theta_0=\theta_1$, so $\Delta_1=0$, and read
+$c_r$ as $c_1$ for $r\le0$, matching the convention $m_t=c_1$ for $t\le d$ of
+Section~\ref{sec:setting}. Then $c_t-c_{t-d}=P\sum_{j=t-d+1}^t\Delta_j$. Because the
+rows of $P$ are probability vectors, averaging cannot increase the supremum norm, so
+$\|c_t-c_{t-d}\|_\infty\le\sum_j\|\Delta_j\|_\infty$. By Cauchy--Schwarz applied to the $d$
+summands, $\|c_t-c_{t-d}\|_\infty^2\le d\sum_{j=t-d+1}^t\|\Delta_j\|_\infty^2$. Summing over $t$
+and using that each increment belongs to at most $d$ windows gives $\etwo\le d^2W$. The ratio $\etwo/(d^2W)$ approaches one when every increment has the same magnitude, sign and
+active coordinate, and some action reaches that coordinate deterministically, since then no
+cancellation occurs within a full window and $P$ passes the increment through undiminished.
+Without the second condition the drift can lie in the kernel of $P$ and the ratio can be zero.
+\end{proof}
+
+\begin{lemma}[Information isolation]\label{lem:iso}
+If $h\le d$ then $A_t$ is independent of the signs governing its own block, and this remains true
+when the learner is provided with the exact stale action-loss vector $m_t$.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:iso}]
+For $t$ in block $b$, every outcome available at $t$ comes from a round $r\le t-d\le bh-d\le(b-1)h$,
+by the definition of the delay and because $h\le d$. Such rounds lie in blocks strictly before
+$b$, whose joint law depends only on $\sigma_2,\dots,\sigma_{b-1}$. Hence by conditional
+independence $A_t$ is independent of block $b$'s signs. For the oracle, take any $h\le d$. If
+$t>d$ then $t-d\le bh-d\le(b-1)h$ by the same computation, so $m_t=c_{t-d}$ is measurable with
+respect to the signs of blocks strictly before $b$. If $t\le d$ then $m_t=c_1=\tfrac12\mathbf 1$,
+which is deterministic because block~$1$ is neutral. In both cases $m_t$ is independent of block
+$b$'s signs, so adjoining it to the learner's information leaves the conclusion intact.
+\end{proof}
+
+The construction in full. Take states $s_0,\dots,s_q$, a stationary deterministic map sending
+$a_j$ to $s_j$ for $j\le q$ and every other action to $s_0$, and independent Rademacher signs
+$\sigma_b^{(j)}$ for $2\le b\le B=\lfloor T/h\rfloor$. Set $\theta_t(s_0)=\tfrac12$ throughout,
+$\theta_t\equiv\tfrac12$ on block~$1$, and $\theta_t(s_j)=\tfrac12-\varepsilon\sigma_b^{(j)}$ on
+each later block $b$. The neutral first block makes $c_1=\tfrac12\mathbf 1$, so the
+convention $m_t=c_1$ for $t\le d$ of Section~\ref{sec:setting} supplies a constant over exactly
+the rounds that precede any usable feedback, which is what Lemma~\ref{lem:iso} needs at $b=1$. Rounds after the last complete block carry no drift, costing a constant factor.
+
+\begin{lemma}[Rademacher lower tail]\label{lem:rade}
+Let $S_B$ be a sum of $B\ge32$ independent Rademacher signs. For every $1\le u\le\sqrt B/32$,
+$\Pr(S_B\ge u\sqrt B)\ge\tfrac u4e^{-64u^2}$.
+\end{lemma}
+
+\begin{proof}
+Write $S_B=2X-B$ with $X\sim\mathrm{Bin}(B,\tfrac12)$, so that
+$\{S_B\ge u\sqrt B\}=\{X\ge B/2+u\sqrt B/2\}$. Passing to $X$ removes the lattice gap, since $X$
+takes every integer value in $[0,B]$ whereas $S_B$ takes only those of the parity of $B$. Put
+$n=\lfloor B/2\rfloor$ and $t=\lceil u\sqrt B/2\rceil+1$, so $X\ge n+t$ implies the event, and
+$t\le u\sqrt B$ because $u\sqrt B\ge\sqrt{32}>4$.
+
+For $j\ge1$ the ratio of consecutive binomial probabilities is
+$\Pr(X=n+j)/\Pr(X=n+j-1)=(B-n-j+1)/(n+j)$. Using $(B-1)/2\le n\le B/2$, its distance from one is
+at most $(2j-1)/(n+j)\le(4j-2)/(B-1)\le8j/B$ for $B\ge2$. Restricting to $j\le B/16$ keeps
+$8j/B\le\tfrac12$, where $\log(1-x)\ge-2x$ holds, so summing over $i\le j$ gives
+$\Pr(X=n+j)\ge\Pr(X=n)e^{-16j(j+1)/(2B)}\ge\Pr(X=n)e^{-16j^2/B}$. The central term satisfies
+$\Pr(X=n)\ge1/(2\sqrt B)$ for every $B\ge2$.
+
+Sum over the $t$ integers $j\in\{t,\dots,2t-1\}$, all of which are at most $2t$ and hence at most
+$B/16$ because $u\le\sqrt B/32$ forces $2t\le2u\sqrt B\le B/16$. Each term is at least
+$e^{-64t^2/B}/(2\sqrt B)$, and $t\le u\sqrt B$ makes the exponent at most $64u^2$, so
+$\Pr(X\ge n+t)\ge t\,e^{-64u^2}/(2\sqrt B)\ge\tfrac u4e^{-64u^2}$ using $t\ge u\sqrt B/2$.
+\end{proof}
+
+Three regimes give the maximal inequality the lower bound needs. Each $S_B^{(j)}$ is sub-Gaussian
+with variance proxy $B$, so $\Ex\max_j(S_B^{(j)})^{+}\le\sqrt{2B\log q}+\sqrt B$ throughout. For
+the matching lower bound, first suppose $\log q\le B/8$ and $\log q\ge128$. Taking
+$u=\sqrt{\log q/128}$, which then lies in $[1,\sqrt B/32]$, makes $e^{-64u^2}=q^{-1/2}$, so
+$\Pr(S_B^{(j)}\ge u\sqrt B)\ge\tfrac u4q^{-1/2}$ and independence across $j$ gives
+$\Pr(\max_jS_B^{(j)}<u\sqrt B)\le e^{-u\sqrt q/4}$, at most $\tfrac12$ beyond an absolute $q$.
+Hence $\Ex\max_j(S_B^{(j)})^{+}\ge\tfrac12u\sqrt B=\Omega(\sqrt{B\log q})$. Second, if
+$\log q>B/8$ and $B\ge1024$, take $u=\sqrt B/32$, so $u\sqrt B=B/32$ and $e^{-64u^2}=e^{-B/16}$,
+and $q\ge e^{B/8}$ makes $q\,e^{-B/16}$ diverge, giving
+$\Ex\max_j(S_B^{(j)})^{+}=\Omega(B)$, which is $\Omega(\sqrt{B\min\{1+\log q,B\}})$ in that
+regime. Third, when $\log q<128$ or $B<1024$ the quantity $\sqrt{B\min\{1+\log q,B\}}$ is
+$O(\sqrt B)$, and a single walk already gives
+$\Ex(S_B^{(1)})^{+}=\tfrac12\Ex|S_B|\ge\tfrac12(\Ex S_B^2)^{3/2}(\Ex S_B^4)^{-1/2}\ge\tfrac12\sqrt{B/3}$
+by H\"older, since $\Ex S_B^2=B$ and $\Ex S_B^4\le3B^2$. Combining the three regimes,
+$\Ex\max_j(S_B^{(j)})^{+}=\Theta(\sqrt{B\min\{1+\log q,B\}})$. This is the route by which maxima
+of independent random walks fix the minimax rate for prediction with expert advice
+\citep{cesabianchilugosi2006}.
+
+\begin{proof}[Proof of Theorem~\ref{thm:lower}]
+Take $h=d$ and $\varepsilon=\tfrac12\sqrt{E/T}$. By Lemma~\ref{lem:iso} every algorithm's
+expected loss equals $T/2$, since its action is independent of the current block's signs and all states have mean
+$\tfrac12$ marginally. Its regret is therefore exactly the comparator's
+fluctuation advantage,
+$\varepsilon d\,\Ex\bigl[\max_{j\le q}\bigl(\sum_{2\le b\le B}\sigma_b^{(j)}\bigr)^{+}\bigr]$ with
+$B=\lfloor T/d\rfloor$, over the $B-1$ randomized blocks. Per round $\|c_t-m_t\|_\infty\in\{0,2\varepsilon\}$, because the
+supremum norm charges only the largest coordinate and each coordinate moves by at most
+$2\varepsilon$ at a block boundary, so $\etwo\le4\varepsilon^2T=E$ holds deterministically. The
+budget must bind on the realized sequence, since a budget holding only in expectation would not
+constrain the instance selected by Yao's principle. By Lemma~\ref{lem:rade} and the discussion following it, the expected maximum of the positive
+parts of $q$ independent Rademacher sums of length $B-1$ is
+$\Theta(\sqrt{(B-1)\min\{1+\log q,B-1\}})$, which covers both regimes and the case $q=1$. The
+hypothesis $d\le T/2$ gives $B\ge2$ and hence $B-1\ge B/2$, so replacing $B-1$ by $B$ costs a
+factor at most $\sqrt2$ in each branch of the minimum, including the saturated branch where the
+minimum is $B-1$ rather than $1+\log q$. Substituting $B=\lfloor T/d\rfloor$ and $\varepsilon$
+therefore gives $\Theta(\sqrt{dE\min\{1+\log q,T/d\}})$. Rounds after the last complete block
+carry no drift and change the constant only. When the oracle is withheld, the $\sqrt{KT}$ term is \citet[Thm.~5.1]{esposito2023}, whose
+construction is stationary and therefore lies in the present model class.
+\end{proof}
+
+\begin{proposition}\label{prop:tight}
+Suppose $X_t=c_t(A_t)$. On instances whose drift is carried by a single action, $\lamtwo=\etwo$,
+so the bound of \citet{baron2025} reads $\Ot(\sqrt{KT+d\,\etwo})$ and its drift contribution
+$\sqrt{d\,\etwo}$ matches Theorem~\ref{thm:lower} up to logarithmic factors.
+\end{proposition}
+
+In words, single-action drift makes the Euclidean and supremum measures agree, so on that family
+the drift term of the published upper bound cannot be improved. The $\sqrt{KT}$ term is not
+matched, since a perfect hint leaves the loss vector known after the action and the problem
+full-information, where the rate is $\Theta(\sqrt{T\log K})$. Neither statement covers noisy
+outcomes, for which no upper bound is available.
+
+\begin{proof}[Proof of Proposition~\ref{prop:tight}]
+If only one coordinate of $c_t-m_t$ is nonzero then $\|c_t-m_t\|_2=\|c_t-m_t\|_\infty$. On the
+family of Section~\ref{sec:lower} that coordinate has magnitude at most $2\varepsilon\le1$, so
+the truncation at one in $\lamtwo$ is inactive and $\lamtwo=\etwo$. The bound of \citet{baron2025} then reads $\Ot(\sqrt{KT+d\etwo})$, whose $\sqrt{d\etwo}$
+contribution Theorem~\ref{thm:lower} matches up to the logarithmic factor at $q=1$. Its
+$\sqrt{KT}$ contribution is not matched.
+\end{proof}
+
+\section{The two-action counterexample}\label{app:counter}
+
+Take $K=2$ with the hybrid regularizer of \citet{zimmert2020}, Tsallis parameter $\beta=0.01$,
+learning rate $\eta=0.5$ and residual scale $C=1$. The iterate solves the stationarity condition
+$g(x_1)+L_1=g(x_2)+L_2$ with $x_1+x_2=1$, where
+\[
+g(x)=-\tfrac{1}{2\beta}x^{-1/2}+\tfrac{1}{\eta}\log x
+\]
+and $L_a$ is the cumulative estimate for action $a$. Suppose the cumulative estimates place
+action~1 at probability $x_1$. A single maximally negative centered residual $-C/x_1$ is then
+delivered to action~1. This is realizable in the model of Section~\ref{sec:setting}, since
+$m_t(1)=1$ and $X_t=0$ give exactly $\check c_t(1)-m_t(1)=-C/x_1$ with $C=1$. Solving the
+stationarity condition again gives the following.
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+$x_1$ before & $x_1$ after & ratio \\
+\midrule
+$9.15\times10^{-3}$ & $1.46\times10^{-2}$ & $1.6$ \\
+$9.83\times10^{-4}$ & $7.39\times10^{-3}$ & $7.5$ \\
+$2.19\times10^{-4}$ & $9.98\times10^{-1}$ & $4561$ \\
+$5.80\times10^{-5}$ & $1.00$ & $17226$ \\
+$4.86\times10^{-6}$ & $1.00$ & $205641$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The transition sits at $4\beta^2C^2=4\times10^{-4}$, which is where the Tsallis term
+$x^{-1/2}$ ceases to dominate the entropy term $\log x$ in $g$, so the one-step linearization
+underlying a constant-factor bound fails. The violated statement is the local-stability
+inequality asserting that $x_{t'}(a)/x_t(a)$ stays bounded by a constant for all $t'$ within $d$
+rounds of $t$. A single round refutes it, so no accumulation argument is needed. This invalidates that lemma
+and the proof route resting on it, and not every argument that might use the same regularizer. It does not refute
+Conjecture~\ref{conj:add}, which concerns the regret rate and may be provable by other means.
+Devices that bound the residual magnitude introduce either a first-order bias dominating the
+target term or a probability floor narrowing the delay regime.
+
+\section{Numerical detail}\label{app:num}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{fig2.pdf}
+\caption{Relative gain $(R_{\text{action}}-R_{\text{state}})/R_{\text{action}}$ of pooling
+through the state, for the practical $m=1$ variant, at $K=40$, $|\Sset|=8$, $T=5000$ and $12$
+paired seeds. Blue is a gain, and $\bar v$ is a Monte Carlo estimate over $4000$ play
+distributions of the \emph{raw} map, which for the coarsened panel is not the $\bar v(P^g)$ that
+Theorem~\ref{thm:rep} charges. The dashed line marks where the bound of
+Theorem~\ref{thm:sexp3}, which analyzes $m=d+1$, falls below $\Ot(\sqrt{(K+d)T})$. It compares two
+upper bounds for a variant other than the one plotted, so it is a reference and not a prediction.}
+\label{fig:phase}
+\end{figure}
+
+Fifteen studies, alongside Figure~\ref{fig:phase}, which sweeps row overlap against delay in
+the three settings the studies treat separately, $P$ known, $P$ estimated, and states coarsened.
+Studies one to thirteen draw $P$ from a Dirichlet and studies~fourteen and fifteen do not.
+Study~fifteen is the one where \textsc{State-EXP3} is beaten.
+Each study is reported as an observation, an interpretation, and a limitation. Studies~8 and~9
+ask whether the two theorems describe the right \emph{dependence} rather than whether a bound
+holds, which is the question a loose bound leaves open. Study~10 is a control for study~6 and
+reverses its conclusion, and study~13 reports a rule that does not work. All policies run on the
+same environment parameters and common random-number streams, so a seed fixes everything except
+which estimator is formed, and differences are taken within a seed before averaging. Round $r$'s outcome is consumed before round $r+d+1$, matching
+Section~\ref{sec:setting}. Reported $\pm$ is one standard error of the paired difference.
+
+\textbf{Does the bound hold, and does the estimator help?} With $|\Sset|=4$, $T=10000$, $d=50$,
+drift band $0.05$ and $100$ seeds:
+
+\begin{center}\small
+\begin{tabular}{rrrrrr}
+\toprule
+$K$ & state, $m=d+1$ & state, $m=1$ & action, $m=1$ & paired gain & state better in \\
+\midrule
+ 8 & 455.1 & 368.2 & 387.6 & $19.3\pm3.4$ &  73/100 \\
+20 & 618.3 & 493.7 & 547.5 & $53.8\pm5.6$ &  87/100 \\
+40 & 734.3 & 574.5 & 696.1 & $121.5\pm9.4$ &  99/100 \\
+80 & 780.4 & 614.8 & 784.0 & $169.3\pm9.9$ & 100/100 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Observed. Realized regret for the analyzed variant stayed below
+$\sqrt{2(d+1)|\Sset|T\log K}$ in $100$ of $100$ seeds at every $K$, the bound running from $2913$
+to $4228$ against realized $455$ to $780$. The plain variant beat the action-level baseline at
+every $K$, by a margin growing from $19$ to $169$ as $K$ rose tenfold with $|\Sset|$ fixed, and it
+beat the analyzed variant throughout. Sweeping the delay at $K=40$ gave state-pooled $387$, $569$
+and $731$ against action-level $653$, $699$ and $773$ at $d=10$, $50$ and $200$.
+
+Interpretation. The margin growing in $K$ at fixed $|\Sset|$ is the prediction that separates the
+two estimators, so the state channel is doing the work the effective dimension attributes to it.
+Interleaving looks like a price of the analysis rather than of the estimator. The narrowing of the
+gap as the delay grows is what an additive delay term predicts and a multiplicative one does not,
+which is the diagnostic evidence behind Conjecture~\ref{conj:add}.
+
+Limitation. This is one synthetic family with a fixed drift band, the plain variant carries no
+guarantee, and a simulation cannot establish that a bound holds, only that realized regret stayed
+below it in the runs performed.
+
+\textbf{What does an unknown map cost?} What follows evaluates a practical variant, the plug-in
+estimate with $\hat P_t$ updated every round, no restart, $m=1$ and $\alpha=0.01$, and not the
+warm-start algorithm of Theorem~\ref{thm:unknown}, which freezes $\hat P$ and restarts. Against
+the same algorithm given $P$ and against the action-level baseline, over $60$ paired seeds and at
+mixing rate $\gamma$:
+
+\begin{center}\small
+\begin{tabular}{rrrrrr}
+\toprule
+$K$ & $\gamma$ & known $P$ & plug-in & action-level & plug-in gain \\
+\midrule
+ 8 & 0.00 & 366.2 & 365.3 & 385.4 & $20.0\pm4.3$ \\
+20 & 0.00 & 480.3 & 477.9 & 529.0 & $51.2\pm7.6$ \\
+40 & 0.00 & 582.8 & 585.3 & 710.2 & $124.8\pm11.2$ \\
+80 & 0.00 & 625.2 & 623.1 & 802.2 & $179.1\pm12.9$ \\
+\midrule
+40 & 0.02 & 590.5 & 592.8 & 712.9 & $120.1\pm10.4$ \\
+40 & 0.10 & 618.9 & 623.5 & 735.5 & $112.0\pm10.1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Observed. The plug-in landed within $0.5$ per cent of known $P$ at every $K$ and beat
+action-level weighting by $20$ to $179$ as $K$ rose tenfold. Forced exploration did not help,
+$\gamma=0$ being best at every $K$. At $K=40$ the sampled maps have $\kappa\approx1.14$, so the
+exploration term $(\kappa|\Sset|)^{2/5}K^{1/5}T^{4/5}$ of Theorem~\ref{thm:unknown} evaluates to
+about $6100$ and its leading term to about $2700$, against realized regret $585$ and against
+$\sqrt{KT}=632$.
+
+Interpretation. Estimating $P$ is nearly free on this family, and the gap between the analysis and
+the behavior is an order of magnitude, so the analysis rather than the method looks conservative.
+
+Limitation. The variant run here has no guarantee of its own, so the comparison is against a rate
+proved for a different algorithm. That $\gamma=0$ wins is a statement about this family rather
+than about the algorithm, which the next study tests.
+
+\textbf{Where does the plug-in fail?} The family above is mild. Five deliberately hostile maps at
+$K=40$, $|\Sset|=8$, $T=8000$, $d=50$ and $30$ paired seeds, with $\kappa$ measured on each: a
+best action reachable only through a state the others rarely produce, a sensor whose mass sits on
+one state, a state of probability $10^{-3}$ everywhere, a deterministic map, and one whose good
+action's early visits are unrepresentative.
+
+\begin{center}\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+& & & & \multicolumn{4}{c}{plug-in at mixing rate $\gamma$} \\
+\cmidrule(l){5-8}
+environment & $\kappa$ & known $P$ & action-level & $0$ & $0.01$ & $0.05$ & $0.20$ \\
+\midrule
+rare optimal action & 125.9 & 950.7 & 1302.3 & 948.2 & 976.8 & 1087.8 & 1503.0 \\
+unbalanced coverage & 152.7 & 483.4 & 604.4 & 474.1 & 476.2 & 487.0 & 531.8 \\
+near-unreachable state & 108.8 & 552.9 & 650.4 & 559.5 & 563.3 & 575.8 & 624.7 \\
+deterministic rows & 2.5 & 556.3 & 733.7 & 571.9 & 585.9 & 653.9 & 904.3 \\
+misleading early visits & 1.5 & 674.0 & 847.2 & 679.9 & 688.0 & 716.8 & 834.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Observed. The plug-in beat action-level weighting on all five, including two with $\kappa$ above
+$100$, and forced exploration cost regret in every cell. At the Laplace default $\alpha=1$ the
+deterministic map is the one case where the plug-in \emph{loses} to action-level weighting,
+$750.3$ against $733.7$. Sweeping $\alpha$ over $1$, $0.3$, $0.1$, $0.03$, $0.01$ gives $750.3$,
+$642.5$, $601.4$, $581.1$, $571.9$ there and is monotone on all five, and $\alpha=0.01$ is what
+the tables above use.
+
+Interpretation. The mixing rate that Theorem~\ref{thm:unknown} tunes is doing analytic work rather
+than algorithmic work. The single loss has an identifiable mechanism, since one visit to a
+deterministic row is recorded as $\hat P(s\mid a)=2/(1+|\Sset|)$ rather than $1$, so rarely played
+actions are scored as if spread over states they never reach.
+
+Limitation. The leading rate is indifferent to fixed $\alpha$ and the algorithm is not, which is
+worth stating rather than tuning away. These five maps show that hostility to the plug-in is
+survivable at a small constant, not that it is harmless, and no map adversarial to the smoothing
+constant itself was constructed.
+
+\textbf{Does safe blending recover the pooling gain, and if not why not?} The rule of Theorem~\ref{thm:safe}, run in the $m=1$ variant like
+everything else in this appendix rather than in the analyzed $m=d+1$ one, was compared against its
+two ingredients at $K=40$, $|\Sset|=8$, $d=50$ and $20$ paired seeds. Measuring the realized bias
+against the certificate's own budget locates the outcome. At $K=40$, $|\Sset|=8$, $T=8000$,
+$d=50$ and $12$ seeds the per-round budget $\tfrac\eta2(K-2|\Sset|)$ sums to $307.3$ over the
+horizon, and
+
+\begin{center}\small
+\begin{tabular}{rrl}
+\toprule
+summed & versus budget & quantity \\
+\midrule
+128.7 & $0.42\times$ & what the regret charges, $\sum_t|\langle x_t,b_t\rangle-b_t(a^\star)|$ \\
+513.7 & $1.67\times$ & what Proposition~\ref{prop:plugin} charges, $\sum_t\max_a|b_t(a)|$ \\
+32000.0 & $104\times$ & what the algorithm can verify, Hoeffding radii \\
+32000.0 & $104\times$ & the same with Bernstein radii \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Observed. The rule reproduced action-level regret to the digit in every cell, $533.2$, $754.4$
+and $1317.0$ at $T=8000$ on the Dirichlet, deterministic and rare-optimal families and $2304.6$,
+$2023.5$ and $3108.8$ at $T=50000$, against a plug-in that scores $464.8$, $585.5$, $956.5$ and
+$1770.6$, $1473.5$, $2346.6$ on the same runs. The fraction of round-action pairs it cleared for
+pooling was $0.000$ everywhere, at both horizons, at both smoothing constants, and with the
+confidence logs dropped as well.
+
+Interpretation. The implemented certificate selected no pooling in any run, so the policy
+coincided numerically with the action-level baseline rather than merely matching its guarantee,
+and the table says where that comes from. On this trajectory the realized bias lies below the
+best-case variance budget, so pooling would pay for itself here. The bound of
+Proposition~\ref{prop:plugin} is $1.67$ times the budget with a factor of $4.0$ available between
+it and the truth, so a tight bias bound would close the analytical gap. What the algorithm can
+verify is saturated at the trivial cap of four per round, and Bernstein radii buy nothing over
+Hoeffding ones, which is where the failure lives.
+
+Limitation. Two exact refinements of the bias bound, an oscillation in place of a maximum and a
+Cauchy--Schwarz split into the comparator's effective dimension times a chi-square, give $577.9$
+and $5931.6$ against a truth of $94.1$ over $T=4000$, where the maximum gives $368.0$, so both are
+worse than what they replace. The budget table is one diagnostic trajectory rather than a worst
+case, so it shows this certificate inert here and not that no certificate can clear.
+
+\textbf{Can the denominator be counted instead of predicted?} With $x$ frozen over blocks of
+$400$ and the states of the first half counted, at $K=40$, $|\Sset|=8$, $T=8000$, $d=50$ and $12$
+seeds, the counted denominator gives regret $496.5$ against $499.5$ for the predicted one and a
+comparator bias of $99.6$ against $52.9$, both under the budget of $153.7$ for the pooled half.
+
+Observed. Counting is the noisier of the two on regret and on bias. Computed under uniform play,
+the predicted relative error is vacuous at every setting tried, $K=40$ through $K=4000$, while the
+counted one reads $0.0244$ against a budget of $0.0892$ at $K=1000$ and $T=10^5$.
+
+Interpretation. A prediction pools every action's history while a count uses one block, which is
+why counting is noisier, and yet the counted certificate is the better scaled of the two. That
+setting is the first in which any certificate for $\rho_t$ clears at all.
+
+Limitation. The window that buys it is $53$ per cent of the horizon, and the frozen-block regret
+at that window, $1.2\times10^7$, exceeds the $2.6\times10^4$ the pooling was meant to improve, so
+what clears is the certificate and not a usable algorithm.
+
+\textbf{Does the effective dimension, rather than $|\Sset|$, govern the gain?} Holding
+$|\Sset|=8$, $K=40$, $T=5000$, $d=20$ and $24$ seeds, and varying only the overlap between the
+rows of $P$, the measured mean of $v_t$ moves while $|\Sset|$ does not:
+
+\begin{center}\small
+\begin{tabular}{rrrrr}
+\toprule
+row overlap & mean $v_t$ & state-pooled & action-level & paired gain \\
+\midrule
+0.00 & 2.719 & 392.7 & 599.3 & $206.6\pm20.0$ \\
+0.25 & 2.013 & 361.1 & 528.1 & $167.0\pm21.3$ \\
+0.50 & 1.532 & 306.5 & 406.5 & $100.0\pm10.5$ \\
+0.75 & 1.168 & 199.9 & 229.2 & $29.3\pm3.2$ \\
+0.95 & 1.009 &  49.2 &  50.8 & $1.6\pm0.5$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Observed. Both the regret and the advantage over action-level weighting fall monotonically with
+$v_t$, from a paired gain of $206.6$ at $v_t=2.719$ to $1.6$ at $v_t=1.009$. Nothing about the raw
+state count changes across the sweep.
+
+Interpretation. $|\Sset|$ is constant and cannot explain the pattern, while $v_t$ moves with it,
+which is the comparison Theorem~\ref{thm:sexp3} predicts.
+
+Limitation. The two estimators do not become the same object at $v_t\approx1$. Rather the rows of
+$P$ agree, so every action induces the same loss and both regrets collapse, making that endpoint
+uninformative rather than favorable. One parameter of one map family was varied, so the sweep is
+consistent with the effective dimension governing the gain rather than establishing it.
+
+\textbf{Is there a bias-variance trade in the representation?} With $16$ raw states drawn from
+four latent clusters, $K=40$, $T=6000$, $d=20$ and $24$ seeds, running the algorithm on nested
+groupings of size $1,2,4,8,16$ gives, for the analyzed $m=d+1$ variant, regret
+$1590$, $831$, $754$, $920$, $1080$ at within-cluster heterogeneity $0$, with mean $v_t$ rising
+$1.000$, $1.122$, $1.435$, $1.663$, $2.089$ and $\delta_t(g)$ falling $0.700$, $0.275$, $0$, $0$,
+$0$.
+
+Observed. The minimum sits at four groups, the number of latent clusters, and stays there at
+heterogeneity $0.12$, where regret reads $1657$, $885$, $787$, $960$, $1113$. Realized regret
+stayed below the bound of Theorem~\ref{thm:rep} in every cell. The bound's own optimum agrees at
+heterogeneity $0$, where it reads $9364$, $4321$, $1155$, $1243$, $1394$ and also selects four
+groups, but not at $0.12$, where it reads $11128$, $6073$, $3430$, $3231$, $1385$ and selects the
+finest representation.
+
+Interpretation. A trade-off in the representation exists and is located at the latent structure,
+which is what Theorem~\ref{thm:rep} describes qualitatively.
+
+Limitation. The bias term $2\sum_t\delta_t(g)$ is the conservative half of the trade, so the
+theorem certifies a trade-off whose location it does not predict once groups are heterogeneous,
+and the latent cluster count was known to the experimenter and not to any algorithm.
+
+Separately, on the construction of Theorem~\ref{thm:lower} with $h=d$ the mean pseudo-regret over
+$400$ seeds is $44.1$ against a predicted fluctuation of $40.5$, and of the five policies compared
+there the four without access to the block signs attain expected loss within $0.05\%$ of $T/2$, as
+Lemma~\ref{lem:iso} predicts, while the one given them attains pseudo-regret $-954$. The programs
+producing every number reported here, together with the stored outputs each figure reads, are at
+\expandafter\url\expandafter{\repourl}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig3.pdf}
+\caption{Study~8, the drift channel. \textbf{Left,} measured regret against the scale
+Theorem~\ref{thm:lower} predicts, over twelve cells in which $d$ varies $20$-fold, $\etwo$
+$100$-fold and $q$ $16$-fold. The dashed line has slope one. \textbf{Right,} the same points
+divided by that scale, grouped by which parameter the cell sweeps, with the shaded band spanning
+the observed range. \textsc{State-EXP3} appears here only as one more algorithm on the hard
+family, where it has no advantage.}
+\label{fig:drift}
+\end{figure}
+
+\textbf{Does the drift bound describe the right scaling?} The construction of
+Theorem~\ref{thm:lower} at $K=40$, $T=8000$, $h=d$ and $12$ paired seeds, sweeping $d$ from $10$
+to $200$, the amplitude $\varepsilon$ from $0.02$ to $0.20$ so that $\etwo$ runs from $12$ to
+$1193$, and the drifting coordinates $q$ from $1$ to $16$. Four policies are run, uniform, action-level \textsc{EXP3}, \textsc{State-EXP3},
+and the greedy policy on the exact stale vector $m_t$, the last because
+Theorem~\ref{thm:lower} claims to survive it. $\etwo$ is measured on the realized instance rather
+than predicted, so the normalization uses the quantity the theorem uses.
+
+Observed. The predicted scale $\sqrt{d\,\etwo\min\{1+\log q,T/d\}}$ ranges from $38$ to $377$
+across the grid and the measured regret tracks it (Figure~\ref{fig:drift}). Normalized, the four
+policies read $0.230$ to $0.429$, $0.228$ to $0.424$, $0.238$ to $0.417$ and $0.237$ to $0.437$,
+a spread below $1.9$ against a tenfold range in the predictor. The oracle-assisted policy has the
+largest mean ratio, $0.345$ against $0.311$, $0.314$ and $0.310$ for the three that never see
+$m_t$.
+
+Interpretation. The three arguments enter the predicted scale differently and the collapse holds
+in all three sweeps, so it is the form of the bound rather than one fitted constant that tracks
+the data. That greedy play on the exact $m_t$ sits at the top of the band rather than below it is
+the concrete content of the claim that the bound survives the oracle.
+
+Limitation. Every cell has $T/d>1+\log q$, so only the $1+\log q$ branch of the minimum is
+exercised and the $T/d$ saturation branch, which needs $d$ comparable to $T$, is not probed. A
+lower bound quantifies over all algorithms and four policies cannot establish that. What these
+runs check is the scaling of the construction.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig4.pdf}
+\caption{Study~9, the state channel. The plotted ratio would be flat if
+Theorem~\ref{thm:sexp3} captured the dependence on all three of $T$, $d$ and $\bar v$.
+\textbf{Left,} horizon sweep at the largest effective dimension, one line per delay.
+\textbf{Right,} every cell with $\bar v>1.05$ against rounds per interleaved copy, where the
+three delays fall on one curve.}
+\label{fig:scal}
+\end{figure}
+
+\textbf{Does Theorem~\ref{thm:sexp3} describe the right dependence on $T$, $d$ and $\bar v$?} A
+$4\times3\times5$ grid in row overlap, delay and horizon at $K=40$, $|\Sset|=8$ and five paired
+seeds, running the analyzed $m=d+1$ variant and reporting $R/\sqrt{(d+1)\bar vT\log K}$. A raw
+regret table cannot answer this and neither can a bound that holds with room to spare, since the
+question is about dependence rather than level.
+
+Observed. Over the full grid the ratio spans $35.9$ times, from $0.016$ to $0.579$. Dropping the
+near-degenerate column at $\bar v=1.013$ leaves $7.1$ times over $45$ cells. At $\bar v=3.656$ and
+$d=10$ it moves only $1.35$ times across a sixteenfold range of $T$, and at $d=200$ it moves
+$2.57$ times. Against rounds per interleaved copy $T/(d+1)$ the three delays fall on one
+increasing curve (Figure~\ref{fig:scal}).
+
+Interpretation. The $\sqrt T$ dependence is well described wherever each copy receives enough
+rounds, and what is left is carried by the interleaving rather than by $T$ or $\bar v$. At
+$d=200$ and $T=2500$ each of the $201$ copies sees $12$ rounds, so that cell is nowhere near the
+regime the bound describes. Study~1 reaches the same conclusion about interleaving from the
+$m=1$ comparison, and this reaches it from the dependence instead.
+
+Limitation. The degenerate column is degenerate for the reason study~6 gives, since at
+$\bar v\approx1$ the rows of $P$ agree, every action induces nearly the same loss, and both
+regrets collapse for a reason the bound cannot see. One natural explanation for the remaining
+looseness is ruled out rather than confirmed: the realized $\sum_tv_t$ lies within $1.01$ to
+$1.49$ of the budget $\bar vT$, so the sup over play distributions is not the source.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig5.pdf}
+\caption{\textbf{Left,} study~10. The same overlap sweep with and without holding the task
+difficulty fixed. Matching the uniform-play regret reverses the trend, so the decline study~6
+reports is the confound and not the mechanism. Bars are one standard error of the paired
+difference. \textbf{Right,} study~11, regret saved against action-level weighting over the
+smoothing pseudocount and the sensor balance, $10$ paired seeds per cell.}
+\label{fig:matched}
+\end{figure}
+
+\textbf{Does pooling help because the rows overlap, or because overlap made the task easy?}
+Study~6 sweeps the overlap and finds the advantage falling as $\bar v$ falls, which read at face
+value contradicts Theorem~\ref{thm:sexp3}, whose bound improves as $\bar v$ falls. That sweep is
+confounded, since raising the overlap also flattens $c_t=P\theta_t$ across actions, collapsing
+the comparator gap so that both regrets vanish together. This study holds $K=40$, $|\Sset|=8$,
+$T=10000$, $d=50$ and the difficulty fixed, and varies only $\bar v$. Difficulty is the
+uniform-play regret $\sum_t\mathrm{mean}_ac_t(a)-\min_a\sum_tc_t(a)$, a property of the instance
+with no algorithm in it, and the amplitude of $\theta$ is bisected in every cell to hit a common
+target. The map keeps one contrast direction alive at every overlap and $\theta$ is aligned with
+it, which is what lets the gap survive as the rows agree.
+
+Observed. Across $20$ paired seeds the relative gain rises from $11.7$ per cent at
+$\bar v=3.380$ to $19.3$ per cent at $\bar v=1.120$, with absolute gains $85.5\pm8.9$ to
+$106.2\pm7.9$ and a correlation of $-0.929$ between $\bar v$ and the gain. Study~6's unmatched
+sweep falls from $34.5$ to $3.1$ per cent over a comparable range (Figure~\ref{fig:matched}).
+
+Interpretation. The two sweeps disagree in sign, and the one that controls difficulty agrees with
+the direction Theorem~\ref{thm:sexp3} predicts. Overlap is what pooling exploits, and study~6
+measures overlap confounded with an instance becoming trivial. This also explains study~9's
+degenerate column without appealing to it.
+
+Limitation. At the two highest overlaps some seeds cannot reach the common target and the
+realized difficulty is $5$ to $13$ per cent below it, so the matching is close rather than exact.
+Since a smaller gap should if anything shrink the advantage, the measured rise is conservative in
+that direction. The reversal is one construction at one target, and the matched gains are also
+smaller in magnitude than the unmatched ones, which is what fixing the difficulty costs.
+
+\textbf{Is the plug-in fragile in the smoothing constant, and does that depend on coverage?}
+Study~3 reports one map where the plug-in loses at $\alpha=1$ and recovers as $\alpha$ falls,
+which is an anecdote about a single instance. Here $\alpha$ is swept over $1$ to $0.003$ against
+the sensor balance $\kappa$ of Theorem~\ref{thm:unknown}, controlled from $1.2$ to $76$ by
+placing mass $\rho$ on one scarce state and drawing rows around that mean, at $K=40$,
+$|\Sset|=8$, $T=8000$, $d=50$ and $10$ paired seeds.
+
+Observed. No cell loses to action-level weighting, the gain running from $28.3$ to $66.9$ over
+the $30$ cells. The gain roughly doubles as $\alpha$ falls from $1$ to $0.03$ and is flat below
+that, while moving along $\kappa$ at fixed $\alpha$ changes it far less, the worst-to-best
+plug-in regret within a $\kappa$ column being $1.07$. At the better $\alpha$ the plug-in is
+indistinguishable from known $P$, the paired difference clearing two standard errors in one of
+the five columns and changing sign in another.
+
+Interpretation. Of the two parameters the analysis names, the one that matters here is the one
+the analysis treats as free. A Laplace default costs about half the available gain at every
+coverage level tried, and coverage imbalance over a sixtyfold range costs much less than that.
+Taken with study~2 this is further evidence that the difficulty in the unknown-$P$ setting is
+certification rather than estimation.
+
+Limitation. This is one map family with $\kappa$ varied through a single scarce state, so it does
+not rule out a construction in which $\kappa$ is the binding parameter, and Theorem~\ref{thm:unknown}
+still carries $\kappa$ for a worst case this family need not contain. The flatness below
+$\alpha=0.03$ says the leading behavior stops moving, not that any fixed $\alpha$ is safe at every
+horizon.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig6.pdf}
+\caption{Study~12. \textbf{Left,} the three measured arms and the two certificates on one axis,
+$|\Sset|=8$, $T=5000$, $d=50$, $12$ paired seeds, every measured arm at $m=1$. The shaded region
+is what the analysis costs rather than what the method does. \textbf{Right,} the same measured
+arms rescaled with the certificates removed, which is the only way to see that known $P$ and the
+plug-in coincide. Bars are one standard error.}
+\label{fig:cert}
+\end{figure}
+
+\textbf{How far is the method from its certificate, and the certificate from useful?} Study~2
+reports these numbers in separate columns, leaving the reader to assemble them. Here action-level
+weighting, \textsc{State-EXP3} with $P$ given, and the same estimator with $\hat P_t$ updated
+every round are measured on the same paired seeds across $K$ from $8$ to $160$, and drawn beside
+the two certificates. Theorem~\ref{thm:sexp3} is the certificate for known $P$ and analyzes
+$m=d+1$, while Theorem~\ref{thm:unknown} is the warm-start rate and analyzes an algorithm that
+freezes $\hat P$ and restarts, so both are plotted to show the size of a gap and not as like for
+like.
+
+Observed. The plug-in stays within $1.6$ per cent of known $P$ at every $K$, the two curves being
+visually indistinguishable, while action-level weighting costs $1.4$ to $17.4$ per cent more
+than the plug-in as $K$ rises twentyfold. Theorem~\ref{thm:sexp3} sits $10.7$ to $14.8$ times
+above the measured plug-in and Theorem~\ref{thm:unknown} sits $14.0$ to $18.7$ times above it.
+The warm-start certificate also stays above $\sqrt{KT}$ at every $K$ tried, by factors of $19.2$
+down to $6.6$.
+
+Interpretation. The vertical gap is the analysis, not the method. Estimating $P$ online is close
+to free on this family, so the order of magnitude between the measured arms and either
+certificate is conservatism in the proof. That the warm-start rate never drops below $\sqrt{KT}$
+here is the concrete form of the statement in Section~\ref{sec:alg} that it does not certify the
+channel it analyzes.
+
+Limitation. The measured arms run $m=1$ and Theorem~\ref{thm:sexp3} analyzes $m=d+1$, and the
+plug-in is not the warm-start algorithm Theorem~\ref{thm:unknown} analyzes, so neither vertical
+gap is a statement about a bound being loose for the algorithm it covers. A conservative bound and
+a well-behaved algorithm are consistent with a third possibility, that the family is easy.
+
+\textbf{Can the coarsening be chosen from data?} Theorem~\ref{thm:rep} takes the representation
+as given and study~7 uses the latent cluster count, which no algorithm knows. This study supplies
+a rule and measures what it costs, with no theorem behind it. A prefix of $1200$ rounds runs the
+identity representation and estimates $\hat\theta(s)$ by averaging the outcomes seen at each
+state. Sorting states by $\hat\theta$ and merging adjacent pairs greedily gives one candidate at
+every granularity from $16$ down to $1$, each scored by the quantity Theorem~\ref{thm:rep}
+bounds, $\sqrt{2(d+1)V(g)\log K}+2\sum_t\hat\delta_t(g)$, and the argmin runs the remaining
+rounds. Against it are the identity, the true clusters, and the best candidate on the ladder
+scored in hindsight, over $24$ paired seeds.
+
+Observed. The rule fails. It selects $15$ groups at heterogeneity $0$ and $16$ at $0.12$, against
+a true cluster count of four, and lands at $912.9\pm30.1$ and $944.7\pm31.1$ where the identity
+gives $921.0\pm30.5$ and $952.7\pm32.4$, so it captures under one per cent of the available gain.
+The true clusters give $843.7\pm27.9$ and $883.0\pm31.1$, and hindsight over the same ladder gives
+$833.5\pm27.8$ and $841.5\pm23.6$.
+
+Interpretation. Hindsight nearly matches the true clusters, so the ladder does contain a good
+representation and the failure is the criterion rather than the candidate set. Measuring
+$\hat\delta$ at the four-group representation locates it. At heterogeneity $0$ the true
+within-group spread is exactly zero while the prefix estimates it at $0.154$, which is sampling
+noise, and the bound multiplies that by $2(T-T_0)$ to give a phantom bias of $1483$ against a real
+variance saving of $1261$. The bias term is the conservative half of Theorem~\ref{thm:rep}, and a
+noisy plug-in estimate of it is enough to forbid every merge.
+
+Limitation. One selector on one family, and a negative result about this rule is not a negative
+result about data-driven selection. The obvious repairs, debiasing $\hat\delta$ for its sampling
+noise or scoring candidates on held-out loss instead of on the bound, are not evaluated here. The
+prefix is also charged to every arm equally, so the comparison understates what a selector that
+spent less on estimation might do.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig7.pdf}
+\caption{Study~14, a recommendation funnel. \textbf{Left,} the effective dimension stays near two
+while the catalogue grows thirty-twofold, so the gap between $K$ and $\bar v$ comes from the
+catalogue having categories, not from a chosen $K$. \textbf{Right,} the three arms at $T=20000$
+and $8$ paired seeds, labelled by whether the regime condition of Section~\ref{sec:alg} holds.
+Bars are one standard error. No real data is used anywhere in this study.}
+\label{fig:funnel}
+\end{figure}
+
+\textbf{Is ``many actions resolved by few states'' a natural regime?} Every study so far draws
+$P$ from a Dirichlet, which is the assumption under test rather than evidence for it. This one
+builds an environment to the shape of a recommendation funnel instead. Actions are $K=200$
+catalogue items, states are $|\Sset|=6$ ordered engagement depths, and the outcome is a delayed
+conversion. Three structural facts are imposed because funnels have them, namely that items fall
+into a modest number of categories sharing an engagement profile, that item quality is
+heavy-tailed, and that the loss falls with engagement depth and drifts seasonally rather than
+adversarially. The generated catalogue puts $74$ per cent of its mass on no engagement and $1.4$
+per cent on the deepest.
+
+Observed. The effective dimension is $\bar v=1.97$ against $K=200$, a hundredfold gap, and it
+stays between $1.41$ and $1.81$ as the catalogue grows from $25$ to $800$ items
+(Figure~\ref{fig:funnel}). Against action-level weighting the state-pooled variant saves $79.3$,
+$63.6$ and $38.9$ per cent at $d=10$, $50$ and $200$, the largest margins anywhere in this
+appendix. The plug-in matches known $P$ at every delay, the paired difference never reaching two
+standard errors. The regime condition $\bar v(d+1)\log K\le K+d$ holds at $d=10$ and fails at
+$d=50$ and $d=200$.
+
+Interpretation. The separation between $K$ and $\bar v$ arrives from catalogue structure rather
+than from a tuned parameter, and it does not close as the catalogue grows, which is the claim the
+Dirichlet families cannot make. That the condition Theorem~\ref{thm:sexp3} needs fails at the
+delays a funnel has, while the practical variant still saves most of the regret, is the same
+message as study~1 in the setting that motivates the paper. It is evidence for
+Conjecture~\ref{conj:add} rather than for the theorem.
+
+Limitation. \emph{No real data is used.} There is no interaction log in this environment, nothing
+here is fitted to one, and this is not a semi-synthetic benchmark in the usual sense of that
+phrase. The structure is imposed by hand from qualitative properties, so it shows that the regime
+is describable and self-consistent, not that any deployed system occupies it. The arms run $m=1$,
+which carries no guarantee, and the environment has no adversarial component, so it exercises the
+pooling channel and not the drift channel.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig8.pdf}
+\caption{Study~15. \textbf{Left,} regret relative to the best arm in each family, so $1$ is that
+column's winner, over five policies, nine settings and $10$ paired seeds. The best-state rule
+leads seven columns and \textsc{State-EXP3} leads two. \textbf{Right,} growth in $T$ on the one
+family built so the rule's assumption is false, with fitted exponents. The left panel is a worst
+case over families chosen here; the right panel is why that is not a worst case over the model.}
+\label{fig:base}
+\end{figure}
+
+\textbf{Which assumption produces which benefit?} Comparing against action-level weighting alone
+leaves open whether the gain comes from the state structure or from an implementation detail.
+Five policies are run on the same paired seeds over nine settings. Besides action-level weighting
+and \textsc{State-EXP3} they are \textsc{EXP3-IX}, the usual robustification of an importance
+weight; \emph{naive sharing}, which credits $P(S_t\mid a)X_t/\bar p(S_t)$ using the unconditional
+state distribution and so isolates the value of the denominator $q_t=x_t^\top P$ from the value
+of sharing at all; and a \emph{best-state rule}, which estimates $\hat\theta(s)$ online, takes the
+best state, and plays the action most likely to reach it. Two settings are added to the earlier
+families, one where the best action mixes over several good states rather than maximizing the
+single best one, and one that is obliviously nonstationary. Running a bandit over states and
+mapping the values back through $P$ is not a separate baseline, since
+$\sum_sP(s\mid a)\mathbf 1\{S_t=s\}X_t/q_t(s)$ equals $P(S_t\mid a)X_t/q_t(S_t)$ identically, so
+that method \emph{is} \textsc{State-EXP3}.
+
+Observed. \textsc{State-EXP3} does not win most columns. The best-state rule leads seven of the
+nine and \textsc{State-EXP3} leads two, and over these nine settings the rule is also better on
+the median, $1.00$ against $1.47$ times the column winner, and on the worst case, $3.08$ against
+$3.39$ (Figure~\ref{fig:base}). \textsc{EXP3-IX} is $1.5$ to $17.1$ per cent worse than plain
+action-level weighting everywhere, and naive sharing ranges from $18.7$ per cent better to $22.7$
+per cent worse than it. On the spread family the ordering inverts, \textsc{State-EXP3} leading by
+$47.6$ and $22.2$ per cent while the best-state rule falls $61.5$ and $43.0$ per cent behind
+action-level weighting. Sweeping the horizon there, the rule's regret grows with fitted exponent
+$1.00$ and \textsc{State-EXP3}'s with $0.58$.
+
+Interpretation. The best-state rule buys its lead with an assumption, that the best action is the
+one most likely to reach the single best state. Where that holds it is very strong, and in the
+funnel it holds in $10$ of $10$ seeds because engagement depth is ordered, which is why it leads
+there by a factor of two. Where it fails the rule commits to a fixed action and pays regret linear
+in $T$, which no exploration rate repairs, and the exponent of $1.00$ is that happening. The
+comparison therefore separates the assumptions rather than ranking the methods.
+\textsc{State-EXP3} assumes nothing about the shape of $\theta$. Across these nine selected
+settings its largest regret ratio to the column winner is $3.39$, and the rule's suite maximum is
+slightly smaller at $3.08$, but the rule's fitted growth on the spread family is linear.
+Action-level weighting also carries a sublinear guarantee, so what separates the arms here is the
+constant rather than the rate. \textsc{State-EXP3}'s paired standard errors are the smallest of
+the five at $5.8$ per cent of the mean against $23.6$ for the rule. That naive sharing
+can be worse than no sharing is the separate point that the denominator, not the sharing, is what
+Proposition~\ref{prop:pool} buys.
+
+Limitation. Nine settings chosen here are not a worst case over the model, and the median and
+worst-case columns above should be read as describing this set only. A practitioner whose problem
+has the ordered structure of the funnel should use the best-state rule, and this appendix does not
+identify when that structure can be verified in advance. On the drift family no arm's paired difference from
+action-level weighting reaches two standard errors, the largest being the best-state rule's
+$+24.6\pm12.4$, so that column is reported as an absence of signal rather than a result.
+
+Taken together the fifteen studies cover both channels. Studies one, six, seven, nine, ten,
+fourteen and fifteen probe the state channel. They are consistent with the effective dimension, rather than $|\Sset|$
+or $K$, governing what pooling buys, with the qualification that study~ten had to control for
+task difficulty before study~six's sweep pointed the way Theorem~\ref{thm:sexp3} does, and
+study~nine shows where the theorem stops describing the dependence and attributes that to the
+interleaving. Studies two to five, eleven and twelve probe what happens when the
+action-to-state matrix must be estimated, and locate the difficulty in certifying the estimate
+rather than in forming it, study~eleven adding that the smoothing constant matters more than the
+coverage imbalance the analysis carries and study~twelve putting the measured arms and their
+certificates on one axis. Study~thirteen closes the representation thread by showing that the
+bound of Theorem~\ref{thm:rep} is too conservative to serve as its own selection rule.
+Study~fourteen is the only one whose action-to-state matrix is not drawn from a Dirichlet, and it
+reports the largest margins here, though on a structure imposed by hand rather than measured.
+Study~fifteen widens the baseline set and finds \textsc{State-EXP3} beaten in seven of nine
+settings by a heuristic that assumes the best action is the one reaching the single best state,
+which holds on several of these families and fails with linear regret when it does not. Study eight is the drift channel, and its collapse across $d$, $\etwo$ and $q$
+is the strongest evidence here that Theorem~\ref{thm:lower} has the right form. No study runs a
+method that uses both channels, which is the gap Section~\ref{sec:conj} describes.
+
+\section{Why the delay does not become additive}\label{app:additive}
+
+Run \textsc{State-EXP3} with $m=1$, so $x_t\propto\exp(-\eta L_t)$ with
+$L_t=\sum_{r\le t-d-1}\hat c_r$. Let $\tilde x_r$ be the iterate that has also absorbed the
+outstanding estimates $G_r=\sum_{s=r-d}^{r-1}\hat c_s\ge0$. Two terms appear.
+
+The delay term is $\Ex[\langle x_r-\tilde x_r,\hat c_r\rangle]$. Since
+$\tilde x_r(a)\ge x_r(a)e^{-\eta G_r(a)}$ and $1-e^{-z}\le z$, it is at most
+$\eta\Ex[\sum_ax_r(a)G_r(a)\hat c_r(a)]=\eta\sum_{s=r-d}^{r-1}\Ex[\langle x_r,\hat c_s\rangle]$,
+and $x_r$ depends only on rounds $r-d-1$ and earlier, hence on rounds before $s$, so
+$\Ex[\langle x_r,\hat c_s\rangle]=\Ex[\langle x_r,c_s\rangle]\le1$. This term is $\eta dT$ for
+any unbiased estimator, which is the additive form.
+
+The quadratic term is where it stops. The telescoping scores
+$\sum_ax_{r+d}(a)\hat c_r(a)^2$, with $x_{r+d}$ the iterate that has absorbed rounds up to $r-1$,
+while Proposition~\ref{prop:pool} bounds the play-weighted sum, the one against $x_r$, by $v_r$.
+Carrying out the substitution,
+$\Ex[\sum_ax_{r+d}(a)\hat c_r(a)^2\mid\cdot]\le\sum_sq_{r+d}(s)/q_r(s)\le|\Sset|/Z_r$ for
+$Z_r=\Ex_{a\sim x_r}[e^{-\eta G_r(a)}]$, and $Z_r\ge e^{-\eta\langle x_r,G_r\rangle}$, so the
+swap costs an exponential moment of $\langle x_r,G_r\rangle$.
+
+No bound on that moment holds uniformly over state distributions. For this estimator
+$\langle x_r,\hat c_s\rangle=q_r(S_s)X_s/q_s(S_s)$, so the quantity is governed by
+$1/q_s(S_s)$, the reciprocal probability of the state actually observed. Its mean is
+$\sum_sq_s(s)/q_s(s)=|\Sset|$, which is why the delay term is fine. For a fixed $q$ of full
+support the exponential moment is finite, $1/q(S)$ being bounded, and what fails is uniformity.
+Already at $|\Sset|=2$ with $q=(\varepsilon,1-\varepsilon)$,
+$\Ex[e^{\eta/q(S)}]\ge\varepsilon e^{\eta/\varepsilon}\to\infty$ as $\varepsilon\to0$ while the
+mean stays at $2$, so no bound in $|\Sset|$ and $\eta$ alone is available, and $q_s$ is set by the
+algorithm's own past play. Measured at $|\Sset|=4$, the mean stays at $4.0$ while
+$\Ex[e^{0.05/q(S)}]$ runs $1.22$, $1.43$ and then $1.3\times10^{21}$ as the smallest state
+probability falls through $0.25$, $0.019$ and $0.0009$.
+
+Flooring $q$ restores the moment and costs the product back. Mixing with the uniform action at
+rate $\gamma$ gives $q_t(s)\ge\gamma\bar p(s)$, so $\eta\langle x_r,G_r\rangle\le1$ needs
+$\gamma\asymp\eta d\kappa|\Sset|$ under the balanced-sensor condition $\bar p(s)\ge1/(\kappa|\Sset|)$,
+and the mixing cost $\gamma T$ then reproduces $\Ot(\sqrt{d\kappa|\Sset|T\log K})$. So the
+obstruction is not an artifact of one device. Empirically it does not bite, $1/Z_r$ staying below
+$1.33$ at the tuned $\eta$ over $d\in\{10,50,200\}$, which is why
+Conjecture~\ref{conj:add} is stated rather than abandoned.
+
+\section{Stationary sensors}\label{app:sensor}
+
+\begin{observation}\label{obs:sensor}
+The multiplicative term $\sqrt{\min\{|\Sset|,d\}T}$ is not forced by the known construction, and
+is absent at one endpoint of the present model class.
+\end{observation}
+
+The $\Omega(\sqrt{\min\{|\Sset|,d\}T})$ construction of \citet[Thm.~5.2]{esposito2023} re-splits
+states across actions adversarially per block, so its action-to-state map is time-varying and
+lies outside the model class of Section~\ref{sec:setting}. At $\etwo=0$ with stationary $P$ the
+problem is a stochastic delayed bandit, where delay enters additively \citep{joulani2013}. One
+route to it is therefore unavailable and the term is absent at one endpoint, but neither a
+matching upper bound for all $\etwo>0$ nor a lower bound ruling it out is established here.
+
+\end{document}
