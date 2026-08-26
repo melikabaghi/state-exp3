@@ -50,14 +50,14 @@ days. With $K$ actions and delay $d$, the rate available when the state-to-outco
 unrestricted is $\Ot(\sqrt{(K+d)T})$ \citep{esposito2023}, so costs grow with the catalogue even
 when many items behave alike. When can the intermediate signal remove that dependence? If the
 outcome mean depends on the action only through the state it produced, one delayed outcome
-informs every action that could have produced it. The cost
-is then set by an \emph{effective dimension} $v_t\in[1,|\Sset|]$: how much the action-induced
-state distributions overlap under the current play, not how many actions exist. Interleaving $d+1$
-copies of exponential weights attains $\Ot(\sqrt{(d+1)V\log K})$ for any deterministic
-$V\ge\sum_tv_t$ fixed before the run, improving on $\Ot(\sqrt{(K+d)T})$ when overlap is high;
-coarsening the states lowers the dimension further at an explicit bias. Sharing cannot remove the
-cost of delay itself: a learner handed the exact loss vector from $d$ rounds ago still suffers
-$\Omega(\sqrt{d\mathcal E\min\{1+\log q,T/d\}})$, where $\mathcal E$ bounds accumulated staleness.
+informs every action that could have produced it. What then sets the cost is not how many actions
+there are but how differently they behave, an \emph{effective dimension} $v_t\in[1,|\Sset|]$.
+Running $d+1$ copies of exponential weights in rotation attains $\Ot(\sqrt{(d+1)V\log K})$ for any
+fixed $V\ge\sum_tv_t$ chosen before the run, which beats the general rate when actions overlap.
+Grouping similar states lowers the cost further, at a bias we make explicit. Sharing cannot remove the
+cost of delay itself: a learner handed the exact losses from $d$ rounds ago still suffers
+$\Omega(\sqrt{d\mathcal E\min\{1+\log q,T/d\}})$, where $\mathcal E$ bounds how far the losses
+drift while it waits.
 Intermediate feedback therefore helps only when the signal is both shared across actions and still
 current, two independent requirements. Synthetic experiments on the practical
 single-copy variant, not covered by the theorem, cut regret by up to $79$ per cent.
@@ -184,53 +184,54 @@ Section~\ref{sec:alg} and Section~\ref{sec:lower}.
 \section{Pooling through the state}\label{sec:alg}
 
 When an outcome arrives, do not update only the action played: update every action by how likely
-it was to produce the observed state. Here $P$ is known and
-the learner does not receive $m_t$. Write $q_t(s)=\sum_ax_t(a)P(s\mid a)$ and set $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$, which is unbiased
-for $c_t(a)$ and whose play-weighted second moment is at most the \emph{effective dimension}
-$v_t=\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2\in[1,|\Sset|]$, equal to one plus the $\chi^2$
-mutual information between action and state. \textsc{State-EXP3} runs $m$ interleaved copies of
-exponential weights / \textsc{EXP3} \citep{auer2002}, copy $i$ taking rounds congruent to $i$ modulo $m$, playing
-$x_t\propto\exp(-\eta L_i)$ and adding $\hat c_t$ to $L_i$ once $X_t$ is usable. Each update costs
-$O(K)$ (Appendix~\ref{app:pool}, with pseudocode).
+it was to produce the observed state. Here $P$ is known and the learner does not
+receive $m_t$. Let $q_t(s)=\sum_ax_t(a)P(s\mid a)$ be the chance of seeing state $s$ this round,
+and charge each action $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$. This guess is right on average, and
+how noisy it is depends on how much the actions overlap, through the \emph{effective dimension}
+$v_t=\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2\in[1,|\Sset|]$.
+\textsc{State-EXP3} runs $m$ copies of \textsc{EXP3} \citep{auer2002} in rotation, copy $i$ taking
+every $m$th round, and adds $\hat c_t$ to a copy's running total once the outcome is usable. A
+round costs $O(K)$ (Appendix~\ref{app:pool}, with pseudocode and the $\chi^2$ reading of $v_t$).
 
 \begin{theorem}\label{thm:sexp3}
-Let $P$ be known and $(\theta_t)$ oblivious. For every $\eta>0$, \textup{\textsc{State-EXP3}} with
-$m=d+1$ satisfies $\Ex[R_T]\le(d+1)\log K/\eta+\tfrac{\eta}{2}\Ex[\sum_tv_t]$, so any deterministic $V$ fixed before the run with
-$\sum_tv_t\le V$ surely and $\eta=\sqrt{2(d+1)\log K/V}$ give
-$\Ex[R_T]\le\sqrt{2(d+1)V\log K}$. Writing $\bar v$ for the largest $v_t$ over all play
-distributions, $V=\bar vT\le|\Sset|T$ is such a bound and depends on $P$ alone.
+Let $P$ be known and $(\theta_t)$ oblivious. Pick before the run any fixed number $V$ with
+$\sum_tv_t\le V$ always. Then \textup{\textsc{State-EXP3}} with $m=d+1$ and the matching learning
+rate satisfies
+\[
+\Ex[R_T]\le\sqrt{2(d+1)V\log K}.
+\]
+Writing $\bar v$ for the largest $v_t$ over all ways of playing, $V=\bar vT\le|\Sset|T$ is one such
+choice, and it depends on $P$ alone.
 \end{theorem}
 
-The effective dimension measures how strongly the current play distinguishes actions through the
-state channel: $v_t$ approaches one when the action-induced state distributions overlap heavily,
-and grows when the observed state reveals which action was played.  The proof combines two facts: the pooled estimator is
-unbiased with play-weighted second moment at most $v_t$, and the $d+1$ interleaved copies make
-each copy's own feedback immediate. With $V=\bar vT$, Theorem~\ref{thm:sexp3} improves on
-the unrestricted-state-to-loss rate $\Ot(\sqrt{(K+d)T})$ \citep{esposito2023} when
-$\bar v(d+1)\log K\lesssim K+d$. Theorem~\ref{thm:sexp3} isolates the benefit of cross-action sharing but is neither
-delay-adaptive nor tight in every case. Interleaving makes the delay cost
-multiplicative in $d+1$, the bound pays $v_t$
-rather than $v_t-1$ and so does not vanish when all rows of $P$ agree, where regret is zero but the
-bound still reads $\sqrt{2(d+1)T\log K}$, and it does not adapt to $\etwo$. 
+So $K$, the number of actions, has been replaced by $V$, which counts how different the actions
+really are. It falls to one when they all lead to the same states and rises when the state reveals
+which action was played. The proof rests on two facts: the shared guess is right on average and no
+noisier than $v_t$, and running $d+1$ copies in rotation means each copy always has its own last
+outcome in hand. With $V=\bar vT$ this beats the general rate $\Ot(\sqrt{(K+d)T})$
+\citep{esposito2023} whenever $\bar v(d+1)\log K\lesssim K+d$.
+
+The bound has three known gaps. Rotating copies multiplies the delay cost by $d+1$. It charges
+$v_t$ where $v_t-1$ would be right, so it stays at $\sqrt{2(d+1)T\log K}$ even when every action
+behaves identically and the true regret is zero. And it ignores $\etwo$ entirely. 
 
 \section{The representation trade-off}\label{sec:rep}
 
-Fix $g:\Sset\to\mathcal Z$ and run the same algorithm on $g(S_t)$ with
-$P^g(z\mid a)=\sum_{s:g(s)=z}P(s\mid a)$. Coarsening never raises the dimension, but the grouped
-estimator tracks the group average of $\theta_t$ and acquires a bias
-$\delta_t(g)=\max_z\max_{s,s':g(s)=g(s')=z}|\theta_t(s)-\theta_t(s')|$.
+Some states may not be worth telling apart. Group them with a map $g:\Sset\to\mathcal Z$ and run
+the same algorithm on $g(S_t)$, where $P^g(z\mid a)=\sum_{s:g(s)=z}P(s\mid a)$. Grouping never
+raises the dimension, but the estimate now tracks a group average, so the widest spread of losses
+inside a group, $\delta_t(g)=\max_z\max_{s,s':g(s)=g(s')=z}|\theta_t(s)-\theta_t(s')|$, is the
+error introduced.
 
 \begin{theorem}\label{thm:rep}
 Under the hypotheses of Theorem~\ref{thm:sexp3}, running on $g$ with $\sum_tv_t(g)\le V(g)$ gives
 $\Ex[R_T]\le\sqrt{2(d+1)V(g)\log K}+2\sum_t\delta_t(g)$.
 \end{theorem}
 
-Theorem~\ref{thm:rep} makes the state representation a bias--variance design choice. Coarsening
-need not preserve the original state-sufficiency condition: the grouped estimator is instead
-unbiased for a predictable surrogate loss whose per-action discrepancy from $c_t$ is at most
-$\delta_t(g)$ (Appendix~\ref{app:etc}). The first term is the sharing benefit and the second the coarsening bias: finer representations
-preserve more decision-relevant distinctions but raise statistical complexity, while coarser ones
-share more aggressively and pay $2\sum_t\delta_t(g)$. The trade-off lands on the generating structure: with $16$
+The two terms name the sides of the trade. Merging states need not preserve state-sufficiency, so
+the grouped estimate is no longer right for $c_t$; it is right for a stand-in loss differing from
+$c_t$ by at most $\delta_t(g)$ on every action (Appendix~\ref{app:etc}). Keep states apart and you preserve differences that matter but learn more
+slowly; merge them and you share more but pay $2\sum_t\delta_t(g)$. The trade-off lands on the generating structure: with $16$
 states from four latent clusters, regret over nested groupings of size $1,2,4,8,16$ reads $1590$,
 $831$, $754$, $920$, $1080$, minimized at the true cluster count, which no algorithm knew. The map $g$ is fixed in advance; learning it from data remains open.
 
@@ -242,19 +243,18 @@ construction gives the $q$ drifting actions private states, removing useful pool
 $q\le|\Sset|-1$ (Appendix~\ref{app:proofs}).
 
 \begin{theorem}\label{thm:lower}
-Fix $T$, $1\le d\le T/2$, $\mathcal E\le T/4$, and $1\le q\le\min\{K-1,|\Sset|-1\}$. For every possibly
-randomized algorithm, including one given the exact stale action-loss vector, there exists an
-oblivious instance with $\etwo\le\mathcal E$ such that
-$\Ex[R_T]=\Omega(\sqrt{d\,\mathcal E\min\{1+\log q,\,T/d\}})$. If the oracle is withheld and $K\le T$, the
-same model class has minimax regret
-$\Omega(\sqrt{KT}+\sqrt{d\,\mathcal E\min\{1+\log q,\,T/d\}})$, up to absolute constant factors.
+Fix $T$, a delay $1\le d\le T/2$, a drift budget $\mathcal E\le T/4$, and
+$1\le q\le\min\{K-1,|\Sset|-1\}$. Every algorithm, even one handed the exact losses from $d$ rounds
+ago, meets some instance fixed in advance with $\etwo\le\mathcal E$ on which
+$\Ex[R_T]=\Omega(\sqrt{d\,\mathcal E\min\{1+\log q,\,T/d\}})$. Without that help, and if $K\le T$,
+the best regret any algorithm can guarantee is
+$\Omega(\sqrt{KT}+\sqrt{d\,\mathcal E\min\{1+\log q,\,T/d\}})$, up to constants.
 \end{theorem}
 
-In the oracle-free lower bound, $\sqrt{KT}$ is the ordinary exploration cost, whereas the second
-term depends on the delay $d$, the drift budget $\mathcal E$, and the number $q$ of
-independently drifting coordinates available to the best fixed action. The two terms are established
-using different hard instances; taking their maximum yields the displayed additive form up to an
-absolute factor of two.
+The first term, $\sqrt{KT}$, is the usual price of exploring. The second is the price of delay: it
+grows with how long the wait is, how far the losses drift while you wait, and how many directions
+$q$ the best fixed action can exploit. The two come from different hard instances, so adding them
+overstates the truth by at most a factor of two.
 
 \section{What the experiments show}\label{sec:num}
 
