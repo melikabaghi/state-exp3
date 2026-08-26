@@ -126,7 +126,7 @@ Theorem~\ref{thm:lower} the second. Unknown $P$ is estimable with a conservative
 \includegraphics[width=\textwidth]{fig1.pdf}
 \caption{\textbf{Both panels synthetic. Left, the state-to-outcome relationship changes while the
 action-to-state channel stays fixed}, so the loss vector from $d$ rounds earlier grows
-increasingly inaccurate. This discrepancy is measured by $\etwo$. \textbf{Right, more overlap allows more sharing across actions}, at matched task
+increasingly inaccurate. $\etwo$ measures this discrepancy. \textbf{Right, more overlap allows more sharing across actions}, at matched task
 difficulty, $K=40$, $|\Sset|=8$, $T=10000$, $d=50$, $20$ paired seeds, bars one standard error of
 the paired difference. \textbf{The right panel runs the practical $m=1$ variant.
 Theorem~\ref{thm:sexp3} analyzes $m=d+1$ and does not prove this, so the panel motivates
@@ -173,8 +173,7 @@ $r\le t-d-1$.
 The \emph{action-to-state matrix} $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and the \emph{state-loss means} $\theta_t\in[0,1]^{|\Sset|}$ are \emph{oblivious}:
 chosen in advance, not reacting to the learner. Action losses are $c_t=P\theta_t$ and performance
 is the static \emph{pseudo-regret}, the gap to the best single action in hindsight,
-$\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner additionally
-receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
+$\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner also receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
 function of the observables, so a lower bound surviving it is stronger, and
 \textsc{State-EXP3} never uses it. We measure how misleading $m_t$ is by $\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which stays small
 when errors are small even if frequent. The geometry of $P$ thus governs sharing across actions
@@ -213,7 +212,7 @@ outcome in hand. With $V=\bar vT$ this beats the general rate $\Ot(\sqrt{(K+d)T}
 
 The bound has three known gaps. Rotating copies multiplies the delay cost by $d+1$. It charges
 $v_t$ where $v_t-1$ would be right, so it stays at $\sqrt{2(d+1)T\log K}$ even when every action
-behaves identically and the true regret is zero. And it ignores $\etwo$ entirely. 
+behaves identically and the true regret is zero. It also ignores $\etwo$. 
 
 \section{The representation trade-off}\label{sec:rep}
 
@@ -238,7 +237,7 @@ $831$, $754$, $920$, $1080$, minimized at the true cluster count, which no algor
 \section{The cost of drift}\label{sec:lower}
 
 We now ask how much drift costs even when the stale action losses are free.
-Theorem~\ref{thm:lower} isolates a temporal obstruction, not a joint overlap--drift bound: the
+Theorem~\ref{thm:lower} isolates a temporal obstruction, not a joint overlap-drift bound: the
 construction gives the $q$ drifting actions private states, removing useful pooling and forcing
 $q\le|\Sset|-1$ (Appendix~\ref{app:proofs}).
 
@@ -282,7 +281,7 @@ $K$ & state, $m{=}d{+}1$ & state, $m{=}1$ & action, $m{=}1$ & paired gain & stat
 These experiments study the practical $m=1$ variant. They test the pooling mechanism, not
 Theorem~\ref{thm:sexp3}, whose proof requires $m=d+1$; we read
 them as evidence motivating Conjecture~\ref{conj:add}, and Appendix~\ref{app:num} evaluates the
-analyzed variant. Two negative results are reported in full. A best-state heuristic leads seven of nine settings,
+analyzed variant. We report two negative results in full. A best-state heuristic leads seven of nine settings,
 though its regret grows linearly where its assumption fails, and certified Safe-Pool pools nothing in any run (Appendix~\ref{app:num}).
 
 \section{Discussion}\label{sec:conj}
