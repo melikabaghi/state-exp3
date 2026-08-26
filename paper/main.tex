@@ -101,8 +101,6 @@ on how far the losses have moved, which we measure by $\etwo=\sum_t\|c_t-m_t\|_\
 (Figure~\ref{fig:one}). Our lower bound asks
 how much regret this mismatch forces even when $m_t$ is supplied for free.
 
-
-
 \begin{center}\small
 \begin{tabular}{@{}lll@{}}
 \toprule
@@ -168,14 +166,13 @@ rounds given the states. The conditional mean depends on $A_t$ only through $S_t
 \emph{state-sufficiency} assumption is exactly what licenses cross-action pooling: after observing
 an outcome at state $S_t$, the learner may use it to update every action that could have produced
 that state. If an action has a direct effect on the outcome not represented in $S_t$, the argument
-no longer applies. Here $\mathcal F_{t-1}$ is all information available immediately before $A_t$ is
-chosen, so $x_t$ is $\mathcal F_{t-1}$-measurable; $X_r$ may first affect the action distribution
+no longer applies. Here $x_t$ may depend only on $\mathcal F_{t-1}$, everything seen before $A_t$ is chosen; $X_r$ may first affect the action distribution
 at round $r+d+1$, equivalently the round-$t$ decision uses realized outcomes only from rounds
 $r\le t-d-1$.
 
-The \emph{action-to-state matrix} $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and
-$\theta_t\in[0,1]^{|\Sset|}$ is an oblivious sequence of \emph{state-loss means}, so the induced
-action losses are $c_t=P\theta_t$. Performance is the static pseudo-regret
+The \emph{action-to-state matrix} $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and the \emph{state-loss means} $\theta_t\in[0,1]^{|\Sset|}$ are \emph{oblivious}:
+chosen in advance, not reacting to the learner. Action losses are $c_t=P\theta_t$ and performance
+is the static \emph{pseudo-regret}, the gap to the best single action in hindsight,
 $\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner additionally
 receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
 function of the observables, so a lower bound surviving it is stronger, and
@@ -211,11 +208,10 @@ unbiased with play-weighted second moment at most $v_t$, and the $d+1$ interleav
 each copy's own feedback immediate. With $V=\bar vT$, Theorem~\ref{thm:sexp3} improves on
 the unrestricted-state-to-loss rate $\Ot(\sqrt{(K+d)T})$ \citep{esposito2023} when
 $\bar v(d+1)\log K\lesssim K+d$. Theorem~\ref{thm:sexp3} isolates the benefit of cross-action sharing but is neither
-delay-adaptive nor tight at every structural endpoint. Interleaving makes the delay cost
+delay-adaptive nor tight in every case. Interleaving makes the delay cost
 multiplicative in $d+1$, the bound pays $v_t$
 rather than $v_t-1$ and so does not vanish when all rows of $P$ agree, where regret is zero but the
-bound still reads $\sqrt{2(d+1)T\log K}$, and it does not adapt to $\etwo$. These gaps motivate the $m=1$ variant and
-Conjecture~\ref{conj:add}.
+bound still reads $\sqrt{2(d+1)T\log K}$, and it does not adapt to $\etwo$. 
 
 \section{The representation trade-off}\label{sec:rep}
 
@@ -256,7 +252,7 @@ $\Omega(\sqrt{KT}+\sqrt{d\,\mathcal E\min\{1+\log q,\,T/d\}})$, up to absolute c
 
 In the oracle-free lower bound, $\sqrt{KT}$ is the ordinary exploration cost, whereas the second
 term depends on the delay $d$, the drift budget $\mathcal E$, and the number $q$ of
-independently drifting coordinates available to the comparator. The two terms are established
+independently drifting coordinates available to the best fixed action. The two terms are established
 using different hard instances; taking their maximum yields the displayed additive form up to an
 absolute factor of two.
 
@@ -283,8 +279,8 @@ $K$ & state, $m{=}d{+}1$ & state, $m{=}1$ & action, $m{=}1$ & paired gain & stat
 \end{tabular}
 \end{center}
 
-These experiments study the practical $m=1$ variant. They test the pooling mechanism and the
-qualitative role of overlap, not Theorem~\ref{thm:sexp3}, whose proof requires $m=d+1$; we read
+These experiments study the practical $m=1$ variant. They test the pooling mechanism, not
+Theorem~\ref{thm:sexp3}, whose proof requires $m=d+1$; we read
 them as evidence motivating Conjecture~\ref{conj:add}, and Appendix~\ref{app:num} evaluates the
 analyzed variant. Two negative results are reported in full. A best-state heuristic leads seven of nine settings,
 though its regret grows linearly where its assumption fails, and certified Safe-Pool pools nothing in any run (Appendix~\ref{app:num}).
