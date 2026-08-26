@@ -38,6 +38,7 @@ Appendix I reports fifteen numbered studies. One file per study, in the order th
     python3 drift_scaling.py             # study 8, drift scaling
     python3 scaling_3d.py                # study 9, T x d x v grid
     python3 matched_control.py           # study 10, difficulty-matched overlap sweep
+    python3 matched_control_rep.py       # study 10b, the same sweep at a second configuration
     python3 alpha_kappa.py               # study 11, smoothing by coverage surface
     python3 certificate_gap.py           # study 12, measured arms beside their certificates
     python3 data_driven_grouping.py      # study 13, choosing the coarsening from data

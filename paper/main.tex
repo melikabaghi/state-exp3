@@ -44,21 +44,23 @@ Integration of Machine Learning for Uncertainty-Aware Decision-Making}
 \maketitle
 
 \begin{abstract}
-A learner chooses an action, observes an intermediate state immediately, and receives a bounded
-outcome only after a fixed delay. When the outcome mean depends
-on the action only through that state, one delayed observation can inform every action that could
-have produced it. We quantify this sharing by an \emph{effective dimension} $v_t\in[1,|\Sset|]$,
-set by the overlap of the action-induced state distributions under the learner's current play; its
-worst case $\bar v=\sup_xv(P,x)$ depends on $P$ alone. For known $P$, the analyzed $m=d+1$ version
-of \textsc{State-EXP3} attains $\Ot(\sqrt{(d+1)V\log K})$ for any deterministic $V\ge\sum_tv_t$
-fixed before the run. Coarsening the states lowers the dimension at the price of an explicit
-within-group bias. A separate temporal cost remains: even a learner given the exact stale
-action-loss vector $m_t=c_{t-d}$ suffers $\Omega(\sqrt{dE_2\min\{1+\log q,T/d\}})$ on an
-appropriate oblivious instance, where $E_2=\sum_t\|c_t-m_t\|_\infty^2$. Experiments on the
-unproved but practical $m=1$ variant motivate a conjectured sharper delay dependence, showing
-larger gains as overlap increases at matched difficulty and a regret reduction of as much as $79$
-per cent in a hand-structured synthetic funnel. The results separate cross-action pooling from the
-independently persistent cost of temporal staleness.
+An action's consequences often arrive in two stages: an intermediate signal at once, and the
+outcome that matters only after a delay. A recommender sees a click in seconds but a purchase in
+days. With $K$ actions and delay $d$, the rate available when the state-to-outcome map is
+unrestricted is $\Ot(\sqrt{(K+d)T})$ \citep{esposito2023}, so costs grow with the catalogue even
+when many items behave alike. When can the intermediate signal remove that dependence? If the
+outcome mean depends on the action only through the state it produced, one delayed outcome
+informs every action that could have produced it. The cost
+is then set by an \emph{effective dimension} $v_t\in[1,|\Sset|]$: how much the action-induced
+state distributions overlap under the current play, not how many actions exist. Interleaving $d+1$
+copies of exponential weights attains $\Ot(\sqrt{(d+1)V\log K})$ for any deterministic
+$V\ge\sum_tv_t$ fixed before the run, improving on $\Ot(\sqrt{(K+d)T})$ when overlap is high;
+coarsening the states lowers the dimension further at an explicit bias. Sharing cannot remove the
+cost of delay itself: a learner handed the exact loss vector from $d$ rounds ago still suffers
+$\Omega(\sqrt{d\mathcal E\min\{1+\log q,T/d\}})$, where $\mathcal E$ bounds accumulated staleness.
+Intermediate feedback therefore helps only when the signal is both shared across actions and still
+current, two independent requirements. Synthetic experiments on the practical
+single-copy variant, not covered by the theorem, cut regret by up to $79$ per cent.
 \end{abstract}
 
 \section{Introduction}
@@ -79,26 +81,27 @@ users across the intermediate states. Operationally, a catalogue with thousands 
 be easy to learn from if those items funnel users through only a few genuinely different
 engagement patterns.
 
-Bandits with intermediate observations formalize this. \citet{esposito2023} show the
-state-to-loss map decides the complexity, with an unrestricted one giving only the rate available
-with no intermediate observations.
+Bandits with intermediate observations formalize this. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
+unrestricted one giving only the rate available with no intermediate observations; we fix that map
+and ask what the \emph{action-to-state} geometry buys.
 
-Because similar actions reach similar states, we can \emph{pool through the state}, charging a delayed outcome to every action that could have
+Intermediate observations face two independent limitations: whether information can be shared
+\emph{across actions}, and whether it stays useful \emph{across time}.
+
+Across actions: because similar actions reach similar states, we can \emph{pool through the state},
+charging a delayed outcome to every action that could have
 produced the state observed. The resulting statistical cost is governed by an \emph{effective
 dimension} $v_t$, which measures how distinguishable the action-induced state distributions are
 under the learner's current play. When many actions behave similarly through the state channel,
 $v_t$ can be far smaller than $K$.
 
-Delay creates a second difficulty even if the learner is handed an exact description of the
-past. Let $m_t=c_{t-d}$ be the action-loss vector from $d$ rounds earlier. Its usefulness depends
+Across time: delay creates a second difficulty even when the learner is handed an exact
+description of the past. Let $m_t=c_{t-d}$ be the action-loss vector from $d$ rounds earlier. Its usefulness depends
 on how far the losses have moved, which we measure by $\etwo=\sum_t\|c_t-m_t\|_\infty^2$
 (Figure~\ref{fig:one}). Our lower bound asks
-how much regret this mismatch forces even when $m_t$ is supplied for free. \citet{vernade2020} vary the action-to-state map while fixing the
-state-to-loss map, whereas we fix the former and let the latter vary obliviously.
+how much regret this mismatch forces even when $m_t$ is supplied for free.
 
-Intermediate feedback helps \emph{across actions}, where shared states reduce the independent
-exploration needed, but cannot remove the cost incurred \emph{across time}, where even perfectly
-known past information can go stale before the next decision.
+
 
 \begin{center}\small
 \begin{tabular}{@{}lll@{}}
@@ -110,16 +113,13 @@ Can states cut the cost of learning? & $P$ known, $m=d+1$
 Can we simplify the representation? & $g$ fixed in advance
   & Thm~\ref{thm:rep}: $V(g)$ against $2\sum_t\delta_t(g)$ \\
 Can it remove the cost of delay? & exact $m_t$ supplied
-  & Thm~\ref{thm:lower}: no, $\Omega(\sqrt{d\,\etwo\min\{1+\log q,T/d\}})$ \\
+  & Thm~\ref{thm:lower}: no, $\Omega(\sqrt{d\,\mathcal E\min\{1+\log q,T/d\}})$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Together, the three results separate two difficulties that intermediate feedback creates.
-Theorems~\ref{thm:sexp3} and~\ref{thm:rep} isolate how overlap in a fixed action-to-state map
-reduces the cost of learning across actions, whereas Theorem~\ref{thm:lower} shows that stale
-information can remain costly across time even when an exact delayed loss vector is supplied for
-free. Unknown $P$ is estimable with a conservative warm-start guarantee
+Theorems~\ref{thm:sexp3} and~\ref{thm:rep} address the first difficulty and
+Theorem~\ref{thm:lower} the second. Unknown $P$ is estimable with a conservative warm-start guarantee
 (Appendix~\ref{app:unknown}), while jointly adapting to overlap and temporal drift remains open
 (Conjecture~\ref{conj:add}).
 
@@ -138,50 +138,57 @@ Conjecture~\ref{conj:add}} (Appendix~\ref{app:num}, study~10).}
 
 \section{Related work}
 
-\emph{Delayed bandits.} \citet{zimmert2020} give the optimal
-$\Ot(\sqrt{KT}+\sqrt{D\log K})$ for total delay $D$, and \citet{esposito2023} allow an unknown and
-possibly adversarial action-to-state map whereas ours is fixed and, for the upper bounds, known.
+Our results connect two largely separate lines of work: delayed feedback, and information sharing
+across actions. \emph{Delayed bandits.} \citet{vernade2020} vary the action-to-state map while fixing the
+state-to-loss map, whereas we fix the former and let the latter vary obliviously.
+\citet{zimmert2020} give the optimal
+$\Ot(\sqrt{KT}+\sqrt{D\log K})$ for total delay $D$, and \citet{esposito2023} allow an unknown and possibly adversarial
+action-to-state map; we fix that channel instead, which is what makes its overlap geometry
+measurable through $v_t$.
 \emph{Stale predictions.} \citet{baron2025} derive upper bounds adapting to the inaccuracy of
-evolving observations. Our lower bound instead asks what delay-dependent cost is unavoidable as a
-function of stale-prediction error, while our upper bound separately exploits the geometry of a
-fixed action-to-state map. \citet{wang2026} bound squared gradient prediction error without delay,
-so the delay factor and its saturation are new here. \citet{zhang2026impatient} share
-the motivation in a stochastic Bayesian model whereas ours is adversarial.
+evolving observations; our lower bound instead asks what delay-dependent cost is unavoidable in
+stale-prediction error. \citet{wang2026} bound squared gradient prediction error without delay, so the delay factor and
+its saturation are new here; \citet{zhang2026impatient} share the motivation in a stochastic
+Bayesian model whereas ours is adversarial.
 \emph{Mediator feedback} provides the closest structural connection: $v_t-1$ is the $\chi^2$
-mutual information appearing in that literature \citep{eldowa2024}. The capacity quantity is known from mediator
-feedback; our contribution is its role when the outcome attached to the observed state is delayed,
-and the separation of that structural benefit from an independent temporal obstruction
-(Appendix~\ref{app:transfer}). Feedback graphs and off-policy coverage
+mutual information of \citet{eldowa2024}. Our contribution is not that quantity but its role when
+the outcome attached to the observed state is delayed, and the separation of that structural
+benefit from an independent temporal obstruction (Appendix~\ref{app:transfer}). Feedback graphs and off-policy coverage
 \citep{gabbianelli2023} provide related forms of information sharing;
 Appendix~\ref{app:related} gives the detailed comparison.
 
 \section{Problem formulation}\label{sec:setting}
 
 There are $T$ rounds, $K$ actions, a finite state space $\Sset$, and a fixed known delay $d$; all
-logarithms are natural. Let $\mathcal F_{t-1}$ denote all information available immediately before the learner chooses
-$A_t$. At round $t$ the learner draws $A_t$ from an $\mathcal F_{t-1}$-measurable $x_t$, observes $S_t\sim P(\cdot\mid A_t)$ at once, and at time $t+d$ observes $X_t\in[0,1]$ with
-$\Ex[X_t\mid\mathcal F_{t-1},A_t,S_t]=\theta_t(S_t)$, outcomes conditionally independent across
-rounds given the states. The outcome $X_r$ arrives after the round-$r$ decision and may first affect the learner's action
-distribution at round $r+d+1$; equivalently, the round-$t$ decision uses realized outcomes only
-from rounds $r\le t-d-1$. The conditional mean depends on $A_t$ only through $S_t$. This
+logarithms are natural. Every round follows the chain
+$A_t\xrightarrow{\;P\;}S_t\xrightarrow{\;\theta_t\;}X_t$: the learner draws $A_t$ from $x_t$,
+observes $S_t\sim P(\cdot\mid A_t)$ at once, and receives $X_t\in[0,1]$ only at time $t+d$, with
+$\Ex[X_t\mid\mathcal F_{t-1},A_t,S_t]=\theta_t(S_t)$ and outcomes conditionally independent across
+rounds given the states. The conditional mean depends on $A_t$ only through $S_t$. This
 \emph{state-sufficiency} assumption is exactly what licenses cross-action pooling: after observing
 an outcome at state $S_t$, the learner may use it to update every action that could have produced
 that state. If an action has a direct effect on the outcome not represented in $S_t$, the argument
-no longer applies.
+no longer applies. Here $\mathcal F_{t-1}$ is all information available immediately before $A_t$ is
+chosen, so $x_t$ is $\mathcal F_{t-1}$-measurable; $X_r$ may first affect the action distribution
+at round $r+d+1$, equivalently the round-$t$ decision uses realized outcomes only from rounds
+$r\le t-d-1$.
 
 The \emph{action-to-state matrix} $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and
 $\theta_t\in[0,1]^{|\Sset|}$ is an oblivious sequence of \emph{state-loss means}, so the induced
 action losses are $c_t=P\theta_t$. Performance is the static pseudo-regret
-$\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. For the lower bound only, the learner also receives the \emph{stale action-loss
-vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
+$\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner additionally
+receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
 function of the observables, so a lower bound surviving it is stronger, and
 \textsc{State-EXP3} never uses it. We measure how misleading $m_t$ is by $\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which stays small
-when errors are small though frequent. 
+when errors are small even if frequent. The geometry of $P$ thus governs sharing across actions
+and the evolution of $\theta_t$ governs staleness across time, the two axes of
+Section~\ref{sec:alg} and Section~\ref{sec:lower}. 
 
 \section{Pooling through the state}\label{sec:alg}
 
-Here $P$ is known and the learner does not receive $m_t$. Write
-$q_t(s)=\sum_ax_t(a)P(s\mid a)$ and set $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$, which is unbiased
+When an outcome arrives, do not update only the action played: update every action by how likely
+it was to produce the observed state. Here $P$ is known and
+the learner does not receive $m_t$. Write $q_t(s)=\sum_ax_t(a)P(s\mid a)$ and set $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$, which is unbiased
 for $c_t(a)$ and whose play-weighted second moment is at most the \emph{effective dimension}
 $v_t=\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2\in[1,|\Sset|]$, equal to one plus the $\chi^2$
 mutual information between action and state. \textsc{State-EXP3} runs $m$ interleaved copies of
@@ -201,15 +208,14 @@ The effective dimension measures how strongly the current play distinguishes act
 state channel: $v_t$ approaches one when the action-induced state distributions overlap heavily,
 and grows when the observed state reveals which action was played.  The proof combines two facts: the pooled estimator is
 unbiased with play-weighted second moment at most $v_t$, and the $d+1$ interleaved copies make
-each copy's own feedback immediate. Formally, with $V=\bar vT$, Theorem~\ref{thm:sexp3} improves on
+each copy's own feedback immediate. With $V=\bar vT$, Theorem~\ref{thm:sexp3} improves on
 the unrestricted-state-to-loss rate $\Ot(\sqrt{(K+d)T})$ \citep{esposito2023} when
 $\bar v(d+1)\log K\lesssim K+d$. Theorem~\ref{thm:sexp3} isolates the benefit of cross-action sharing but is neither
 delay-adaptive nor tight at every structural endpoint. Interleaving makes the delay cost
-multiplicative in $d+1$, the bound pays $v_t$ rather than $v_t-1$ and so does not vanish when all
-rows of $P$ agree, and it does not adapt to $\etwo$. These gaps motivate the $m=1$ variant and
+multiplicative in $d+1$, the bound pays $v_t$
+rather than $v_t-1$ and so does not vanish when all rows of $P$ agree, where regret is zero but the
+bound still reads $\sqrt{2(d+1)T\log K}$, and it does not adapt to $\etwo$. These gaps motivate the $m=1$ variant and
 Conjecture~\ref{conj:add}.
-A best-state rule can also be stronger under an additional structural assumption, but suffers
-linear regret when that assumption fails (Appendix~\ref{app:num}).
 
 \section{The representation trade-off}\label{sec:rep}
 
@@ -226,10 +232,11 @@ $\Ex[R_T]\le\sqrt{2(d+1)V(g)\log K}+2\sum_t\delta_t(g)$.
 Theorem~\ref{thm:rep} makes the state representation a bias--variance design choice. Coarsening
 need not preserve the original state-sufficiency condition: the grouped estimator is instead
 unbiased for a predictable surrogate loss whose per-action discrepancy from $c_t$ is at most
-$\delta_t(g)$ (Appendix~\ref{app:etc}). Thus finer representations preserve more decision-relevant
-distinctions but raise statistical complexity, whereas coarser representations share more
-aggressively and pay the explicit $2\sum_t\delta_t(g)$ bias term. The map $g$ is fixed in advance;
-learning it from data remains open.
+$\delta_t(g)$ (Appendix~\ref{app:etc}). The first term is the sharing benefit and the second the coarsening bias: finer representations
+preserve more decision-relevant distinctions but raise statistical complexity, while coarser ones
+share more aggressively and pay $2\sum_t\delta_t(g)$. The trade-off lands on the generating structure: with $16$
+states from four latent clusters, regret over nested groupings of size $1,2,4,8,16$ reads $1590$,
+$831$, $754$, $920$, $1080$, minimized at the true cluster count, which no algorithm knew. The map $g$ is fixed in advance; learning it from data remains open.
 
 \section{The cost of drift}\label{sec:lower}
 
@@ -247,40 +254,47 @@ same model class has minimax regret
 $\Omega(\sqrt{KT}+\sqrt{d\,\mathcal E\min\{1+\log q,\,T/d\}})$, up to absolute constant factors.
 \end{theorem}
 
-A decision-maker told the exact loss vector from $d$ rounds ago can still choose systematically
-badly when the environment moves fast enough.  
-
 In the oracle-free lower bound, $\sqrt{KT}$ is the ordinary exploration cost, whereas the second
-term depends on the delay $d$, the stale-prediction error $\etwo$, and the number $q$ of
+term depends on the delay $d$, the drift budget $\mathcal E$, and the number $q$ of
 independently drifting coordinates available to the comparator. The two terms are established
 using different hard instances; taking their maximum yields the displayed additive form up to an
 absolute factor of two.
 
 \section{What the experiments show}\label{sec:num}
 
-The main experiments study the practical $m=1$ variant. They are designed to test the pooling
-mechanism and the qualitative role of overlap, not to validate Theorem~\ref{thm:sexp3}, whose
-proof requires $m=d+1$. We therefore read them as evidence motivating
-Conjecture~\ref{conj:add}; Appendix~\ref{app:num} evaluates the analyzed variant.
-
-A synthetic recommendation funnel illustrates the regime. With
+Pooling gives large gains when many actions share a small number of state patterns.
+A synthetic recommendation funnel
+illustrates the low-dimension regime. With
 $K=200$ catalogue items and six engagement states the estimated effective dimension is only $1.97$,
 and the state-pooled variant cuts regret against action-level weighting by $79.3$, $63.6$ and
-$38.9$ per cent at $d=10,50,200$. The funnel is hand-structured rather than fitted to data, so the results illustrate the mechanism,
-not a deployed system. On a Dirichlet family it gains $5$ to $22$ per cent as $K$ grows from $8$ to $80$, and an
-online plug-in $\hat P_t$ stays within $0.5$ per cent of known $P$.
+$38.9$ per cent at $d=10,50,200$. The funnel is hand-structured, not fitted to data, so it illustrates the mechanism rather than a
+deployed system. On a Dirichlet family the gain grows with the catalogue, and an online plug-in $\hat P_t$ stays
+within $0.5$ per cent of known $P$ (study~1: $|\Sset|=8$, $T=5000$, $d=20$, $100$ paired seeds).
 
-Two negative results are reported in full. A best-state heuristic leads seven of nine settings,
+\begin{center}\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+$K$ & state, $m{=}d{+}1$ & state, $m{=}1$ & action, $m{=}1$ & paired gain & state better in \\
+\midrule
+ 8 & 455.1 & 368.2 & 387.6 & $19.3\pm3.4$ &  73/100 \\
+40 & 734.3 & 574.5 & 696.1 & $121.5\pm9.4$ &  99/100 \\
+80 & 780.4 & 614.8 & 784.0 & $169.3\pm9.9$ & 100/100 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These experiments study the practical $m=1$ variant. They test the pooling mechanism and the
+qualitative role of overlap, not Theorem~\ref{thm:sexp3}, whose proof requires $m=d+1$; we read
+them as evidence motivating Conjecture~\ref{conj:add}, and Appendix~\ref{app:num} evaluates the
+analyzed variant. Two negative results are reported in full. A best-state heuristic leads seven of nine settings,
 though its regret grows linearly where its assumption fails, and certified Safe-Pool pools nothing in any run (Appendix~\ref{app:num}).
 
 \section{Discussion}\label{sec:conj}
 
-The results suggest a simple diagnostic. Pooling helps most when many actions induce similar
-state distributions, so the effective dimension falls well below the action count.
-Coarsening strengthens it when grouped states have similar outcome means, while fast-changing
-state-to-outcome relationships limit how far delayed information can be trusted. The question is
-not whether an intermediate signal exists, but whether it is shared across actions and stays
-informative over the delay.
+The results suggest a simple diagnostic. Pooling helps most when many actions induce similar state
+distributions, so the effective dimension falls well below the action count; coarsening strengthens
+it when grouped states have similar outcome means; and fast-changing state-to-outcome relationships
+limit how far delayed information can be trusted. 
 
 \begin{conjecture}[open]\label{conj:add}
 \textup{\textsc{State-EXP3}} with $m=1$ satisfies the first displayed bound, and some algorithm
@@ -292,11 +306,9 @@ achieves the second. Both statements remain unproved.
 \]
 \end{conjecture}
 
-\textsc{State-EXP3} formalizes the first requirement; Theorem~\ref{thm:lower} shows the second can
-impose an unavoidable cost. The results separate the
-\emph{cross-action} and \emph{cross-time} difficulties but do not yet yield a single algorithm
-adapting to both, the main open problem left here (Appendices~\ref{app:counter},
-\ref{app:additive}).
+Intermediate feedback is useful when it creates genuine sharing and stays predictive long enough
+to act on; adapting automatically to both remains the main open problem
+(Appendices~\ref{app:counter}, \ref{app:additive}).
 
 \begin{thebibliography}{99}
 \bibitem[Alon et al.(2015)]{alon2015} N.~Alon, N.~Cesa-Bianchi, O.~Dekel, and T.~Koren. Online learning with feedback graphs: beyond bandits. \emph{COLT}, PMLR 40, 2015.
@@ -308,6 +320,7 @@ adapting to both, the main open problem left here (Appendices~\ref{app:counter},
 \bibitem[Esposito et al.(2023)]{esposito2023} E.~Esposito, S.~Masoudian, H.~Qiu, D.~van~der~Hoeven, N.~Cesa-Bianchi, and Y.~Seldin. Delayed bandits: When do intermediate observations help? \emph{ICML}, PMLR 202, 2023.
 \bibitem[Esposito et al.(2022)]{esposito2022} E.~Esposito, F.~Fusco, D.~van~der~Hoeven, and N.~Cesa-Bianchi. Learning on the edge: online learning with stochastic feedback graphs. \emph{NeurIPS}, 35, 2022.
 \bibitem[Flaspohler et al.(2021)]{flaspohler2021} G.~E.~Flaspohler, F.~Orabona, J.~Cohen, S.~Mouatadid, M.~Oprescu, P.~Orenstein, and L.~Mackey. Online learning with optimism and delay. \emph{ICML}, PMLR 139, 2021.
+\bibitem[Guinet et al.(2022)]{guinet2022} G.~Guinet, S.~Amin, and P.~Jaillet. Effective dimension in bandit problems under censorship. \emph{NeurIPS}, 35, 2022.
 \bibitem[Gabbianelli et al.(2023)]{gabbianelli2023} G.~Gabbianelli, G.~Neu, and M.~Papini. Online learning with off-policy feedback. \emph{ALT}, PMLR 201, 2023.
 \bibitem[Hsieh et al.(2022)]{hsieh2022} Y.-G.~Hsieh, F.~Iutzeler, J.~Malick, and P.~Mertikopoulos. Multi-agent online optimization with delays. \emph{JMLR}, 23, 2022.
 \bibitem[Joulani et al.(2013)]{joulani2013} P.~Joulani, A.~Gy\"orgy, and C.~Szepesv\'ari. Online learning under delayed feedback. \emph{ICML}, 2013.
@@ -324,6 +337,10 @@ adapting to both, the main open problem left here (Appendices~\ref{app:counter},
 \appendix
 
 \section{Extended related work}\label{app:related}
+
+\citet{guinet2022} use the name \emph{effective dimension} for an unrelated quantity, the number of
+directions a censored-feedback problem can resolve; it is not $v_t$ and the observation model
+differs.
 
 The minimax characterization of delayed adversarial bandits traces to \citet{cesabianchi2019}, and
 \citet{joulani2013} give the additive form of the delay penalty in the stochastic case. On acting
@@ -1377,8 +1394,42 @@ degenerate column without appealing to it.
 Limitation. At the two highest overlaps some seeds cannot reach the common target and the
 realized difficulty is $5$ to $13$ per cent below it, so the matching is close rather than exact.
 Since a smaller gap should if anything shrink the advantage, the measured rise is conservative in
-that direction. The reversal is one construction at one target, and the matched gains are also
-smaller in magnitude than the unmatched ones, which is what fixing the difficulty costs.
+that direction. The matched gains are also smaller in magnitude than the unmatched ones, which is
+what fixing the difficulty costs.
+
+\textbf{Does the matched-difficulty trend survive a second configuration?} Study~10 is a single
+design point, so the same procedure was re-run at $K=20$, $|\Sset|=12$, $T=8000$, $d=20$ and $20$
+paired seeds, with the common target lowered to $500$ so that it is reachable at every overlap.
+Nothing else changes.
+
+\begin{center}\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+overlap & $\vhat$ & $R_{\text{unif}}$ & state & action & paired gain \\
+\midrule
+0.00 & 3.440 & 500.0 & 364.7 & 407.2 & $42.5\pm8.2$ \\
+0.35 & 2.225 & 500.0 & 346.8 & 401.3 & $54.6\pm8.3$ \\
+0.65 & 1.518 & 500.0 & 309.3 & 372.4 & $63.2\pm6.4$ \\
+0.85 & 1.240 & 493.6 & 271.8 & 346.0 & $74.3\pm7.2$ \\
+0.95 & 1.191 & 490.1 & 256.9 & 327.6 & $70.7\pm7.8$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Observed. The relative gain rises from $10.4$ to $21.6$ per cent as $\vhat$ falls from $3.440$ to
+$1.191$, and the correlation between $\vhat$ and the absolute gain is $-0.972$ against study~10's
+$-0.929$. Realized difficulty spans $490.1$ to $500.0$, a $1.020$ times spread, so the matching is
+tighter here than in study~10.
+
+Interpretation. The direction study~10 reports is not an artifact of its single configuration. Two
+independent design points, differing in $K$, $|\Sset|$, $T$ and $d$, give the same sign and a
+comparable magnitude.
+
+Limitation. Both configurations use the same construction and the same matching routine, so this
+tests configuration sensitivity and not construction sensitivity. Both run the practical $m=1$
+variant. An earlier attempt at this replication silently failed because
+\texttt{match\_scale} binds its target as a default argument, so the bisection saturated and the
+difficulty was never matched; the run reported here passes the target explicitly.
 
 \textbf{Is the plug-in fragile in the smoothing constant, and does that depend on coverage?}
 Study~3 reports one map where the plug-in loses at $\alpha=1$ and recovers as $\alpha$ falls,
