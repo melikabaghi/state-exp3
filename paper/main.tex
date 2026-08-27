@@ -1038,7 +1038,7 @@ Fifteen studies, alongside Figure~\ref{fig:phase}, which sweeps row overlap agai
 the three settings the studies treat separately, $P$ known, $P$ estimated, and states coarsened.
 Studies one to thirteen draw $P$ from a Dirichlet and studies~fourteen and fifteen do not.
 Study~fifteen is the one where \textsc{State-EXP3} is beaten.
-Each study is reported as an observation, an interpretation, and a limitation. Studies~8 and~9
+Each study reports an observation, an interpretation, and a limitation. Studies~8 and~9
 ask whether the two theorems describe the right \emph{dependence} rather than whether a bound
 holds, which is the question a loose bound leaves open. Study~10 is a control for study~6 and
 reverses its conclusion, and study~13 reports a rule that does not work. All policies run on the
@@ -1293,7 +1293,7 @@ family, where it has no advantage.}
 \textbf{Does the drift bound describe the right scaling?} The construction of
 Theorem~\ref{thm:lower} at $K=40$, $T=8000$, $h=d$ and $12$ paired seeds, sweeping $d$ from $10$
 to $200$, the amplitude $\varepsilon$ from $0.02$ to $0.20$ so that $\etwo$ runs from $12$ to
-$1193$, and the drifting coordinates $q$ from $1$ to $16$. Four policies are run, uniform, action-level \textsc{EXP3}, \textsc{State-EXP3},
+$1193$, and the drifting coordinates $q$ from $1$ to $16$. We run four policies: uniform, action-level \textsc{EXP3}, \textsc{State-EXP3},
 and the greedy policy on the exact stale vector $m_t$, the last because
 Theorem~\ref{thm:lower} claims to survive it. $\etwo$ is measured on the realized instance rather
 than predicted, so the normalization uses the quantity the theorem uses.
@@ -1576,7 +1576,7 @@ case over families chosen here; the right panel is why that is not a worst case 
 
 \textbf{Which assumption produces which benefit?} Comparing against action-level weighting alone
 leaves open whether the gain comes from the state structure or from an implementation detail.
-Five policies are run on the same paired seeds over nine settings. Besides action-level weighting
+We run five policies on the same paired seeds over nine settings. Besides action-level weighting
 and \textsc{State-EXP3} they are \textsc{EXP3-IX} \citep{neu2015}, the implicit-exploration variant of \textsc{EXP3}, an importance
 weight; \emph{naive sharing}, which credits $P(S_t\mid a)X_t/\bar p(S_t)$ using the unconditional
 state distribution and so isolates the value of the denominator $q_t=x_t^\top P$ from the value
