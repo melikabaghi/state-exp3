@@ -82,8 +82,7 @@ be easy to learn from if those items funnel users through only a few genuinely d
 engagement patterns.
 
 Bandits with intermediate observations formalize this. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
-unrestricted one giving only the rate available with no intermediate observations; we fix that map
-and ask what the \emph{action-to-state} geometry buys.
+unrestricted one giving only the rate available with no intermediate observations; we fix that map and ask how much the \emph{action-to-state} structure helps.
 
 Intermediate observations face two independent limitations: whether information can be shared
 \emph{across actions}, and whether it stays useful \emph{across time}.
@@ -117,8 +116,7 @@ Can it remove the cost of delay? & exact $m_t$ supplied
 \end{center}
 
 Theorems~\ref{thm:sexp3} and~\ref{thm:rep} address the first difficulty and
-Theorem~\ref{thm:lower} the second. Unknown $P$ is estimable with a conservative warm-start guarantee
-(Appendix~\ref{app:unknown}), while jointly adapting to overlap and temporal drift remains open
+Theorem~\ref{thm:lower} the second. Unknown $P$ can be estimated, with a weaker guarantee (Appendix~\ref{app:unknown}), while jointly adapting to overlap and temporal drift remains open
 (Conjecture~\ref{conj:add}).
 
 \begin{figure}[t]
@@ -185,7 +183,7 @@ Section~\ref{sec:alg} and Section~\ref{sec:lower}.
 When an outcome arrives, do not update only the action played: update every action by how likely
 it was to produce the observed state. Here $P$ is known and the learner does not
 receive $m_t$. Let $q_t(s)=\sum_ax_t(a)P(s\mid a)$ be the chance of seeing state $s$ this round,
-and charge each action $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$. This guess is right on average, and
+and give each action $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$. It is correct on average, and
 how noisy it is depends on how much the actions overlap, through the \emph{effective dimension}
 $v_t=\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2\in[1,|\Sset|]$.
 \textsc{State-EXP3} runs $m$ copies of \textsc{EXP3} \citep{auer2002} in rotation, copy $i$ taking
@@ -205,14 +203,12 @@ choice, and it depends on $P$ alone.
 
 So $K$, the number of actions, has been replaced by $V$, which counts how different the actions
 really are. It falls to one when they all lead to the same states and rises when the state reveals
-which action was played. The proof rests on two facts: the shared guess is right on average and no
-noisier than $v_t$, and running $d+1$ copies in rotation means each copy always has its own last
-outcome in hand. With $V=\bar vT$ this beats the general rate $\Ot(\sqrt{(K+d)T})$
+which action was played. The proof uses two facts: the shared estimate is correct on average and no noisier than $v_t$,
+and with $d+1$ copies in rotation each copy has its own previous outcome before it acts again. With $V=\bar vT$ this beats the general rate $\Ot(\sqrt{(K+d)T})$
 \citep{esposito2023} whenever $\bar v(d+1)\log K\lesssim K+d$.
 
-The bound has three known gaps. Rotating copies multiplies the delay cost by $d+1$. It charges
-$v_t$ where $v_t-1$ would be right, so it stays at $\sqrt{2(d+1)T\log K}$ even when every action
-behaves identically and the true regret is zero. It also ignores $\etwo$. 
+The bound has three known gaps. Rotating copies multiplies the delay cost by $d+1$. It uses $v_t$ where $v_t-1$ would be correct, so it stays at $\sqrt{2(d+1)T\log K}$ even when every action
+behaves the same way and the true regret is zero. It also ignores $\etwo$. 
 
 \section{The representation trade-off}\label{sec:rep}
 
@@ -227,17 +223,17 @@ Under the hypotheses of Theorem~\ref{thm:sexp3}, running on $g$ with $\sum_tv_t(
 $\Ex[R_T]\le\sqrt{2(d+1)V(g)\log K}+2\sum_t\delta_t(g)$.
 \end{theorem}
 
-The two terms name the sides of the trade. Merging states need not preserve state-sufficiency, so
+The two terms are the gain and the cost. Merging states need not preserve state-sufficiency, so
 the grouped estimate is no longer right for $c_t$; it is right for a stand-in loss differing from
 $c_t$ by at most $\delta_t(g)$ on every action (Appendix~\ref{app:etc}). Keep states apart and you preserve differences that matter but learn more
-slowly; merge them and you share more but pay $2\sum_t\delta_t(g)$. The trade-off lands on the generating structure: with $16$
-states from four latent clusters, regret over nested groupings of size $1,2,4,8,16$ reads $1590$,
-$831$, $754$, $920$, $1080$, minimized at the true cluster count, which no algorithm knew. The map $g$ is fixed in advance; learning it from data remains open.
+slowly; merge them and you share more but pay $2\sum_t\delta_t(g)$. The best grouping is the true one: with $16$ states built from
+four hidden groups, groupings of size $1,2,4,8,16$ give regret $1590$, $831$, $754$, $920$,
+$1080$, lowest at four, which no algorithm was told. The map $g$ is fixed in advance; learning it from data remains open.
 
 \section{The cost of drift}\label{sec:lower}
 
 We now ask how much drift costs even when the stale action losses are free.
-Theorem~\ref{thm:lower} isolates a temporal obstruction, not a joint overlap-drift bound: the
+Theorem~\ref{thm:lower} shows a cost from time alone, not a joint overlap-drift bound: the
 construction gives the $q$ drifting actions private states, removing useful pooling and forcing
 $q\le|\Sset|-1$ (Appendix~\ref{app:proofs}).
 
@@ -250,9 +246,9 @@ the best regret any algorithm can guarantee is
 $\Omega(\sqrt{KT}+\sqrt{d\,\mathcal E\min\{1+\log q,\,T/d\}})$, up to constants.
 \end{theorem}
 
-The first term, $\sqrt{KT}$, is the usual price of exploring. The second is the price of delay: it
-grows with how long the wait is, how far the losses drift while you wait, and how many directions
-$q$ the best fixed action can exploit. The two come from different hard instances, so adding them
+The first term, $\sqrt{KT}$, is the usual cost of exploring. The second is the cost of delay: it grows
+with the wait, how far the losses move during it, and the number $q$ of directions the best fixed
+action can use. The two come from different hard instances, so adding them
 overstates the truth by at most a factor of two.
 
 \section{What the experiments show}\label{sec:num}
@@ -286,8 +282,7 @@ though its regret grows linearly where its assumption fails, and certified Safe-
 
 \section{Discussion}\label{sec:conj}
 
-The results suggest a simple diagnostic. Pooling helps most when many actions induce similar state
-distributions, so the effective dimension falls well below the action count; coarsening strengthens
+The results suggest a simple diagnostic. Pooling helps most when many actions lead to similar states, so the effective dimension falls well below the action count; coarsening strengthens
 it when grouped states have similar outcome means; and fast-changing state-to-outcome relationships
 limit how far delayed information can be trusted. 
 
