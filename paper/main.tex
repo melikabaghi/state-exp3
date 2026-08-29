@@ -279,7 +279,7 @@ $K$ & state, $m{=}d{+}1$ & state, $m{=}1$ & action, $m{=}1$ & paired gain & stat
 These experiments study the practical $m=1$ variant. They test the pooling mechanism, not
 Theorem~\ref{thm:sexp3}, whose proof requires $m=d+1$; we read
 them as evidence motivating Conjecture~\ref{conj:add}, and Appendix~\ref{app:num} evaluates the
-analyzed variant. We report the negative results in full. A best-state rule leads seven of nine
+analyzed variant. Broader comparisons reveal structure-dependent trade-offs. A best-state rule leads seven of nine
 settings, though where its assumption fails its regret grows linearly and its spread across seeds
 is four times ours, and certified Safe-Pool never pools. Against a minimax-optimal action-level
 delayed-bandit baseline the state channel still helps, cutting regret by $32$ to $68$ per cent on
@@ -1034,10 +1034,11 @@ upper bounds for a variant other than the one plotted, so it is a reference and 
 \label{fig:phase}
 \end{figure}
 
-Fifteen studies, alongside Figure~\ref{fig:phase}, which sweeps row overlap against delay in
+Sixteen studies, alongside Figure~\ref{fig:phase}, which sweeps row overlap against delay in
 the three settings the studies treat separately, $P$ known, $P$ estimated, and states coarsened.
-Studies one to thirteen draw $P$ from a Dirichlet and studies~fourteen and fifteen do not.
-Study~fifteen is the one where \textsc{State-EXP3} is beaten.
+Studies one to thirteen draw $P$ from a Dirichlet and studies~fourteen to sixteen do not
+throughout. \textsc{State-EXP3} is beaten in study~fifteen, and in four of six cells of
+study~sixteen when the baseline alone is grid-tuned.
 Each study reports an observation, an interpretation, and a limitation. Studies~8 and~9
 ask whether the two theorems describe the right \emph{dependence} rather than whether a bound
 holds, which is the question a loose bound leaves open. Study~10 is a control for study~6 and
@@ -1630,7 +1631,7 @@ delay convention, under three tunings.
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-family, cell & \textsc{State-EXP3} & \citeauthor{zimmert2020} & same, oracle & \textsc{State-EXP3}, oracle \\
+family, cell & \textsc{State-EXP3} & \citeauthor{zimmert2020} & same, grid-best & \textsc{State-EXP3}, grid-best \\
 \midrule
 funnel, $d=10$   &  949.0 & 2959.4 & 2413.8 & 27.0 \\
 funnel, $d=50$   & 1728.1 & 3557.0 & 2556.4 & 95.9 \\
@@ -1643,25 +1644,28 @@ overlap $0.95$   &  461.4 &  540.2 &  419.4 &  34.3 \\
 \end{center}
 
 Observed. With \textsc{State-EXP3} at the single tuning used everywhere else here and
-\citet{zimmert2020} given the best of a bounded grid around its own, \textsc{State-EXP3} wins every cell,
-cutting regret by $31.5$ to $67.9$ per cent on the funnel and $9.6$ to $14.6$ per cent on the
-matched sweep. Tuning both by oracle search over the learning rate, \textsc{State-EXP3} wins every
-cell again and by more, $66.8$ to $98.9$ per cent. Tuning \citet{zimmert2020} by oracle search
-while leaving \textsc{State-EXP3} at its paper tuning, the third column against the first,
-\citet{zimmert2020} wins the funnel at $d=200$ and all three matched cells.
+\citet{zimmert2020} at the best of a six-point grid around its own value, \textsc{State-EXP3} wins
+every cell, cutting regret by $31.5$ to $67.9$ per cent on the funnel and $9.6$ to $14.6$ per cent
+on the matched sweep. With both at their grid-best, over seven multipliers for
+\citet{zimmert2020} and six for \textsc{State-EXP3}, \textsc{State-EXP3} wins every cell again and
+by more, $66.8$ to $98.9$ per cent. With \citet{zimmert2020} at its grid-best and
+\textsc{State-EXP3} left at its paper tuning, the third column against the first,
+\citet{zimmert2020} wins the funnel at $d=200$ and all three matched cells, four of six.
 
-Interpretation. Only the fourth column against the first is a symmetric protocol; in the second
-column \citet{zimmert2020} alone receives a grid search, and in the third it alone receives an
-unbounded one. Where \textsc{State-EXP3} is not held to the worse tuning of the two, the state
-channel helps against the strongest published method, which is expected, since that method is
-action-level by construction and cannot read the state at all. Oracle tuning helps \textsc{State-EXP3} far more than it helps
-\citet{zimmert2020}, which is consistent with pooling cutting estimator variance and lower
-variance admitting a larger learning rate.
+Interpretation. No column is a symmetric protocol. The two grids are finite and unequal, and
+\textsc{State-EXP3}'s grid-best sits at its top multiplier in every cell, so its own minimum may
+lie outside the range searched; the truncation runs against \textsc{State-EXP3}. Where it is not
+held to the worse tuning of the two, the state channel helps against the strongest published
+method, which is expected, since that method is action-level by construction and cannot read the
+state at all. Grid tuning helps \textsc{State-EXP3} far more than it helps \citet{zimmert2020},
+which is consistent with pooling cutting estimator variance and lower variance admitting a larger
+learning rate.
 
-Limitation. The asymmetric column is a real loss and is reported as one. These are our own
-synthetic families, and a method built for adversarial worst cases is not shown at its best on
-benign instances. Oracle tuning is not an algorithm, so only the first two columns describe
-anything a practitioner could run. Eight paired seeds on the funnel and ten on the matched sweep.
+Limitation. The third column against the first is a real loss and is reported as one. These are
+our own synthetic families, and a method built for adversarial worst cases is not shown at its
+best on benign instances. Every grid-best multiplier is chosen by reading these benchmarks, so
+none of the last three columns is a procedure a practitioner could run; only the first is. Eight
+paired seeds on the funnel and ten on the matched sweep.
 
 Taken together the sixteen studies cover both channels. Studies one, six, seven, nine, ten,
 fourteen and fifteen probe the state channel. They are consistent with the effective dimension, rather than $|\Sset|$
@@ -1680,8 +1684,7 @@ Study~fifteen widens the baseline set and finds \textsc{State-EXP3} beaten in se
 settings by a heuristic that assumes the best action is the one reaching the single best state,
 which holds on several of these families and fails with linear regret when it does not. Study~sixteen places
 \textsc{State-EXP3} against the strongest published delayed-bandit method. It is ahead in every
-cell when both are tuned alike, and behind in four of the six when that method alone is
-oracle-tuned.
+cell when both are tuned alike, and behind in four of the six when that method alone is grid-tuned.
 Study eight is the drift channel, and its collapse across $d$, $\etwo$ and $q$
 is the strongest evidence here that Theorem~\ref{thm:lower} has the right form. No study runs a
 method that uses both channels, which is the gap Section~\ref{sec:conj} describes.

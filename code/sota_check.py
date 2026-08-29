@@ -1,4 +1,4 @@
-"""SOTA check, not yet in the paper: tuned Zimmert-Seldin against State-EXP3.
+"""Study 16: tuned Zimmert-Seldin against State-EXP3.
 
 Every reported gain so far compares State-EXP3 against action-level EXP3, EXP3-IX, naive
 sharing, or the best-state rule.  None of those is the strongest published algorithm for
@@ -7,13 +7,16 @@ delay term is additive rather than multiplicative.  algo.py already implements i
 (class ZS / ftrl_hybrid); it was used in the lower-bound scaling study but never run on the
 headline families.  This script runs it there.
 
-Three tunings are reported, and only the third is symmetric:
-  1. ZS at the best of a bounded grid around its own theory value; State-EXP3 at the single
-     tuning used everywhere else in the paper.  This favors ZS.
-  2. ZS additionally given an unbounded oracle sweep over the learning rate, State-EXP3 still
-     at its paper tuning.  This favors ZS more, and ZS wins four of the six cells.
-  3. Both given the same unbounded oracle sweep.  Symmetric.
-Oracle tuning is not an algorithm; it is reported to bound how much of the gap is tuning.
+Three tunings are reported.  None is symmetric: the grids are finite and unequal, seven
+learning-rate multipliers for ZS and six for State-EXP3, and State-EXP3's grid-best sits at its
+top multiplier in every cell, so its own minimum may lie outside the range searched.
+  1. ZS at the best of a six-point grid around its theory value; State-EXP3 at the single tuning
+     used everywhere else in the paper.  This favors ZS.
+  2. ZS at its grid-best over the wider seven-point range, State-EXP3 still at its paper tuning.
+     This favors ZS more, and ZS wins four of the six cells.
+  3. Both at their grid-best.
+Every grid-best multiplier is chosen by reading these benchmarks, so only tuning 1's State-EXP3
+column is a procedure a practitioner could run.
 
 Families:
   funnel          -- the 79 per cent headline claim (K=200, |S|=6)
@@ -21,7 +24,7 @@ Families:
 Sanity: ZS ignores states, so on both families it should behave like a well-tuned
 action-level method, and its regret should be sublinear-looking, not broken.
 
-Writes sota_check.npz and prints tables.  Nothing here feeds the paper yet.
+Writes sota_check.npz and prints tables.  Reproduces the study-16 table in the paper.
 """
 from __future__ import annotations
 
