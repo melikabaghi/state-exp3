@@ -25,7 +25,7 @@ tectonic 0.16.9.
 
 ## Reproducing the paper
 
-Appendix I reports fifteen numbered studies. One file per study, in the order they appear.
+Appendix I reports sixteen numbered studies. One file per study, in the order they appear.
 
     cd code
     python3 state_exp3_experiment.py     # study 1, does the bound hold and does pooling help
