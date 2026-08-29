@@ -67,12 +67,12 @@ minimax-optimal method of \citet{zimmert2020}.
 
 \section{Introduction}
 
-Delayed outcomes are common in sequential decision-making. A system must choose an action now
-even though the outcome it cares about may arrive much later. Recommendation is a representative
-example. An item is shown immediately, an engagement signal such as a click or browsing depth is
-observed soon after, and conversion or retention may only be known days or weeks later. The
-central question here is when such an intermediate signal can reduce the cost of learning before
-the final outcome arrives.
+Delayed outcomes are common in sequential decision-making. A system must act now even though the outcome it
+cares about may arrive much later. Recommendation is a representative
+example. An item is shown immediately, an engagement signal such as a click or browsing depth
+is observed soon after, and conversion or retention may only be known days or weeks later.
+Such decisions are committed before their economically relevant consequences appear. The central question is when such
+a signal can reduce the cost of learning before the final outcome arrives.
 
 In this interpretation, actions are catalogue items, states are intermediate engagement outcomes,
 and the delayed outcome is conversion. Different items may induce similar distributions over
@@ -281,7 +281,7 @@ Theorem~\ref{thm:sexp3}, whose proof requires $m=d+1$; we read
 them as evidence motivating Conjecture~\ref{conj:add}, and Appendix~\ref{app:num} evaluates the
 analyzed variant. Broader comparisons reveal structure-dependent trade-offs. A best-state rule leads seven of nine
 settings, though where its assumption fails its regret grows linearly and its spread across seeds
-is four times ours, and certified Safe-Pool never pools. Against a minimax-optimal action-level
+is four times ours. Against a minimax-optimal action-level
 delayed-bandit baseline the state channel still helps, cutting regret by $32$ to $68$ per cent on
 the funnel under the reported tuning protocol (Appendix~\ref{app:num}).
 
