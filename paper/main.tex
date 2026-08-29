@@ -277,8 +277,11 @@ $K$ & state, $m{=}d{+}1$ & state, $m{=}1$ & action, $m{=}1$ & paired gain & stat
 These experiments study the practical $m=1$ variant. They test the pooling mechanism, not
 Theorem~\ref{thm:sexp3}, whose proof requires $m=d+1$; we read
 them as evidence motivating Conjecture~\ref{conj:add}, and Appendix~\ref{app:num} evaluates the
-analyzed variant. We report two negative results in full. A best-state heuristic leads seven of nine settings,
-though its regret grows linearly where its assumption fails, and certified Safe-Pool pools nothing in any run (Appendix~\ref{app:num}).
+analyzed variant. We report two negative results in full. A best-state rule leads seven of nine
+settings, though where its assumption fails its regret grows linearly and its spread across seeds
+is four times ours, and certified Safe-Pool never pools. Against the strongest published
+delayed-bandit method the state channel still helps, cutting regret by $32$ to $68$ per cent on
+the funnel (Appendix~\ref{app:num}).
 
 \section{Discussion}\label{sec:conj}
 
@@ -1615,7 +1618,48 @@ identify when that structure can be verified in advance. On the drift family no 
 action-level weighting reaches two standard errors, the largest being the best-state rule's
 $+24.6\pm12.4$, so that column is reported as an absence of signal rather than a result.
 
-Taken together the fifteen studies cover both channels. Studies one, six, seven, nine, ten,
+\textbf{Does pooling still help against the strongest published delayed-bandit algorithm?} Every
+comparison so far is against action-level weighting, \textsc{EXP3-IX}, naive sharing, or the
+best-state rule. None is the strongest published method for delayed feedback: that is the hybrid
+Tsallis-plus-entropy \textsc{FTRL} of \citet{zimmert2020}, whose delay term is additive rather
+than multiplicative. We run it on both headline families, with the same environments, seeds and
+delay convention, under three tunings.
+
+\begin{center}\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+family, cell & \textsc{State-EXP3} & \citeauthor{zimmert2020} & same, oracle & \textsc{State-EXP3}, oracle \\
+\midrule
+funnel, $d=10$   &  949.0 & 2959.4 & 2413.8 & 27.0 \\
+funnel, $d=50$   & 1728.1 & 3557.0 & 2556.4 & 95.9 \\
+funnel, $d=200$  & 3244.8 & 4734.7 & 2807.7 & 199.7 \\
+overlap $0.00$   &  661.5 &  731.8 &  610.4 & 202.4 \\
+overlap $0.65$   &  584.1 &  673.1 &  544.0 &  51.2 \\
+overlap $0.95$   &  461.4 &  540.2 &  419.4 &  34.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Observed. With \textsc{State-EXP3} at the single tuning used everywhere else here and
+\citet{zimmert2020} given the best of a bounded grid around its own, \textsc{State-EXP3} wins every cell,
+cutting regret by $31.5$ to $67.9$ per cent on the funnel and $9.6$ to $14.6$ per cent on the
+matched sweep. Tuning both by oracle search over the learning rate, \textsc{State-EXP3} wins every
+cell again and by more, $66.8$ to $98.9$ per cent. Tuning \citet{zimmert2020} by oracle search
+while leaving \textsc{State-EXP3} at its paper tuning, the third column against the first,
+\citet{zimmert2020} wins the funnel at $d=200$ and all three matched cells.
+
+Interpretation. Under either symmetric protocol the state channel helps against the strongest
+published method, which is expected, since that method is action-level by construction and cannot
+read the state at all. Oracle tuning helps \textsc{State-EXP3} far more than it helps
+\citet{zimmert2020}, which is consistent with pooling cutting estimator variance and lower
+variance admitting a larger learning rate.
+
+Limitation. The asymmetric column is a real loss and is reported as one. These are our own
+synthetic families, and a method built for adversarial worst cases is not shown at its best on
+benign instances. Oracle tuning is not an algorithm, so only the first two columns describe
+anything a practitioner could run. Eight paired seeds on the funnel and ten on the matched sweep.
+
+Taken together the sixteen studies cover both channels. Studies one, six, seven, nine, ten,
 fourteen and fifteen probe the state channel. They are consistent with the effective dimension, rather than $|\Sset|$
 or $K$, governing what pooling buys, with the qualification that study~ten had to control for
 task difficulty before study~six's sweep pointed the way Theorem~\ref{thm:sexp3} does, and

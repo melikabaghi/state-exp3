@@ -44,6 +44,7 @@ Appendix I reports fifteen numbered studies. One file per study, in the order th
     python3 data_driven_grouping.py      # study 13, choosing the coarsening from data
     python3 funnel.py                    # study 14, the recommendation funnel (no real data)
     python3 baselines.py                 # study 15, the wider baseline set
+    python3 sota_check.py                # study 16, vs tuned Zimmert-Seldin
     python3 verify_lower.py              # the construction check closing study 7
     python3 phase_diagram.py             # writes phase.npz for Figure 2
 
