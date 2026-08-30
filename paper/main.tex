@@ -89,6 +89,11 @@ first of the two has been resolved. Bandits with
 intermediate observations formalize this: the learner repeatedly picks one action and sees the
 consequence of that action alone. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
 unrestricted one giving only the rate available with no intermediate observations; we fix that map and ask how much the \emph{action-to-state} structure helps.
+The delayed-feedback literature has since developed along other axes: \citet{baron2025} obtain
+instance-dependent bounds when the observations themselves evolve, and \citet{levy2025} treat
+contextual actions under delay with general function approximation. In neither does an
+intermediate state carry one delayed outcome across several actions, which is the mechanism
+studied here.
 
 Intermediate observations face two independent limitations: whether information can be shared
 \emph{across actions}, and whether it stays useful \emph{across time}.
@@ -299,6 +304,7 @@ axes.
 \bibitem[Esposito et al.(2023)]{esposito2023} E.~Esposito, S.~Masoudian, H.~Qiu, D.~van~der~Hoeven, N.~Cesa-Bianchi, and Y.~Seldin. Delayed bandits: When do intermediate observations help? \emph{ICML}, PMLR 202, 2023.
 \bibitem[Esposito et al.(2022)]{esposito2022} E.~Esposito, F.~Fusco, D.~van~der~Hoeven, and N.~Cesa-Bianchi. Learning on the edge: online learning with stochastic feedback graphs. \emph{NeurIPS}, 35, 2022.
 \bibitem[Gabbianelli et al.(2023)]{gabbianelli2023} G.~Gabbianelli, G.~Neu, and M.~Papini. Online learning with off-policy feedback. \emph{ALT}, PMLR 201, 2023.
+\bibitem[Levy et al.(2025)]{levy2025} O.~Levy, L.~Erez, A.~Cohen, and Y.~Mansour. Regret bounds for adversarial contextual bandits with general function approximation and delayed feedback. \emph{arXiv:2510.09127}, 2025.
 \bibitem[Thune et al.(2019)]{thune2019} T.~S.~Thune, N.~Cesa-Bianchi, and Y.~Seldin. Nonstochastic multiarmed bandits with unrestricted delays. \emph{NeurIPS}, 32, 2019.
 \bibitem[Vernade et al.(2020)]{vernade2020} C.~Vernade, A.~Gy\"orgy, and T.~Mann. Non-stationary delayed bandits with intermediate observations. \emph{ICML}, PMLR 119, 2020.
 \bibitem[Wang et al.(2026)]{wang2026} S.~Wang, A.~Barik, and V.~Y.~F.~Tan. Bandit convex optimization with gradient prediction adaptivity. \emph{arXiv:2605.22191}, 2026.
