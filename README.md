@@ -25,8 +25,8 @@ tectonic 0.16.9.
 
 ## Reproducing the paper
 
-Sixteen studies were run. The submitted paper reports the seven bearing on its claim, keeping
-their original numbers; every study's script is below. One file per study, in the order they appear, followed by two checks
+Sixteen studies were run. The submitted paper reports the five that test its theorems (1, 8, 10,
+14, 16), keeping their original numbers; every study's script is below. One file per study, in the order they appear, followed by two checks
 that belong to appendices rather than to a numbered study.
 
     cd code
@@ -73,8 +73,7 @@ The `.npz` files are committed, so every figure rebuilds without rerunning an ex
 | 5 | `paper/figs/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
 
 `fig4.py`, `fig6.py` and `fig8.py` still build, and their `.npz` inputs are committed, but the
-studies they illustrate are now summarised in a table rather than reported at length, so the paper
-no longer includes them.
+studies they illustrate are not among the five the paper reports, so it no longer includes them.
 
     cd paper/figs && python3 fig1.py && python3 fig2.py && python3 fig3.py \
         && python3 fig5.py && python3 fig7.py

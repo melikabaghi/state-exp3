@@ -284,6 +284,7 @@ solved for, and the bounds lie on different axes.
 \bibitem[Esposito et al.(2022)]{esposito2022} E.~Esposito, F.~Fusco, D.~van~der~Hoeven, and N.~Cesa-Bianchi. Learning on the edge: online learning with stochastic feedback graphs. \emph{NeurIPS}, 35, 2022.
 \bibitem[Gabbianelli et al.(2023)]{gabbianelli2023} G.~Gabbianelli, G.~Neu, and M.~Papini. Online learning with off-policy feedback. \emph{ALT}, PMLR 201, 2023.
 \bibitem[Levy et al.(2025)]{levy2025} O.~Levy, L.~Erez, A.~Cohen, and Y.~Mansour. Regret bounds for adversarial contextual bandits with general function approximation and delayed feedback. \emph{arXiv:2510.09127}, 2025.
+\bibitem[Schlisselberg et al.(2025)]{schlisselberg2025} O.~Schlisselberg, T.~Lancewicki, P.~Auer, and Y.~Mansour. Improved best-of-both-worlds regret for bandits with delayed feedback. \emph{arXiv:2505.24193}, 2025.
 \bibitem[Thune et al.(2019)]{thune2019} T.~S.~Thune, N.~Cesa-Bianchi, and Y.~Seldin. Nonstochastic multiarmed bandits with unrestricted delays. \emph{NeurIPS}, 32, 2019.
 \bibitem[Vernade et al.(2020)]{vernade2020} C.~Vernade, A.~Gy\"orgy, and T.~Mann. Non-stationary delayed bandits with intermediate observations. \emph{ICML}, PMLR 119, 2020.
 \bibitem[Wang et al.(2026)]{wang2026} S.~Wang, A.~Barik, and V.~Y.~F.~Tan. Bandit convex optimization with gradient prediction adaptivity. \emph{arXiv:2605.22191}, 2026.
@@ -615,7 +616,7 @@ result provides an $\etwo$-adaptive upper bound under noisy outcomes.
 
 \section{Numerical detail}\label{app:num}
 
-Sixteen studies were run and the seven bearing on the claim are reported here, each with an
+Sixteen studies were run and the five bearing on the theorems are reported here, each with an
 observation, an interpretation and a limitation. They keep their original numbers, which index the
 released scripts, so the numbering is not contiguous; the code for all sixteen is available.
 Studies 1 to 13 draw $P$ from a Dirichlet and 14 to 16 do not. All policies run on the same
@@ -627,7 +628,17 @@ $\sum_tc_t(A_t)-\min_a\sum_tc_t(a)$ on one realization of the learner and enviro
 computed from the true losses rather than the sampled outcomes; averaging it over seeds estimates
 the expected pseudo-regret the theorems bound.
 
-\textbf{Study~1. The bound holds and pooling helps.} With $|\Sset|=4$, $T=10000$, $d=50$,
+Each study below tests a statement the paper proves. Study~1 checks Theorem~\ref{thm:sexp3}'s
+bound on the interleaved algorithm and compares it with the single-copy one of
+Theorem~\ref{thm:m1}; studies~14 and~16 test Theorem~\ref{thm:m1} where $K$ is large and the
+states few; study~10 tests the prediction common to Theorems~\ref{thm:m1} and~\ref{thm:sexp3},
+that the gain follows the effective dimension and not $K$; and study~8 tests
+Theorem~\ref{thm:lower} on the drift channel. Theorem~\ref{thm:rep}, on coarsening, is exercised by
+the grouped panel of Figure~\ref{fig:phase} rather than by a study of its own. Studies whose
+conclusions were superseded by a later control, or that replicated one already reported, are left
+to the released code.
+
+\textbf{Study~1. The bound of Theorem~\ref{thm:sexp3} holds and pooling helps.} With $|\Sset|=4$, $T=10000$, $d=50$,
 drift band $0.05$ and $100$ seeds:
 
 \begin{center}\small
@@ -661,36 +672,6 @@ which is the diagnostic evidence behind the open problem of Section~\ref{sec:con
 Limitation. This is one synthetic family with a fixed drift band, and a simulation cannot
 establish that a bound holds, only that sample-path pseudo-regret stayed below it in the runs
 performed.
-
-\textbf{Study~6. The effective dimension, not $|\Sset|$, governs the gain.} Holding
-$|\Sset|=8$, $K=40$, $T=5000$, $d=20$ and $24$ seeds, and varying only the overlap between the
-rows of $P$, the measured mean of $v_t$ moves while $|\Sset|$ does not:
-
-\begin{center}\small
-\begin{tabular}{rrrrr}
-\toprule
-row overlap & mean $v_t$ & state-pooled & action-level & paired gain \\
-\midrule
-0.00 & 2.719 & 392.7 & 599.3 & $206.6\pm20.0$ \\
-0.25 & 2.013 & 361.1 & 528.1 & $167.0\pm21.3$ \\
-0.50 & 1.532 & 306.5 & 406.5 & $100.0\pm10.5$ \\
-0.75 & 1.168 & 199.9 & 229.2 & $29.3\pm3.2$ \\
-0.95 & 1.009 &  49.2 &  50.8 & $1.6\pm0.5$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Observed. Both the regret and the advantage over action-level weighting fall monotonically with
-$v_t$, from a paired gain of $206.6$ at $v_t=2.719$ to $1.6$ at $v_t=1.009$. Nothing about the raw
-state count changes across the sweep.
-
-Interpretation. $|\Sset|$ is constant and cannot explain the pattern, while $v_t$ moves with it,
-which is the comparison Theorem~\ref{thm:sexp3} predicts.
-
-Limitation. The two estimators do not become the same object at $v_t\approx1$. Rather the rows of
-$P$ agree, so every action induces the same loss and both regrets collapse, making that endpoint
-uninformative rather than favorable. One parameter of one map family was varied, so the sweep is
-consistent with the effective dimension governing the gain rather than establishing it.
 
 \begin{figure}[t]
 \centering
@@ -740,7 +721,7 @@ that every figure rebuilds without rerunning an experiment.
 \includegraphics[width=\textwidth]{fig5.pdf}
 \caption{\textbf{Left,} study~10. The same overlap sweep with and without holding the task
 difficulty fixed. Matching the uniform-play regret reverses the trend, supporting the interpretation that the
-decline in Study~6 is driven by task-difficulty confounding rather than by the pooling
+decline in the unmatched sweep is driven by task-difficulty confounding rather than by the pooling
 mechanism itself. Bars are one standard error of the paired
 difference. \textbf{Right,} regret saved against action-level weighting over the smoothing
 pseudocount and the sensor balance, $10$ paired seeds per cell, from the plug-in sensitivity study
@@ -749,9 +730,9 @@ whose script is released with the rest.}
 \end{figure}
 
 \textbf{Study~10. Overlap drives the gain, not easier tasks.}
-Study~6 sweeps the overlap and finds the advantage falling as $\vhat$ falls, which read at face
-value contradicts Theorem~\ref{thm:sexp3}, whose bound improves as $\bar v$ falls. That sweep is
-confounded, since raising the overlap also flattens $c_t=P\theta_t$ across actions, collapsing
+Sweeping the overlap without further control finds the advantage falling as $\vhat$ falls, which
+read at face value contradicts Theorem~\ref{thm:sexp3}, whose bound improves as $\bar v$ falls.
+That sweep is confounded, since raising the overlap also flattens $c_t=P\theta_t$ across actions, collapsing
 the comparator gap so that both regrets vanish together. This study holds $K=40$, $|\Sset|=8$,
 $T=10000$, $d=50$ and the difficulty fixed, and varies only $\vhat$. Difficulty is the
 uniform-play regret $\sum_t\mathrm{mean}_ac_t(a)-\min_a\sum_tc_t(a)$, a property of the instance
@@ -761,53 +742,20 @@ it, which is what lets the gap survive as the rows agree.
 
 Observed. Across $20$ paired seeds the relative gain rises from $11.7$ per cent at
 $\vhat=3.380$ to $19.3$ per cent at $\vhat=1.120$, with absolute gains $85.5\pm8.9$ to
-$106.2\pm7.9$ and a correlation of $-0.929$ between $\vhat$ and the gain. Study~6's unmatched
-sweep falls from $34.5$ to $3.1$ per cent over a comparable range (Figure~\ref{fig:matched}).
+$106.2\pm7.9$ and a correlation of $-0.929$ between $\vhat$ and the gain. The unmatched sweep
+falls from $34.5$ to $3.1$ per cent over a comparable range (Figure~\ref{fig:matched}), so the
+apparent contradiction is an artefact of the confound rather than of the mechanism.
 
 Interpretation. The two sweeps disagree in sign, and the matched-difficulty sweep agrees with the overlap
 dependence suggested by Theorem~\ref{thm:sexp3}, although this experiment uses the single-copy
-variant rather than the interleaved one that theorem analyses. Overlap is what pooling exploits, and study~6
-measures overlap confounded with an instance becoming trivial.
+variant rather than the interleaved one that theorem analyses. Overlap is what pooling exploits,
+and the unmatched sweep measures overlap confounded with an instance becoming trivial.
 
 Limitation. At the two highest overlaps some seeds cannot reach the common target and the
 realized difficulty is $5$ to $13$ per cent below it, so the matching is close rather than exact.
 Since a smaller gap should if anything shrink the advantage, the measured rise is conservative in
 that direction. The matched gains are also smaller in magnitude than the unmatched ones, which is
 what fixing the difficulty costs.
-
-\textbf{Study~10b. The matched-difficulty trend survives a second configuration.} Study~10 is a single
-design point, so the same procedure was re-run at $K=20$, $|\Sset|=12$, $T=8000$, $d=20$ and $20$
-paired seeds, with the common target lowered to $500$ so that it is reachable at every overlap.
-Nothing else changes.
-
-\begin{center}\small
-\begin{tabular}{@{}rrrrrr@{}}
-\toprule
-overlap & $\vhat$ & $R_{\text{unif}}$ & state & action & paired gain \\
-\midrule
-0.00 & 3.440 & 500.0 & 364.7 & 407.2 & $42.5\pm8.2$ \\
-0.35 & 2.225 & 500.0 & 346.8 & 401.3 & $54.6\pm8.3$ \\
-0.65 & 1.518 & 500.0 & 309.3 & 372.4 & $63.2\pm6.4$ \\
-0.85 & 1.240 & 493.6 & 271.8 & 346.0 & $74.3\pm7.2$ \\
-0.95 & 1.191 & 490.1 & 256.9 & 327.6 & $70.7\pm7.8$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Observed. The relative gain rises from $10.4$ to $21.6$ per cent as $\vhat$ falls from $3.440$ to
-$1.191$, and the correlation between $\vhat$ and the absolute gain is $-0.972$ against study~10's
-$-0.929$. Realized difficulty spans $490.1$ to $500.0$, a $1.020$ times spread, so the matching is
-tighter here than in study~10.
-
-Interpretation. The direction study~10 reports is not an artifact of its single configuration. Two
-independent design points, differing in $K$, $|\Sset|$, $T$ and $d$, give the same sign and a
-comparable magnitude.
-
-Limitation. Both configurations use the same construction and the same matching routine, so this
-tests configuration sensitivity and not construction sensitivity. Both run the practical $m=1$
-variant. An earlier attempt at this replication silently failed because
-\texttt{match\_scale} binds its target as a default argument, so the bisection saturated and the
-difficulty was never matched; the run reported here passes the target explicitly.
 
 \begin{figure}[t]
 \centering
@@ -852,11 +800,13 @@ is describable and self-consistent, not that any deployed system occupies it. Th
 covered by Theorem~\ref{thm:m1}, and the environment has no adversarial component, so it exercises the
 pooling channel and not the drift channel.
 
-\textbf{Study~16. Pooling still helps against the strongest published algorithm.} Every
+\textbf{Study~16. Pooling still helps against a rate-optimal delayed-bandit algorithm.} Every
 comparison so far is against action-level weighting, \textsc{EXP3-IX}, naive sharing, or the
-best-state rule. None is the strongest published method for delayed feedback: that is the hybrid
-Tsallis-plus-entropy \textsc{FTRL} of \citet{zimmert2020}, whose delay term is additive rather
-than multiplicative. We run it on both headline families, with the same environments, seeds and
+best-state rule. None attains the optimal rate for delayed feedback. The hybrid
+Tsallis-plus-entropy \textsc{FTRL} of \citet{zimmert2020} does, its delay term being additive
+rather than multiplicative, and the algorithms published since match that adversarial rate rather
+than improve on it, adding adaptivity to stochastic instances instead
+\citep{schlisselberg2025}. All of them read the action alone. We run it on both headline families, with the same environments, seeds and
 delay convention, under three tunings.
 
 \begin{center}\small
@@ -887,7 +837,7 @@ by more, $66.8$ to $98.9$ per cent. With \citet{zimmert2020} at its grid-best an
 Interpretation. No column is a symmetric protocol. The two grids are finite and unequal, and
 \textsc{State-EXP3}'s grid-best sits at its top multiplier in every cell, so its own minimum may
 lie outside the range searched; the truncation runs against \textsc{State-EXP3}. Where it is not
-held to the worse tuning of the two, the state channel helps against the strongest published
+held to the worse tuning of the two, the state channel helps against a rate-optimal
 method, which is expected, since that method is action-level by construction and cannot read the
 state at all. Grid tuning helps \textsc{State-EXP3} far more than it helps \citet{zimmert2020},
 which is consistent with pooling cutting estimator variance and lower variance admitting a larger
@@ -899,12 +849,12 @@ best on benign instances. Every grid-best multiplier is chosen by reading these 
 none of the last three columns is a procedure a practitioner could run; only the first is. Eight
 paired seeds on the funnel and ten on the matched sweep.
 
-Taken together these studies cover both channels. Studies 1, 6, 10 and 14 probe the state channel
-and are consistent with the effective dimension, rather than $|\Sset|$ or $K$, governing what
-pooling buys; study~10 had to control for task difficulty before study~6's sweep
-pointed that way. Study~14 is the only one whose matrix is not drawn from a Dirichlet and reports
-the largest margins here, on a structure imposed by hand rather than measured. Study~16 places
-\textsc{State-EXP3} against the strongest published method: ahead in every cell when both are tuned
+Taken together these studies cover both channels. Studies~1, 10 and~14 probe the state channel and
+are consistent with the effective dimension, rather than $|\Sset|$ or $K$, governing what pooling
+buys; study~10 had to control for task difficulty before an overlap sweep pointed that way.
+Study~14 is the only one whose matrix is not drawn from a Dirichlet and reports the largest margins
+here, on a structure imposed by hand rather than measured. Study~16 places
+\textsc{State-EXP3} against a rate-optimal delayed-bandit method: ahead in every cell when both are tuned
 alike, behind in four of six when that method alone is grid-tuned.
 
 \section{Proof of Theorem~\ref{thm:m1}: additive delay without interleaving}\label{app:m1}
