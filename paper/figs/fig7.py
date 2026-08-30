@@ -14,8 +14,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter, ScalarFormatter
 
-V = np.load("../code/funnel_vbar_scaling.npz")
-F = np.load("../code/funnel.npz")
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
+V = np.load(_CODE / "funnel_vbar_scaling.npz")
+F = np.load(_CODE / "funnel.npz")
 
 FIG_W, FIG_H = 5.5, 1.62
 fig = plt.figure(figsize=(FIG_W, FIG_H))

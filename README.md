@@ -66,20 +66,21 @@ The `.npz` files are committed, so every figure rebuilds without rerunning an ex
 
 | figure | builder | reads |
 |---|---|---|
-| 1 | `paper/fig1.py` | `code/matched_control.npz` (study 10) |
-| 2 | `paper/fig2.py` | `code/phase.npz` (`phase_diagram.py`) |
-| 3 | `paper/fig3.py` | `code/drift_scaling.npz` (study 8) |
-| 4 | `paper/fig5.py` | `code/matched_control.npz`, `code/alpha_kappa.npz` (studies 10, 11) |
-| 5 | `paper/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
+| 1 | `paper/figs/fig1.py` | `code/matched_control.npz` (study 10) |
+| 2 | `paper/figs/fig2.py` | `code/phase.npz` (`phase_diagram.py`) |
+| 3 | `paper/figs/fig3.py` | `code/drift_scaling.npz` (study 8) |
+| 4 | `paper/figs/fig5.py` | `code/matched_control.npz`, `code/alpha_kappa.npz` (studies 10, 11) |
+| 5 | `paper/figs/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
 
 `fig4.py`, `fig6.py` and `fig8.py` still build, and their `.npz` inputs are committed, but the
 studies they illustrate are now summarised in a table rather than reported at length, so the paper
 no longer includes them.
 
-    cd paper
-    python3 fig1.py && python3 fig2.py && python3 fig3.py \
-        && python3 fig5.py && python3 fig7.py \
-        && tectonic -X compile main.tex
+    cd paper/figs && python3 fig1.py && python3 fig2.py && python3 fig3.py \
+        && python3 fig5.py && python3 fig7.py
+    cd .. && tectonic -X compile main.tex
+
+Figure builders resolve their inputs relative to the script, so they run from any directory.
 
 Figure 1's right panel reads study 10 rather than study 6, because study 6's overlap sweep does
 not hold task difficulty fixed and study 10 shows the trend reverses once it does.

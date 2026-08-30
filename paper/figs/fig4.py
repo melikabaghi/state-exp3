@@ -19,7 +19,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-D = np.load("../code/scaling_3d.npz")
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
+D = np.load(_CODE / "scaling_3d.npz")
 v, d, T, K = D["vbar"], D["d"], D["T"], 40
 norm = D["s_int"] / np.sqrt((d + 1) * v * T * np.log(K))
 
@@ -44,6 +47,7 @@ axL.set_yticks([0.0, 0.2, 0.4, 0.6])
 axL.tick_params(labelsize=6.0, length=2, pad=1.5, which="major")
 axL.tick_params(length=1.2, which="minor")
 from matplotlib.ticker import NullFormatter, ScalarFormatter
+
 axL.xaxis.set_minor_formatter(NullFormatter())
 axL.xaxis.set_major_formatter(ScalarFormatter())
 axL.text(2700, 0.635, rf"$\bar v={top:.2f}$", fontsize=6.2, color="#111111")

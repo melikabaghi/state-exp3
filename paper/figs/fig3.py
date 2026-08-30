@@ -13,7 +13,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-D = np.load("../code/drift_scaling.npz")
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
+D = np.load(_CODE / "drift_scaling.npz")
 
 POL = [("uniform", "uniform", "#666666", "o"),
        ("exp3", "action-level EXP3", "#0173B2", "s"),
@@ -44,6 +47,7 @@ axL.set_ylabel("measured regret", fontsize=6.6, labelpad=1.5)
 axL.tick_params(labelsize=6.0, length=2, pad=1.5, which="major")
 axL.tick_params(length=1.2, which="minor")
 from matplotlib.ticker import NullFormatter
+
 axL.xaxis.set_minor_formatter(NullFormatter())
 axL.yaxis.set_minor_formatter(NullFormatter())
 for sp in ("top", "right"):

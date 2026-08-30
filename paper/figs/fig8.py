@@ -14,8 +14,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter, ScalarFormatter
 
-B = np.load("../code/baselines.npz")
-G = np.load("../code/baselines_growth.npz")
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
+B = np.load(_CODE / "baselines.npz")
+G = np.load(_CODE / "baselines_growth.npz")
 
 FAMS = [("dirichlet_d10", "Dir\n$d$=10"), ("dirichlet_d50", "Dir\n$d$=50"),
         ("funnel_d10", "fun\n$d$=10"), ("funnel_d50", "fun\n$d$=50"),

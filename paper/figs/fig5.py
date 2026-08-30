@@ -18,8 +18,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter
 
-M = np.load("../code/matched_control.npz")
-A = np.load("../code/alpha_kappa.npz")
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
+M = np.load(_CODE / "matched_control.npz")
+A = np.load(_CODE / "alpha_kappa.npz")
 
 # study 6, verbatim from Appendix I, for the unmatched contrast
 S6_V = np.array([2.719, 2.013, 1.532, 1.168, 1.009])

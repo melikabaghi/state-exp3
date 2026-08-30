@@ -16,7 +16,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
 
-D = np.load("../code/phase.npz")
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
+D = np.load(_CODE / "phase.npz")
 gain, vbar, delay, K = D["gain"], D["vbar"], D["delay"], float(D["K"])
 order = np.argsort(vbar)
 v = vbar[order]

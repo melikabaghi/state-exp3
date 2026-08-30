@@ -14,7 +14,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter, ScalarFormatter
 
-C = np.load("../code/certificate_gap.npz")
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
+C = np.load(_CODE / "certificate_gap.npz")
 K = C["K"]
 
 FIG_W, FIG_H = 5.5, 1.66

@@ -22,6 +22,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from pathlib import Path as _Path
+_CODE = _Path(__file__).resolve().parent.parent.parent / "code"
+
 # colour-blind safe (blue / orange / grey), no red-green pairing
 C_EARLY, C_LATE, C_GREY = "#0173B2", "#DE8F05", "#666666"
 
@@ -72,7 +75,7 @@ for sp in ("top", "right", "left"): axB.spines[sp].set_visible(False)
 
 # ---------------------------------------------------------------- (c) measured gain
 # Appendix I study 10, read from disk so this panel cannot drift from the table.
-M = np.load("../code/matched_control.npz")
+M = np.load(_CODE / "matched_control.npz")
 vbar = M["vbar"]
 rel = 100.0 * M["gain"] / M["action"]
 rel_se = 100.0 * M["gain_se"] / M["action"]
