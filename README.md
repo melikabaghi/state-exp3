@@ -25,8 +25,9 @@ tectonic 0.16.9.
 
 ## Reproducing the paper
 
-Appendix I reports sixteen numbered studies. One file per study, in the order they appear,
-followed by two checks that belong to appendices rather than to a numbered study.
+Appendix I runs sixteen numbered studies: six are reported at length and the other ten are
+summarised in a table there. One file per study, in the order they appear, followed by two checks
+that belong to appendices rather than to a numbered study.
 
     cd code
     python3 state_exp3_experiment.py     # study 1, does the bound hold and does pooling help
@@ -68,15 +69,16 @@ The `.npz` files are committed, so every figure rebuilds without rerunning an ex
 | 1 | `paper/fig1.py` | `code/matched_control.npz` (study 10) |
 | 2 | `paper/fig2.py` | `code/phase.npz` (`phase_diagram.py`) |
 | 3 | `paper/fig3.py` | `code/drift_scaling.npz` (study 8) |
-| 4 | `paper/fig4.py` | `code/scaling_3d.npz` (study 9) |
-| 5 | `paper/fig5.py` | `code/matched_control.npz`, `code/alpha_kappa.npz` (studies 10, 11) |
-| 6 | `paper/fig6.py` | `code/certificate_gap.npz` (study 12) |
-| 7 | `paper/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
-| 8 | `paper/fig8.py` | `code/baselines.npz`, `code/baselines_growth.npz` (study 15) |
+| 4 | `paper/fig5.py` | `code/matched_control.npz`, `code/alpha_kappa.npz` (studies 10, 11) |
+| 5 | `paper/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
+
+`fig4.py`, `fig6.py` and `fig8.py` still build, and their `.npz` inputs are committed, but the
+studies they illustrate are now summarised in a table rather than reported at length, so the paper
+no longer includes them.
 
     cd paper
-    python3 fig1.py && python3 fig2.py && python3 fig3.py && python3 fig4.py \
-        && python3 fig5.py && python3 fig6.py && python3 fig7.py && python3 fig8.py \
+    python3 fig1.py && python3 fig2.py && python3 fig3.py \
+        && python3 fig5.py && python3 fig7.py \
         && tectonic -X compile main.tex
 
 Figure 1's right panel reads study 10 rather than study 6, because study 6's overlap sweep does

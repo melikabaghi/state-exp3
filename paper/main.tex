@@ -298,7 +298,6 @@ once, at $\Ot(\sqrt{KT}+\sqrt{d\,\etwo\log K})$; that remains unproved.
 \bibitem[Hsieh et al.(2022)]{hsieh2022} Y.-G.~Hsieh, F.~Iutzeler, J.~Malick, and P.~Mertikopoulos. Multi-agent online optimization with delays. \emph{JMLR}, 23, 2022.
 \bibitem[Joulani et al.(2013)]{joulani2013} P.~Joulani, A.~Gy\"orgy, and C.~Szepesv\'ari. Online learning under delayed feedback. \emph{ICML}, 2013.
 \bibitem[Mussi et al.(2024)]{mussi2024} M.~Mussi, S.~Drago, M.~Restelli, and A.~M.~Metelli. Factored-reward bandits with intermediate observations. \emph{ICML}, PMLR 235, 2024.
-\bibitem[Neu(2015)]{neu2015} G.~Neu. Explore no more: improved high-probability regret bounds for non-stochastic bandits. \emph{NeurIPS}, 28, 2015.
 \bibitem[Thune et al.(2019)]{thune2019} T.~S.~Thune, N.~Cesa-Bianchi, and Y.~Seldin. Nonstochastic multiarmed bandits with unrestricted delays. \emph{NeurIPS}, 32, 2019.
 \bibitem[Vernade et al.(2020)]{vernade2020} C.~Vernade, A.~Gy\"orgy, and T.~Mann. Non-stationary delayed bandits with intermediate observations. \emph{ICML}, PMLR 119, 2020.
 \bibitem[Wang et al.(2026)]{wang2026} S.~Wang, A.~Barik, and V.~Y.~F.~Tan. Bandit convex optimization with gradient prediction adaptivity. \emph{arXiv:2605.22191}, 2026.
@@ -1045,15 +1044,12 @@ target term or a probability floor narrowing the delay regime.
 
 \section{Numerical detail}\label{app:num}
 
-Sixteen studies, alongside Figure~\ref{fig:phase}, which sweeps row overlap against delay in
-the three settings the studies treat separately, $P$ known, $P$ estimated, and states coarsened.
-Studies one to thirteen draw $P$ from a Dirichlet and studies~fourteen to sixteen do not
-throughout. \textsc{State-EXP3} is beaten in study~fifteen, and in four of six cells of
-study~sixteen when the baseline alone is grid-tuned.
-Each study reports an observation, an interpretation, and a limitation. Studies~8 and~9
-ask whether the two theorems describe the right \emph{dependence} rather than whether a bound
-holds, which is the question a loose bound leaves open. Study~10 is a control for study~6 and
-reverses its conclusion, and study~13 reports a rule that does not work. All policies run on the
+Sixteen studies were run. The six that bear on the claim are reported at length below, each with
+an observation, an interpretation and a limitation; the other ten are summarised in one table at
+the end. Studies one to thirteen draw $P$ from a Dirichlet and fourteen to sixteen do not.
+\textsc{State-EXP3} is beaten in study~fifteen, and in four of six cells of study~sixteen when the
+baseline alone is grid-tuned. Study~10 is a control for study~6 and reverses its conclusion. All
+policies run on the
 same environment parameters and common random-number streams, so a seed fixes everything except
 which estimator is formed, and differences are taken within a seed before averaging. Round $r$'s outcome is consumed before round $r+d+1$, matching
 Section~\ref{sec:setting}. Reported $\pm$ is one standard error of the paired difference. Throughout this appendix,
@@ -1096,140 +1092,6 @@ Limitation. This is one synthetic family with a fixed drift band, the plain vari
 guarantee, and a simulation cannot establish that a bound holds, only that sample-path pseudo-regret stayed
 below it in the runs performed.
 
-\textbf{What does an unknown map cost?} What follows evaluates a practical variant, the plug-in
-estimate with $\hat P_t$ updated every round, no restart, $m=1$ and $\alpha=0.01$, and not the
-warm-start algorithm of Theorem~\ref{thm:unknown}, which freezes $\hat P$ and restarts. Against
-the same algorithm given $P$ and against the action-level baseline, over $60$ paired seeds and at
-mixing rate $\gamma$:
-
-\begin{center}\small
-\begin{tabular}{rrrrrr}
-\toprule
-$K$ & $\gamma$ & known $P$ & plug-in & action-level & plug-in gain \\
-\midrule
- 8 & 0.00 & 366.2 & 365.3 & 385.4 & $20.0\pm4.3$ \\
-20 & 0.00 & 480.3 & 477.9 & 529.0 & $51.2\pm7.6$ \\
-40 & 0.00 & 582.8 & 585.3 & 710.2 & $124.8\pm11.2$ \\
-80 & 0.00 & 625.2 & 623.1 & 802.2 & $179.1\pm12.9$ \\
-\midrule
-40 & 0.02 & 590.5 & 592.8 & 712.9 & $120.1\pm10.4$ \\
-40 & 0.10 & 618.9 & 623.5 & 735.5 & $112.0\pm10.1$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Observed. The plug-in landed within $0.5$ per cent of known $P$ at every $K$ and beat
-action-level weighting by $20$ to $179$ as $K$ rose tenfold. Forced exploration did not help,
-$\gamma=0$ being best at every $K$. At $K=40$ the sampled maps have $\kappa\approx1.14$, so the
-exploration term $(\kappa|\Sset|)^{2/5}K^{1/5}T^{4/5}$ of Theorem~\ref{thm:unknown} evaluates to
-about $6100$ and its leading term to about $2700$, against sample-path pseudo-regret $585$ and against
-$\sqrt{KT}=632$.
-
-Interpretation. Estimating $P$ is nearly free on this family, and the gap between the analysis and
-the behavior is an order of magnitude, so the analysis rather than the method looks conservative.
-
-Limitation. The variant run here has no guarantee of its own, so the comparison is against a rate
-proved for a different algorithm. That $\gamma=0$ wins is a statement about this family rather
-than about the algorithm, which the next study tests.
-
-\textbf{Where does the plug-in fail?} The family above is mild. Five deliberately hostile maps at
-$K=40$, $|\Sset|=8$, $T=8000$, $d=50$ and $30$ paired seeds, with $\kappa$ measured on each: a
-best action reachable only through a state the others rarely produce, a sensor whose mass sits on
-one state, a state of probability $10^{-3}$ everywhere, a deterministic map, and one whose good
-action's early visits are unrepresentative.
-
-\begin{center}\small
-\begin{tabular}{lrrrrrrr}
-\toprule
-& & & & \multicolumn{4}{c}{plug-in at mixing rate $\gamma$} \\
-\cmidrule(l){5-8}
-environment & $\kappa$ & known $P$ & action-level & $0$ & $0.01$ & $0.05$ & $0.20$ \\
-\midrule
-rare optimal action & 125.9 & 950.7 & 1302.3 & 948.2 & 976.8 & 1087.8 & 1503.0 \\
-unbalanced coverage & 152.7 & 483.4 & 604.4 & 474.1 & 476.2 & 487.0 & 531.8 \\
-near-unreachable state & 108.8 & 552.9 & 650.4 & 559.5 & 563.3 & 575.8 & 624.7 \\
-deterministic rows & 2.5 & 556.3 & 733.7 & 571.9 & 585.9 & 653.9 & 904.3 \\
-misleading early visits & 1.5 & 674.0 & 847.2 & 679.9 & 688.0 & 716.8 & 834.3 \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Observed. The plug-in beat action-level weighting on all five, including two with $\kappa$ above
-$100$, and forced exploration cost regret in every cell. At the Laplace default $\alpha=1$ the
-deterministic map is the one case where the plug-in \emph{loses} to action-level weighting,
-$750.3$ against $733.7$. Sweeping $\alpha$ over $1$, $0.3$, $0.1$, $0.03$, $0.01$ gives $750.3$,
-$642.5$, $601.4$, $581.1$, $571.9$ there and is monotone on all five, and $\alpha=0.01$ is what
-the tables above use.
-
-Interpretation. The mixing rate that Theorem~\ref{thm:unknown} tunes is doing analytic work rather
-than algorithmic work. The single loss has an identifiable mechanism, since one visit to a
-deterministic row is recorded as $\hat P(s\mid a)=2/(1+|\Sset|)$ rather than $1$, so rarely played
-actions are scored as if spread over states they never reach.
-
-Limitation. The leading rate is indifferent to fixed $\alpha$ and the algorithm is not, which is
-worth stating rather than tuning away. These five maps show that hostility to the plug-in is
-survivable at a small constant, not that it is harmless, and no map adversarial to the smoothing
-constant itself was constructed.
-
-\textbf{Does safe blending recover the pooling gain, and if not why not?} The rule of Theorem~\ref{thm:safe}, run in the $m=1$ variant like
-everything else in this appendix rather than in the analyzed $m=d+1$ one, was compared against its
-two ingredients at $K=40$, $|\Sset|=8$, $d=50$ and $20$ paired seeds. Measuring the realized bias
-against the certificate's own budget locates the outcome. At $K=40$, $|\Sset|=8$, $T=8000$,
-$d=50$ and $12$ seeds the per-round budget $\tfrac\eta2(K-2|\Sset|)$ sums to $307.3$ over the
-horizon, and
-
-\begin{center}\small
-\begin{tabular}{rrl}
-\toprule
-summed & versus budget & quantity \\
-\midrule
-128.7 & $0.42\times$ & what the regret charges, $\sum_t|\langle x_t,b_t\rangle-b_t(a^\star)|$ \\
-513.7 & $1.67\times$ & what Proposition~\ref{prop:plugin} charges, $\sum_t\max_a|b_t(a)|$ \\
-32000.0 & $104\times$ & what the algorithm can verify, Hoeffding radii \\
-32000.0 & $104\times$ & the same with Bernstein radii \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Observed. The rule reproduced action-level regret to the digit in every cell, $533.2$, $754.4$
-and $1317.0$ at $T=8000$ on the Dirichlet, deterministic and rare-optimal families and $2304.6$,
-$2023.5$ and $3108.8$ at $T=50000$, against a plug-in that scores $464.8$, $585.5$, $956.5$ and
-$1770.6$, $1473.5$, $2346.6$ on the same runs. The fraction of round-action pairs it cleared for
-pooling was $0.000$ everywhere, at both horizons, at both smoothing constants, and with the
-confidence logs dropped as well.
-
-Interpretation. The implemented certificate selected no pooling in any run, so the policy
-coincided numerically with the action-level baseline rather than merely matching its guarantee,
-and the table says where that comes from. On this trajectory the realized bias lies below the
-best-case variance budget, so pooling would pay for itself here. The bound of
-Proposition~\ref{prop:plugin} is $1.67$ times the budget with a factor of $4.0$ available between
-it and the truth, so a tight bias bound would close the analytical gap. What the algorithm can
-verify is saturated at the trivial cap of four per round, and Bernstein radii buy nothing over
-Hoeffding ones, which is where the failure lives.
-
-Limitation. Two exact refinements of the bias bound, an oscillation in place of a maximum and a
-Cauchy--Schwarz split into the comparator's effective dimension times a chi-square, give $577.9$
-and $5931.6$ against a truth of $94.1$ over $T=4000$, where the maximum gives $368.0$, so both are
-worse than what they replace. The budget table is one diagnostic trajectory rather than a worst
-case, so it shows this certificate inert here and not that no certificate can clear.
-
-\textbf{Can the denominator be counted instead of predicted?} With $x$ frozen over blocks of
-$400$ and the states of the first half counted, at $K=40$, $|\Sset|=8$, $T=8000$, $d=50$ and $12$
-seeds, the counted denominator gives regret $496.5$ against $499.5$ for the predicted one and a
-comparator bias of $99.6$ against $52.9$, both under the budget of $153.7$ for the pooled half.
-
-Observed. Counting is the noisier of the two on regret and on bias. Computed under uniform play,
-the predicted relative error is vacuous at every setting tried, $K=40$ through $K=4000$, while the
-counted one reads $0.0244$ against a budget of $0.0892$ at $K=1000$ and $T=10^5$.
-
-Interpretation. A prediction pools every action's history while a count uses one block, which is
-why counting is noisier, and yet the counted certificate is the better scaled of the two. That
-setting is the first in which any certificate for $\rho_t$ clears at all.
-
-Limitation. The window that buys it is $53$ per cent of the horizon, and the frozen-block regret
-at that window, $1.2\times10^7$, exceeds the $2.6\times10^4$ the pooling was meant to improve, so
-what clears is the certificate and not a usable algorithm.
-
 \textbf{Does the effective dimension, rather than $|\Sset|$, govern the gain?} Holding
 $|\Sset|=8$, $K=40$, $T=5000$, $d=20$ and $24$ seeds, and varying only the overlap between the
 rows of $P$, the measured mean of $v_t$ moves while $|\Sset|$ does not:
@@ -1259,36 +1121,6 @@ Limitation. The two estimators do not become the same object at $v_t\approx1$. R
 $P$ agree, so every action induces the same loss and both regrets collapse, making that endpoint
 uninformative rather than favorable. One parameter of one map family was varied, so the sweep is
 consistent with the effective dimension governing the gain rather than establishing it.
-
-\textbf{Is there a bias-variance trade in the representation?} With $16$ raw states drawn from
-four latent clusters, $K=40$, $T=6000$, $d=20$ and $24$ seeds, running the algorithm on nested
-groupings of size $1,2,4,8,16$ gives, for the analyzed $m=d+1$ variant, regret
-$1590$, $831$, $754$, $920$, $1080$ at within-cluster heterogeneity $0$, with mean $v_t$ rising
-$1.000$, $1.122$, $1.435$, $1.663$, $2.089$ and $\delta_t(g)$ falling $0.700$, $0.275$, $0$, $0$,
-$0$.
-
-Observed. The minimum sits at four groups, the number of latent clusters, and stays there at
-heterogeneity $0.12$, where regret reads $1657$, $885$, $787$, $960$, $1113$. Sample-path pseudo-regret
-stayed below the bound of Theorem~\ref{thm:rep} in every cell. The bound's own optimum agrees at
-heterogeneity $0$, where it reads $9364$, $4321$, $1155$, $1243$, $1394$ and also selects four
-groups, but not at $0.12$, where it reads $11128$, $6073$, $3430$, $3231$, $1385$ and selects the
-finest representation.
-
-Interpretation. A trade-off in the representation exists and is located at the latent structure,
-which is what Theorem~\ref{thm:rep} describes qualitatively.
-
-Limitation. The bias term $2\sum_t\delta_t(g)$ is the conservative half of the trade, so the
-theorem certifies a trade-off whose location it does not predict once groups are heterogeneous,
-and the latent cluster count was known to the experimenter and not to any algorithm.
-
-Separately, on the construction of Theorem~\ref{thm:lower} with $h=d$ the mean pseudo-regret over
-$400$ seeds is $44.1$ against a predicted fluctuation of $40.5$, and of the five policies compared
-there the four without access to the block signs attain expected loss within $0.05\%$ of $T/2$, as
-Lemma~\ref{lem:iso} predicts, while the one given them attains pseudo-regret $-954$. The code producing every reported number and figure is at
-\expandafter\url\expandafter{\repourl}. It pins the software environment used for the reported
-numbers, python 3.14.3 with numpy 2.4.2 and matplotlib 3.10.8, states the seed count for each
-study, lists one command per numbered study, and commits the stored outputs each figure reads so
-that every figure rebuilds without rerunning an experiment.
 
 \begin{figure}[t]
 \centering
@@ -1327,42 +1159,44 @@ exercised and the $T/d$ saturation branch, which needs $d$ comparable to $T$, is
 lower bound quantifies over all algorithms and four policies cannot establish that. What these
 runs check is the scaling of the construction.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{fig4.pdf}
-\caption{Study~9, the state channel. The plotted ratio would be flat if
-Theorem~\ref{thm:sexp3} captured the dependence on all three of $T$, $d$ and $\vhat$.
-\textbf{Left,} horizon sweep at the largest effective dimension, one line per delay.
-\textbf{Right,} every cell with $\vhat>1.05$ against rounds per interleaved copy, where the
-three delays fall on one curve.}
-\label{fig:scal}
-\end{figure}
 
-\textbf{Does Theorem~\ref{thm:sexp3} describe the right dependence on $T$, $d$ and $\vhat$?} A
-$4\times3\times5$ grid in row overlap, delay and horizon at $K=40$, $|\Sset|=8$ and five paired
-seeds, running the analyzed $m=d+1$ variant and reporting $R/\sqrt{(d+1)\vhat T\log K}$. A raw
-regret table cannot answer this and neither can a bound that holds with room to spare, since the
-question is about dependence rather than level.
+\textbf{The remaining studies in brief.} Ten further studies are summarised here rather than
+reported at length, since none of them bears directly on the claim of Section~\ref{sec:num}. Each
+was run under the same conventions, and the numbers below are what the runs produced.
 
-Observed. Over the full grid the ratio spans $35.9$ times, from $0.016$ to $0.579$. Dropping the
-near-degenerate column at $\vhat=1.013$ leaves $7.1$ times over $45$ cells. At $\vhat=3.656$ and
-$d=10$ it moves only $1.35$ times across a sixteenfold range of $T$, and at $d=200$ it moves
-$2.57$ times. Against rounds per interleaved copy $T/(d+1)$ the three delays fall on one
-increasing curve (Figure~\ref{fig:scal}).
+\begin{center}\footnotesize
+\begin{tabular}{@{}p{0.31\textwidth}p{0.63\textwidth}@{}}
+\toprule
+Question & What the runs showed \\
+\midrule
+What does an unknown map cost? & The online plug-in stays within $0.5$ per cent of known $P$ at
+every $K$ and beats action-level weighting by $20$ to $179$ as $K$ rises tenfold; forced
+exploration never helped, $\gamma=0$ being best at every $K$. \\
+Where does the plug-in fail? & On five deliberately hostile maps it still beat action-level
+weighting, two of them with $\kappa$ above $100$, and forced exploration cost regret in every
+cell. The Laplace default is not the best smoothing. \\
+Does safe blending recover the pooling gain? & No. The rule reproduces action-level regret to the
+digit, so its guarantee is safe and the algorithm is inert. \\
+Can the denominator be counted rather than predicted? & Counting is the noisier of the two on
+regret and on bias, and the predicted relative error is vacuous from $K=40$ through $K=4000$. \\
+Is there a bias-variance trade in the representation? & Yes. Regret is lowest at four groups, the
+number of latent clusters, and stays there under heterogeneity $0.12$. \\
+Does the rotating bound describe the right dependence on $T$, $d$ and $\vhat$? & Partly. The ratio
+$R/\sqrt{(d+1)\vhat T\log K}$ spans $35.9$ times over the grid, $7.1$ times once a near-degenerate
+column is dropped, so the bound tracks the shape and not the constant. \\
+Is the plug-in fragile in the smoothing constant? & No cell of thirty loses to action-level
+weighting, and the gain roughly doubles as $\alpha$ falls from $1$ to $0.03$. \\
+How far is the method from its certificate? & The plug-in stays within $1.6$ per cent of known
+$P$, while the certificates themselves are far looser than the measured arms. \\
+Can the coarsening be chosen from data? & No. The rule selects $15$ groups at heterogeneity $0$
+and $16$ at $0.12$ against a true count of four. Learning $g$ remains open. \\
+Which assumption produces which benefit? & A best-state rule leads seven of the nine settings and
+\textsc{State-EXP3} two, but where the rule's assumption fails its regret grows linearly and its
+spread across seeds is four times ours. \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-Interpretation. The data are consistent with the predicted $\sqrt T$ dependence once each interleaved copy
-receives enough rounds, while much of the remaining variation is associated with the number of
-rounds available to each copy. At
-$d=200$ and $T=2500$ each of the $201$ copies sees $12$ rounds, so that cell is nowhere near the
-regime the bound describes. Together with the $m=1$ comparison in Study~1, this suggests that much of the observed delay
-penalty comes from the interleaving device used in the analysis rather than from the pooled
-estimator itself.
-
-Limitation. The degenerate column is degenerate for the reason study~6 gives, since at
-$\vhat\approx1$ the rows of $P$ agree, every action induces nearly the same loss, and both
-regrets collapse for a reason the bound cannot see. One natural explanation for the remaining
-looseness is ruled out rather than confirmed, since the realized $\sum_tv_t$ lies within $1.01$ to
-$1.49$ of the budget $\vhat T$, so the sup over play distributions is not the source.
 
 \begin{figure}[t]
 \centering
@@ -1371,8 +1205,9 @@ $1.49$ of the budget $\vhat T$, so the sup over play distributions is not the so
 difficulty fixed. Matching the uniform-play regret reverses the trend, supporting the interpretation that the
 decline in Study~6 is driven by task-difficulty confounding rather than by the pooling mechanism
 itself. Bars are one standard error of the paired
-difference. \textbf{Right,} study~11, regret saved against action-level weighting over the
-smoothing pseudocount and the sensor balance, $10$ paired seeds per cell.}
+difference. \textbf{Right,} regret saved against action-level weighting over the smoothing
+pseudocount and the sensor balance, $10$ paired seeds per cell, from the plug-in sensitivity study
+summarised in the closing table.}
 \label{fig:matched}
 \end{figure}
 
@@ -1438,100 +1273,6 @@ variant. An earlier attempt at this replication silently failed because
 \texttt{match\_scale} binds its target as a default argument, so the bisection saturated and the
 difficulty was never matched; the run reported here passes the target explicitly.
 
-\textbf{Is the plug-in fragile in the smoothing constant, and does that depend on coverage?}
-Study~3 reports one map where the plug-in loses at $\alpha=1$ and recovers as $\alpha$ falls,
-which is an anecdote about a single instance. Here $\alpha$ is swept over $1$ to $0.003$ against
-the sensor balance $\kappa$ of Theorem~\ref{thm:unknown}, controlled from $1.2$ to $76$ by
-placing mass $\rho$ on one scarce state and drawing rows around that mean, at $K=40$,
-$|\Sset|=8$, $T=8000$, $d=50$ and $10$ paired seeds.
-
-Observed. No cell loses to action-level weighting, the gain running from $28.3$ to $66.9$ over
-the $30$ cells. The gain roughly doubles as $\alpha$ falls from $1$ to $0.03$ and is flat below
-that, while moving along $\kappa$ at fixed $\alpha$ changes it far less, the worst-to-best
-plug-in regret within a $\kappa$ column being $1.07$. At the better $\alpha$ the plug-in is
-indistinguishable from known $P$, the paired difference clearing two standard errors in one of
-the five columns and changing sign in another.
-
-Interpretation. Of the two parameters the analysis names, the one that matters here is the one
-the analysis treats as free. A Laplace default costs about half the available gain at every
-coverage level tried, and coverage imbalance over a sixtyfold range costs much less than that.
-Taken with study~2 this is further evidence that the difficulty in the unknown-$P$ setting is
-certification rather than estimation.
-
-Limitation. This is one map family with $\kappa$ varied through a single scarce state, so it does
-not rule out a construction in which $\kappa$ is the binding parameter, and Theorem~\ref{thm:unknown}
-still carries $\kappa$ for a worst case this family need not contain. The flatness below
-$\alpha=0.03$ says the leading behavior stops moving, not that any fixed $\alpha$ is safe at every
-horizon.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{fig6.pdf}
-\caption{Study~12. \textbf{Left,} the three measured arms and the two certificates on one axis,
-$|\Sset|=8$, $T=5000$, $d=50$, $12$ paired seeds, every measured arm at $m=1$. The shaded region
-is what the analysis costs rather than what the method does. \textbf{Right,} the same measured
-arms rescaled with the certificates removed, which is the only way to see that known $P$ and the
-plug-in coincide. Bars are one standard error.}
-\label{fig:cert}
-\end{figure}
-
-\textbf{How far is the method from its certificate, and the certificate from useful?} Study~2
-reports these numbers in separate columns, leaving the reader to assemble them. Here action-level
-weighting, \textsc{State-EXP3} with $P$ given, and the same estimator with $\hat P_t$ updated
-every round are measured on the same paired seeds across $K$ from $8$ to $160$, and drawn beside
-the two certificates. Theorem~\ref{thm:sexp3} is the certificate for known $P$ and analyzes
-$m=d+1$, while Theorem~\ref{thm:unknown} is the warm-start rate and analyzes an algorithm that
-freezes $\hat P$ and restarts, so both are plotted to show the size of a gap and not as like for
-like.
-
-Observed. The plug-in stays within $1.6$ per cent of known $P$ at every $K$, the two curves being
-visually indistinguishable, while action-level weighting costs $1.4$ to $17.4$ per cent more
-than the plug-in as $K$ rises twentyfold. Theorem~\ref{thm:sexp3} sits $10.7$ to $14.8$ times
-above the measured plug-in and Theorem~\ref{thm:unknown} sits $14.0$ to $18.7$ times above it.
-The warm-start certificate also stays above $\sqrt{KT}$ at every $K$ tried, by factors of $19.2$
-down to $6.6$.
-
-Interpretation. The vertical gap reflects analytical conservatism rather than observed algorithmic performance. Estimating $P$ online is close
-to free on this family, so the order of magnitude between the measured arms and either
-certificate is conservatism in the proof. That the warm-start rate never drops below $\sqrt{KT}$
-here is the concrete form of the statement in Section~\ref{sec:alg} that it does not certify the
-channel it analyzes.
-
-Limitation. The measured arms run $m=1$ and Theorem~\ref{thm:sexp3} analyzes $m=d+1$, and the
-plug-in is not the warm-start algorithm Theorem~\ref{thm:unknown} analyzes, so neither vertical
-gap is a statement about a bound being loose for the algorithm it covers. A conservative bound and
-a well-behaved algorithm are consistent with a third possibility, that the family is easy.
-
-\textbf{Can the coarsening be chosen from data?} Theorem~\ref{thm:rep} takes the representation
-as given and study~7 uses the latent cluster count, which no algorithm knows. This study supplies
-a rule and measures what it costs, with no theorem behind it. A prefix of $1200$ rounds runs the
-identity representation and estimates $\hat\theta(s)$ by averaging the outcomes seen at each
-state. Sorting states by $\hat\theta$ and merging adjacent pairs greedily gives one candidate at
-every granularity from $16$ down to $1$, each scored by the quantity Theorem~\ref{thm:rep}
-bounds, $\sqrt{2(d+1)V(g)\log K}+2\sum_t\hat\delta_t(g)$, and the argmin runs the remaining
-rounds. Against it are the identity, the true clusters, and the best candidate on the ladder
-scored in hindsight, over $24$ paired seeds.
-
-Observed. The rule fails. It selects $15$ groups at heterogeneity $0$ and $16$ at $0.12$, against
-a true cluster count of four, and lands at $912.9\pm30.1$ and $944.7\pm31.1$ where the identity
-gives $921.0\pm30.5$ and $952.7\pm32.4$, so it captures under one per cent of the available gain.
-The true clusters give $843.7\pm27.9$ and $883.0\pm31.1$, and hindsight over the same ladder gives
-$833.5\pm27.8$ and $841.5\pm23.6$.
-
-Interpretation. Hindsight nearly matches the true clusters, so the ladder does contain a good
-representation and the failure is the criterion rather than the candidate set. Measuring
-$\hat\delta$ at the four-group representation locates it. At heterogeneity $0$ the true
-within-group spread is exactly zero while the prefix estimates it at $0.154$, which is sampling
-noise, and the bound multiplies that by $2(T-T_0)$ to give a phantom bias of $1483$ against a real
-variance saving of $1261$. The bias term is the conservative half of Theorem~\ref{thm:rep}, and a
-noisy plug-in estimate of it is enough to forbid every merge.
-
-Limitation. One selector on one family, and a negative result about this rule is not a negative
-result about data-driven selection. The obvious repairs, debiasing $\hat\delta$ for its sampling
-noise or scoring candidates on held-out loss instead of on the bound, are not evaluated here. The
-prefix is also charged to every arm equally, so the comparison understates what a selector that
-spent less on estimation might do.
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig7.pdf}
@@ -1575,62 +1316,6 @@ is describable and self-consistent, not that any deployed system occupies it. Th
 which carries no guarantee, and the environment has no adversarial component, so it exercises the
 pooling channel and not the drift channel.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{fig8.pdf}
-\caption{Study~15. \textbf{Left,} regret relative to the best arm in each family, so $1$ is that
-column's winner, over five policies, nine settings and $10$ paired seeds. The best-state rule
-leads seven columns and \textsc{State-EXP3} leads two. \textbf{Right,} growth in $T$ on the one
-family built so the rule's assumption is false, with fitted exponents. The left panel is a worst
-case over families chosen here; the right panel is why that is not a worst case over the model.}
-\label{fig:base}
-\end{figure}
-
-\textbf{Which assumption produces which benefit?} Comparing against action-level weighting alone
-leaves open whether the gain comes from the state structure or from an implementation detail.
-We run five policies on the same paired seeds over nine settings. Besides action-level weighting
-and \textsc{State-EXP3} they are \textsc{EXP3-IX} \citep{neu2015}, the implicit-exploration variant of \textsc{EXP3}, an importance
-weight; \emph{naive sharing}, which credits $P(S_t\mid a)X_t/\bar p(S_t)$ using the unconditional
-state distribution and so isolates the value of the denominator $q_t=x_t^\top P$ from the value
-of sharing at all; and a \emph{best-state rule}, which estimates $\hat\theta(s)$ online, takes the
-best state, and plays the action most likely to reach it. Two settings are added to the earlier
-families, one where the best action mixes over several good states rather than maximizing the
-single best one, and one that is obliviously nonstationary. Running a bandit over states and
-mapping the values back through $P$ is not a separate baseline, since
-$\sum_sP(s\mid a)\mathbf 1\{S_t=s\}X_t/q_t(s)$ equals $P(S_t\mid a)X_t/q_t(S_t)$ identically, so
-that method \emph{is} \textsc{State-EXP3}.
-
-Observed. \textsc{State-EXP3} does not win most columns. The best-state rule leads seven of the
-nine and \textsc{State-EXP3} leads two, and over these nine settings the rule is also better on
-the median, $1.00$ against $1.47$ times the column winner, and on the worst case, $3.08$ against
-$3.39$ (Figure~\ref{fig:base}). \textsc{EXP3-IX} is $1.5$ to $17.1$ per cent worse than plain
-action-level weighting everywhere, and naive sharing ranges from $18.7$ per cent better to $22.7$
-per cent worse than it. On the spread family the ordering inverts, \textsc{State-EXP3} leading by
-$47.6$ and $22.2$ per cent while the best-state rule falls $61.5$ and $43.0$ per cent behind
-action-level weighting. Sweeping the horizon there, the rule's regret grows with fitted exponent
-$1.00$ and \textsc{State-EXP3}'s with $0.58$.
-
-Interpretation. The best-state rule buys its lead with an assumption, that the best action is the
-one most likely to reach the single best state. Where that holds it is very strong, and in the
-funnel it holds in $10$ of $10$ seeds because engagement depth is ordered, which is why it leads
-there by a factor of two. Where it fails the rule commits to a fixed action and pays regret linear
-in $T$, which no exploration rate repairs, and the exponent of $1.00$ is that happening. The
-comparison therefore separates the assumptions rather than ranking the methods.
-\textsc{State-EXP3} assumes nothing about the shape of $\theta$. Across these nine selected
-settings its largest regret ratio to the column winner is $3.39$, and the rule's suite maximum is
-slightly smaller at $3.08$, but the rule's fitted growth on the spread family is linear.
-Action-level weighting also carries a sublinear guarantee, so what separates the arms here is the
-constant rather than the rate. \textsc{State-EXP3}'s paired standard errors are the smallest of
-the five at $5.8$ per cent of the mean against $23.6$ for the rule. That naive sharing
-can be worse than no sharing is the separate point that the denominator, not the sharing, is what
-Proposition~\ref{prop:pool} buys.
-
-Limitation. Nine settings chosen here are not a worst case over the model, and the median and
-worst-case columns above should be read as describing this set only. A practitioner whose problem
-has the ordered structure of the funnel should use the best-state rule, and this appendix does not
-identify when that structure can be verified in advance. On the drift family no arm's paired difference from
-action-level weighting reaches two standard errors, the largest being the best-state rule's
-$+24.6\pm12.4$, so that column is reported as an absence of signal rather than a result.
 
 \textbf{Does pooling still help against the strongest published delayed-bandit algorithm?} Every
 comparison so far is against action-level weighting, \textsc{EXP3-IX}, naive sharing, or the
@@ -1700,50 +1385,31 @@ Study eight is the drift channel, and its collapse across $d$, $\etwo$ and $J$
 is the strongest evidence here that Theorem~\ref{thm:lower} has the right form. No study runs a
 method that uses both channels, which is the gap Section~\ref{sec:conj} describes.
 
-\section{Why the delay does not become additive}\label{app:additive}
+\section{A route that does not work}\label{app:additive}
 
-Run \textsc{State-EXP3} with $m=1$, so $x_t\propto\exp(-\eta L_t)$ with
-$L_t=\sum_{r\le t-d-1}\hat c_r$. Let $\tilde x_r$ be the iterate that has also absorbed the
-outstanding estimates $G_r=\sum_{s=r-d}^{r-1}\hat c_s\ge0$. Two terms appear.
+Theorem~\ref{thm:m1} is proved in Appendix~\ref{app:m1} by bounding a state-marginal ratio. The
+natural first attempt is different and fails, which is worth recording so the detour is not
+repeated.
 
-The delay term is $\Ex[\langle x_r-\tilde x_r,\hat c_r\rangle]$. Since
-$\tilde x_r(a)\ge x_r(a)e^{-\eta G_r(a)}$ and $1-e^{-z}\le z$, it is at most
-$\eta\Ex[\sum_ax_r(a)G_r(a)\hat c_r(a)]=\eta\sum_{s=r-d}^{r-1}\Ex[\langle x_r,\hat c_s\rangle]$,
-and $x_r$ depends only on rounds $r-d-1$ and earlier, hence on rounds before $s$, so
-$\Ex[\langle x_r,\hat c_s\rangle]=\Ex[\langle x_r,c_s\rangle]\le1$. This term is $\eta dT$ for
-any unbiased estimator, which is the additive form.
+Run \textsc{State-EXP3} with $m=1$ and let $\tilde x_r$ be the iterate that has also absorbed the
+outstanding estimates $G_r=\sum_{s=r-d}^{r-1}\hat c_s\ge0$. The delay term
+$\Ex[\langle x_r-\tilde x_r,\hat c_r\rangle]$ is at most $\eta\sum_{s=r-d}^{r-1}\Ex[\langle
+x_r,\hat c_s\rangle]\le\eta d$ for any unbiased estimator, which is already the additive form. The
+quadratic term is where it stops: the telescoping scores $\sum_ax_{r+d}(a)\hat c_r(a)^2$ while
+Proposition~\ref{prop:pool} bounds the sum against $x_r$, and the substitution costs
+$|\Sset|/Z_r$ with $Z_r=\Ex_{a\sim x_r}[e^{-\eta G_r(a)}]$, hence an exponential moment of
+$\langle x_r,G_r\rangle$.
 
-The quadratic term is where it stops. The telescoping scores
-$\sum_ax_{r+d}(a)\hat c_r(a)^2$, with $x_{r+d}$ the iterate that has absorbed rounds up to $r-1$,
-while Proposition~\ref{prop:pool} bounds the play-weighted sum, the one against $x_r$, by $v_r$.
-Carrying out the substitution,
-$\Ex[\sum_ax_{r+d}(a)\hat c_r(a)^2\mid\cdot]\le\sum_sq_{r+d}(s)/q_r(s)\le|\Sset|/Z_r$ for
-$Z_r=\Ex_{a\sim x_r}[e^{-\eta G_r(a)}]$, and $Z_r\ge e^{-\eta\langle x_r,G_r\rangle}$, so the
-swap costs an exponential moment of $\langle x_r,G_r\rangle$.
-
-No bound on that moment holds uniformly over state distributions. For this estimator
-$\langle x_r,\hat c_s\rangle=q_r(S_s)X_s/q_s(S_s)$, so the quantity is governed by
-$1/q_s(S_s)$, the reciprocal probability of the state actually observed. Its mean is
-$\sum_sq_s(s)/q_s(s)=|\Sset|$, which is why the delay term is fine. For a fixed $q$ of full
-support the exponential moment is finite, $1/q(S)$ being bounded, and what fails is uniformity.
-Already at $|\Sset|=2$ with $q=(\varepsilon,1-\varepsilon)$,
-$\Ex[e^{\eta/q(S)}]\ge\varepsilon e^{\eta/\varepsilon}\to\infty$ as $\varepsilon\to0$ while the
-mean stays at $2$, so no bound in $|\Sset|$ and $\eta$ alone is available, and $q_s$ is set by the
-algorithm's own past play. Measured at $|\Sset|=4$, the mean stays at $4.0$ while
-$\Ex[e^{0.05/q(S)}]$ runs $1.22$, $1.43$ and then $1.3\times10^{21}$ as the smallest state
-probability falls through $0.25$, $0.019$ and $0.0009$.
-
-None of this is needed: Appendix~\ref{app:m1} controls the same swap without any moment of
-$1/Z_r$, by bounding the state-marginal ratio directly. The rest of this section records why the
-route through $1/Z_r$ fails, since it is the natural first attempt.
-
-Flooring $q$ restores the moment and costs the product back. Mixing with the uniform action at
-rate $\gamma$ gives $q_t(s)\ge\gamma\bar p(s)$, so $\eta\langle x_r,G_r\rangle\le1$ needs
-$\gamma\asymp\eta d\kappa|\Sset|$ under the balanced-sensor condition $\bar p(s)\ge1/(\kappa|\Sset|)$,
-and the mixing cost $\gamma T$ then reproduces $\Ot(\sqrt{d\kappa|\Sset|T\log K})$. So the
-obstruction is not an artifact of one device. Empirically it does not bite, $1/Z_r$ staying below
-$1.33$ at the tuned $\eta$ over $d\in\{10,50,200\}$, which is what suggested that the obstruction
-was an artifact of the device rather than of the problem, as Appendix~\ref{app:m1} confirms.
+That moment has no bound uniform over state distributions. Here
+$\langle x_r,\hat c_s\rangle=q_r(S_s)X_s/q_s(S_s)$, governed by the reciprocal probability of the
+state actually observed, whose mean is $|\Sset|$ but whose exponential moment is not uniformly
+finite: already at $|\Sset|=2$ with $q=(\varepsilon,1-\varepsilon)$,
+$\Ex[e^{\eta/q(S)}]\ge\varepsilon e^{\eta/\varepsilon}\to\infty$ while the mean stays at $2$.
+Flooring $q$ restores the moment and costs the product back, since $\eta\langle x_r,G_r\rangle\le1$
+then needs $\gamma\asymp\eta d\kappa|\Sset|$ and the mixing cost $\gamma T$ reproduces
+$\Ot(\sqrt{d\kappa|\Sset|T\log K})$. Empirically the obstruction never bites, $1/Z_r$ staying below
+$1.33$ at the tuned $\eta$ over $d\in\{10,50,200\}$, which is what suggested it was an artifact of
+the device rather than of the problem.
 
 \section{Proof of Theorem~\ref{thm:m1}: additive delay without interleaving}\label{app:m1}
 
