@@ -3,3 +3,4 @@ __pycache__/
 paper/*.aux
 paper/*.log
 paper/*.out
+.DS_Store
