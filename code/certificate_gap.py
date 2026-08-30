@@ -88,9 +88,9 @@ def main() -> None:
             kn.append(run(P, theta, c, K, D, "known", sd))
             pl.append(run(P, theta, c, K, D, "plugin", sd))
         kap = float(np.mean(kaps))
-        # Theorem 1, the certificate for the analysed known-P variant
+        # Theorem 5, the certificate for the rotating known-P variant
         thm1 = np.sqrt(2.0 * (D + 1) * S * T * np.log(K))
-        # Theorem 9, the warm-start rate, exploration term as reported in Appendix I
+        # Theorem 9, the warm-start rate, exploration term as reported in Appendix D
         thm9 = (kap * S) ** 0.4 * K ** 0.2 * T ** 0.8
         rows.append(dict(K=K, kappa=kap, action=float(np.mean(ac)), known=float(np.mean(kn)),
                          plugin=float(np.mean(pl)),
@@ -105,7 +105,7 @@ def main() -> None:
     print("\nratios, all against the measured plug-in")
     for r in rows:
         print(f"  K={r['K']:3d}: known/plug-in {r['known']/r['plugin']:5.3f}   "
-              f"Thm 1 / plug-in {r['thm1']/r['plugin']:6.1f}x   "
+              f"Thm 5 / plug-in {r['thm1']/r['plugin']:6.1f}x   "
               f"Thm 9 / plug-in {r['thm9']/r['plugin']:6.1f}x   "
               f"action / plug-in {r['action']/r['plugin']:5.3f}")
     kn = np.array([r["known"] for r in rows]); pl = np.array([r["plugin"] for r in rows])

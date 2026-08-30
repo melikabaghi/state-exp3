@@ -101,7 +101,7 @@ on how far the losses have moved, which we measure by $\etwo=\sum_t\|c_t-m_t\|_\
 (Figure~\ref{fig:one}). Our lower bound asks
 how much regret this mismatch forces even when $m_t$ is supplied for free.
 
-In short, with $P$ known the number of actions stops setting the price
+In short, when the action-to-state map is known the number of actions stops setting the price
 (Theorem~\ref{thm:m1}), but no algorithm escapes the cost of waiting, even one handed the stale
 losses outright (Theorem~\ref{thm:lower}). An unknown map can be estimated, with a weaker
 guarantee (Appendix~\ref{app:unknown}), and adapting to overlap and drift at once remains open
@@ -259,9 +259,9 @@ protocol (Appendix~\ref{app:num}).
 \caption{\textbf{Where pooling pays.} Relative gain
 $(R_{\text{action}}-R_{\text{state}})/R_{\text{action}}$ of pooling through the state, single copy,
 $K=40$, $|\Sset|=8$, $T=5000$, $12$ paired seeds; blue is a gain. $\vhat$ estimates $\sup_xv(x)$
-for the raw map by Monte Carlo, which for the coarsened panel is not the $\bar v(P^g)$ that
-Theorem~\ref{thm:rep} charges. The dashed line compares two upper bounds for the rotating variant,
-so it is a reference and not a prediction for the variant plotted.}
+for the raw map by Monte Carlo, which for the coarsened panel is not the dimension of the coarsened
+map that Theorem~\ref{thm:rep} charges. The dashed line compares two upper bounds for the rotating
+variant, so it is a reference and not a prediction for the variant plotted.}
 \label{fig:phase}
 \end{figure}
 
@@ -1032,6 +1032,12 @@ exercised and the $T/d$ saturation branch, which needs $d$ comparable to $T$, is
 lower bound quantifies over all algorithms and four policies cannot establish that. What these
 runs check is the scaling of the construction.
 
+
+\textbf{Code and environment.} The code producing every reported number and figure is at
+\expandafter\url\expandafter{\repourl}. It pins the software environment used for the reported
+numbers, python 3.14.3 with numpy 2.4.2 and matplotlib 3.10.8, states the seed count for each
+study, lists one command per numbered study, and commits the stored outputs each figure reads so
+that every figure rebuilds without rerunning an experiment.
 
 \textbf{The remaining studies in brief.} Studies 2--5, 7, 9, 11--13 and 15 are summarised here rather than
 reported at length, since none of them bears directly on the claim of Section~\ref{sec:num}. Each

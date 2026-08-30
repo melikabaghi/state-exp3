@@ -1,4 +1,4 @@
-"""The deterministic drift induction behind Theorem 2 (Appendix K).
+"""The deterministic drift induction behind Theorem 1 (Appendix J).
 
 Theorem 2 needs eta <= 1/(e(d+1)), and its proof rests on a lemma that is claimed to hold
 SURELY, not in expectation:
@@ -14,7 +14,7 @@ so the play-weighted mass of the estimate is bounded by one no matter how small 
 The action-level estimator has K in that position, which is where Cesa-Bianchi, Gentile and
 Mansour (2019) pick up the factor K in their learning-rate condition.
 
-Reproduces the two numeric claims of Appendix K:
+Reproduces the two numeric claims of Appendix J:
   * the funnel study's own learning rates satisfy the cap at every delay it reports;
   * the one-step ratio stays far below the permitted 1 + 1/d.
 

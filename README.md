@@ -3,7 +3,7 @@
 Code and stored outputs for *Pooling and Drift in Delayed Bandits* (ML×OR 2026 workshop,
 non-archival).
 
-Published at <https://github.com/melikabaghi/state-exp3>, which is the URL cited in Appendix I.
+Published at <https://github.com/melikabaghi/state-exp3>, which is the URL cited in Appendix H.
 
 An action produces an intermediate state at once and its loss arrives after a fixed delay
 `d`. Because the outcome's conditional mean depends on the action only through the state it
@@ -25,7 +25,7 @@ tectonic 0.16.9.
 
 ## Reproducing the paper
 
-Appendix I runs sixteen numbered studies: six are reported at length and the other ten are
+Appendix H runs sixteen numbered studies: six are reported at length and the other ten are
 summarised in a table there. One file per study, in the order they appear, followed by two checks
 that belong to appendices rather than to a numbered study.
 
@@ -47,7 +47,7 @@ that belong to appendices rather than to a numbered study.
     python3 funnel.py                    # study 14, the recommendation funnel (no real data)
     python3 baselines.py                 # study 15, the wider baseline set
     python3 sota_check.py                # study 16, vs tuned Zimmert-Seldin
-    python3 drift_induction.py           # Appendix K, the drift induction behind Theorem 1
+    python3 drift_induction.py           # Appendix J, the drift induction behind Theorem 1
     python3 verify_lower.py              # the construction check closing study 7
     python3 phase_diagram.py             # writes phase.npz for Figure 2
 
@@ -56,7 +56,7 @@ construction check quoted at the end of study 7. Study 4 uses two files, and
 `enrichment_experiments.py` covers studies 6 and 7 together.
 
 Every experiment seeds its own generator, so a rerun on the versions above reproduces the tables
-to the digit. Seed counts are stated per study in Appendix I. `vbar` is a Monte-Carlo supremum
+to the digit. Seed counts are stated per study in Appendix H. `vbar` is a Monte-Carlo supremum
 over play distributions, drawn from Dirichlet mixtures of three concentrations; the draw count is
 given in each file.
 
@@ -98,11 +98,11 @@ The distinction matters for reading any table.
 | name | `P` | `m` | proved guarantee | in experiments |
 |---|---|---|---|---|
 | action-level EXP3 | not needed | 1 | yes, standard delayed bound | yes, the baseline |
-| `State-EXP3`, analyzed | known | `d+1` | yes, Theorem 5 (Appendix D) | yes, studies 1 and 9 |
+| `State-EXP3`, analyzed | known | `d+1` | yes, Theorem 5 (Appendix C) | yes, studies 1 and 9 |
 | `State-EXP3`, practical | known | 1 | yes, Theorem 1, in the body | yes, most studies |
 | online plug-in | estimated each round | 1 | no | yes |
-| warm-start unknown-`P` | estimated, frozen, restart | `d+1` | yes, Appendix E, conservative | no |
-| Safe-Pool | estimated | `d+1` | yes, Appendix E | yes, study 4 |
+| warm-start unknown-`P` | estimated, frozen, restart | `d+1` | yes, Appendix D, conservative | no |
+| Safe-Pool | estimated | `d+1` | yes, Appendix D | yes, study 4 |
 | best-state rule | known | n/a | no | yes, study 15 |
 
 Unless a column says `m = d+1`, an experiment runs the practical `m = 1` variant, which
