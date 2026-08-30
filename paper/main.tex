@@ -669,11 +669,12 @@ $\sqrt{KT}$ contribution is not matched.
 
 \section{Numerical detail}\label{app:num}
 
-Sixteen studies were run. The six that bear on the claim are reported at length below, each with
-an observation, an interpretation and a limitation; the other ten are summarised in one table at
-the end. Studies 1 to 13 draw $P$ from a Dirichlet and 14 to 16 do not.
-\textsc{State-EXP3} is beaten in study~15, and in four of six cells of study~16 when the
-baseline alone is grid-tuned. Study~10 is a control for study~6 and reverses its conclusion. All
+Sixteen studies were run and the seven bearing on the claim are reported here, each with an
+observation, an interpretation and a limitation. They keep their original numbers, which index the
+released scripts, so the numbering is not contiguous; the code for all sixteen is available.
+Studies 1 to 13 draw $P$ from a Dirichlet and 14 to 16 do not. \textsc{State-EXP3} is beaten in
+four of six cells of study~16 when the baseline alone is grid-tuned, and study~10 is a control for
+study~6 that reverses its conclusion. All
 policies run on the
 same environment parameters and common random-number streams, so a seed fixes everything except
 which estimator is formed, and differences are taken within a seed before averaging. Round $r$'s outcome is consumed before round $r+d+1$, matching
@@ -791,43 +792,6 @@ numbers, python 3.14.3 with numpy 2.4.2 and matplotlib 3.10.8, states the seed c
 study, lists one command per numbered study, and commits the stored outputs each figure reads so
 that every figure rebuilds without rerunning an experiment.
 
-\textbf{The remaining studies in brief.} Studies 2--5, 7, 9, 11--13 and 15 are summarised here rather than
-reported at length, since none of them bears directly on the claim of Section~\ref{sec:num}. Each
-was run under the same conventions, and the numbers below are what the runs produced.
-
-\begin{center}\footnotesize
-\begin{tabular}{@{}p{0.31\textwidth}p{0.63\textwidth}@{}}
-\toprule
-Study and finding & What the runs showed \\
-\midrule
-2. An unknown map costs little & The online plug-in stays within $0.5$ per cent of known $P$ at
-every $K$ and beats action-level weighting by $20$ to $179$ as $K$ rises tenfold; forced
-exploration never helped, $\gamma=0$ being best at every $K$. \\
-3. The plug-in survives hostile maps & On five deliberately hostile maps it still beat action-level
-weighting, two of them with $\kappa$ above $100$, and forced exploration cost regret in every
-cell. The Laplace default is not the best smoothing. \\
-4. Safe blending does not recover the gain & No. The rule reproduces action-level regret to the
-digit, so its guarantee is safe and the algorithm is inert. \\
-5. Counting the denominator is noisier & Counting is the noisier of the two on
-regret and on bias, and the predicted relative error is vacuous from $K=40$ through $K=4000$. \\
-7. The representation has a bias-variance trade & Yes. Regret is lowest at four groups, the
-number of latent clusters, and stays there under heterogeneity $0.12$. \\
-9. The rotating bound tracks the shape, not the constant & Partly. The ratio
-$R/\sqrt{(d+1)\vhat T\log K}$ spans $35.9$ times over the grid, $7.1$ times once a near-degenerate
-column is dropped, so the bound tracks the shape and not the constant. \\
-11. The plug-in is not fragile in the smoothing constant & No cell of thirty loses to action-level
-weighting, and the gain roughly doubles as $\alpha$ falls from $1$ to $0.03$. \\
-12. The certificates are far looser than the method & The plug-in stays within $1.6$ per cent of known
-$P$, while the certificates themselves are far looser than the measured arms. \\
-13. The coarsening cannot be chosen by this rule & No. The rule selects $15$ groups at heterogeneity $0$
-and $16$ at $0.12$ against a true count of four. Learning $g$ remains open. \\
-15. A best-state rule leads seven of the nine settings & A best-state rule leads seven of the nine settings and
-\textsc{State-EXP3} two, but where the rule's assumption fails its regret grows linearly and its
-spread across seeds is four times ours. \\
-\bottomrule
-\end{tabular}
-\end{center}
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig5.pdf}
@@ -837,7 +801,7 @@ decline in Study~6 is driven by task-difficulty confounding rather than by the p
 itself. Bars are one standard error of the paired
 difference. \textbf{Right,} regret saved against action-level weighting over the smoothing
 pseudocount and the sensor balance, $10$ paired seeds per cell, from the plug-in sensitivity study
-summarised in the closing table.}
+whose script is released with the rest.}
 \label{fig:matched}
 \end{figure}
 
@@ -860,8 +824,7 @@ sweep falls from $34.5$ to $3.1$ per cent over a comparable range (Figure~\ref{f
 Interpretation. The two sweeps disagree in sign, and the matched-difficulty sweep agrees with the overlap
 dependence suggested by Theorem~\ref{thm:sexp3}, although this experiment uses the single-copy
 variant rather than the interleaved one that theorem analyses. Overlap is what pooling exploits, and study~6
-measures overlap confounded with an instance becoming trivial. This also explains study~9's
-degenerate column without appealing to it.
+measures overlap confounded with an instance becoming trivial.
 
 Limitation. At the two highest overlaps some seeds cannot reach the common target and the
 realized difficulty is $5$ to $13$ per cent below it, so the matching is close rather than exact.
@@ -993,18 +956,13 @@ best on benign instances. Every grid-best multiplier is chosen by reading these 
 none of the last three columns is a procedure a practitioner could run; only the first is. Eight
 paired seeds on the funnel and ten on the matched sweep.
 
-Taken together the sixteen studies cover both channels. Studies 1, 6, 7, 9, 10, 14 and 15 probe the
-state channel and are consistent with the effective dimension, rather than $|\Sset|$ or $K$,
-governing what pooling buys; study~10 had to control for task difficulty before study~6's sweep
-pointed that way, and study~9 shows where the interleaved bound stops describing the dependence.
-Studies 2 to 5, 11 and 12 estimate the action-to-state matrix and locate the difficulty in
-certifying the estimate rather than in forming it. Study~13 shows the grouping bound is too
-conservative to serve as its own selection rule. Study~14 is the only one whose matrix is not drawn
-from a Dirichlet and reports the largest margins here, on a structure imposed by hand rather than
-measured. Study~15 finds \textsc{State-EXP3} beaten in seven of nine settings by a heuristic that
-assumes the best action reaches the single best state, which fails with linear regret where that
-assumption does not hold. Study~16 places it against the strongest published method: ahead in every
-cell when both are tuned alike, behind in four of six when that method alone is grid-tuned.
+Taken together these studies cover both channels. Studies 1, 6, 10 and 14 probe the state channel
+and are consistent with the effective dimension, rather than $|\Sset|$ or $K$, governing what
+pooling buys; study~10 had to control for task difficulty before study~6's sweep
+pointed that way. Study~14 is the only one whose matrix is not drawn from a Dirichlet and reports
+the largest margins here, on a structure imposed by hand rather than measured. Study~16 places
+\textsc{State-EXP3} against the strongest published method: ahead in every cell when both are tuned
+alike, behind in four of six when that method alone is grid-tuned.
 
 \section{Proof of Theorem~\ref{thm:m1}: additive delay without interleaving}\label{app:m1}
 

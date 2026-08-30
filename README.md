@@ -25,8 +25,8 @@ tectonic 0.16.9.
 
 ## Reproducing the paper
 
-Appendix H runs sixteen numbered studies: six are reported at length and the other ten are
-summarised in a table there. One file per study, in the order they appear, followed by two checks
+Sixteen studies were run. The submitted paper reports the seven bearing on its claim, keeping
+their original numbers; every study's script is below. One file per study, in the order they appear, followed by two checks
 that belong to appendices rather than to a numbered study.
 
     cd code
