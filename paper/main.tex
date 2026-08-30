@@ -56,9 +56,8 @@ a cart, then one late outcome informs every action that could have produced the 
 the price is set by how many genuinely different states the actions produce. We charge each delayed
 outcome through the state and pay an \emph{effective dimension} $v_t$, between $1$ and the number of
 states, in place of $K$. For the single-copy algorithm that is actually run we prove
-$\Ot(\sqrt{V^-}+\sqrt{dT})$ for any budget fixed in advance, and $\Ot(\sqrt{(d+1)V\log K})$ for a
-rotating variant; merging similar states lowers the price again, at a bias we make explicit. The
-gain has a limit: even when handed the exact losses from $d$ rounds ago, no algorithm escapes
+$\Ot(\sqrt{V^-}+\sqrt{dT})$ for any budget fixed in advance, so the action count leaves the leading
+term and the delay enters additively. The gain has a limit: even when handed the exact losses from $d$ rounds ago, no algorithm escapes
 $\Omega(\sqrt{d\mathcal E\min\{1+\log J,T/d\}})$, where $J$ counts the drifting directions and
 $\mathcal E$ bounds how far the losses move while the learner waits. On generated data the state
 channel cuts regret by up to $79$ per cent against action-level weighting, and on the funnel family
@@ -244,7 +243,7 @@ $d$ & action-level & tuned \citep{zimmert2020} & \textsc{State-EXP3} & cut & cut
 \bottomrule
 \end{tabular}\\[2pt]
 Funnel family, $K=200$, $|\Sset|=6$, $T=20000$, $8$ paired seeds; cuts are against action-level
-weighting and against the tuned baseline (study~16).
+weighting and against the tuned baseline (study~14/16).
 \end{center}
 
 These runs use the single-copy algorithm that Theorem~\ref{thm:m1} covers; Appendix~\ref{app:num}
@@ -638,7 +637,7 @@ the grouped panel of Figure~\ref{fig:phase} rather than by a study of its own. S
 conclusions were superseded by a later control, or that replicated one already reported, are left
 to the released code.
 
-\textbf{Study~1. The bound of Theorem~\ref{thm:sexp3} holds and pooling helps.} With $|\Sset|=4$, $T=10000$, $d=50$,
+\textbf{Study~1. The gain grows with $K$ at fixed $|\Sset|$.} With $|\Sset|=4$, $T=10000$, $d=50$,
 drift band $0.05$ and $100$ seeds:
 
 \begin{center}\small
@@ -731,7 +730,7 @@ whose script is released with the rest.}
 
 \textbf{Study~10. Overlap drives the gain, not easier tasks.}
 Sweeping the overlap without further control finds the advantage falling as $\vhat$ falls, which
-read at face value contradicts Theorem~\ref{thm:sexp3}, whose bound improves as $\bar v$ falls.
+read at face value contradicts Theorem~\ref{thm:m1}, whose budget $V^-$ falls with $\bar v$.
 That sweep is confounded, since raising the overlap also flattens $c_t=P\theta_t$ across actions, collapsing
 the comparator gap so that both regrets vanish together. This study holds $K=40$, $|\Sset|=8$,
 $T=10000$, $d=50$ and the difficulty fixed, and varies only $\vhat$. Difficulty is the
@@ -747,8 +746,7 @@ falls from $34.5$ to $3.1$ per cent over a comparable range (Figure~\ref{fig:mat
 apparent contradiction is an artefact of the confound rather than of the mechanism.
 
 Interpretation. The two sweeps disagree in sign, and the matched-difficulty sweep agrees with the overlap
-dependence suggested by Theorem~\ref{thm:sexp3}, although this experiment uses the single-copy
-variant rather than the interleaved one that theorem analyses. Overlap is what pooling exploits,
+dependence Theorem~\ref{thm:m1} predicts for the single-copy algorithm this experiment runs. Overlap is what pooling exploits,
 and the unmatched sweep measures overlap confounded with an instance becoming trivial.
 
 Limitation. At the two highest overlaps some seeds cannot reach the common target and the
@@ -760,7 +758,7 @@ what fixing the difficulty costs.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig7.pdf}
-\caption{Study~14, a recommendation funnel. \textbf{Left,} the effective dimension stays near two
+\caption{Study~14/16, a recommendation funnel. \textbf{Left,} the effective dimension stays near two
 while the catalogue grows thirty-twofold, so the gap between $K$ and $\vhat$ comes from the
 catalogue having categories, not from a chosen $K$. \textbf{Right,} the three arms at $T=20000$
 and $8$ paired seeds, labelled by whether the regime condition of Section~\ref{sec:alg} holds.
@@ -768,46 +766,26 @@ Bars are one standard error. No real data is used anywhere in this study.}
 \label{fig:funnel}
 \end{figure}
 
-\textbf{Study~14. Many actions resolved by few states is a natural regime.} Every study so far draws
-$P$ from a Dirichlet, which is the assumption under test rather than evidence for it. This one
-builds an environment to the shape of a recommendation funnel instead. Actions are $K=200$
+\textbf{Study~14/16. A recommendation funnel, and a rate-optimal baseline on it.} Every other study
+draws $P$ from a Dirichlet, which is the assumption under test rather than evidence for it. This
+one builds an environment to the shape of a recommendation funnel instead. Actions are $K=200$
 catalogue items, states are $|\Sset|=6$ ordered engagement depths, and the outcome is a delayed
 conversion. Three structural facts are imposed because funnels have them, namely that items fall
 into a modest number of categories sharing an engagement profile, that item quality is
 heavy-tailed, and that the loss falls with engagement depth and drifts seasonally rather than
 adversarially. The generated catalogue puts $74$ per cent of its mass on no engagement and $1.4$
-per cent on the deepest.
+per cent on the deepest. The same environments, seeds and delay convention then carry a comparison
+against the hybrid Tsallis-plus-entropy \textsc{FTRL} of \citet{zimmert2020}, which attains the
+optimal rate for delayed feedback, its delay term being additive rather than multiplicative. The
+algorithms published since match that adversarial rate rather than improve on it, adding
+adaptivity to stochastic instances instead \citep{schlisselberg2025}; all of them read the action
+alone.
 
-Observed. The effective dimension is $\vhat=1.97$ against $K=200$, a hundredfold gap, and it
-stays between $1.41$ and $1.81$ as the catalogue grows from $25$ to $800$ items
+Observed. The effective dimension is $\vhat=1.97$ against $K=200$, a hundredfold gap, and it stays
+between $1.41$ and $1.81$ as the catalogue grows from $25$ to $800$ items
 (Figure~\ref{fig:funnel}). Against action-level weighting the state-pooled variant saves $79.3$,
-$63.6$ and $38.9$ per cent at $d=10$, $50$ and $200$, the largest margins anywhere in this
-appendix. The plug-in matches known $P$ at every delay, the paired difference never reaching two
-standard errors. The regime condition $\bar v(d+1)\log K\le K+d$ holds at $d=10$ and fails at
-$d=50$ and $d=200$.
-
-Interpretation. The separation between $K$ and $\vhat$ arrives from catalogue structure rather
-than from a tuned parameter, and it does not close as the catalogue grows, which is the claim the
-Dirichlet families cannot make. That the condition Theorem~\ref{thm:sexp3} needs fails at the
-delays a funnel has, while the single-copy variant still saves most of the regret, is the same
-message as study~1 in the setting that motivates the paper. It is evidence for
-the open problem of Section~\ref{sec:conj} rather than for the theorem.
-
-Limitation. \emph{No real data is used.} There is no interaction log in this environment, nothing
-here is fitted to one, and this is not a semi-synthetic benchmark in the usual sense of that
-phrase. The structure is imposed by hand from qualitative properties, so it shows that the regime
-is describable and self-consistent, not that any deployed system occupies it. The arms run $m=1$,
-covered by Theorem~\ref{thm:m1}, and the environment has no adversarial component, so it exercises the
-pooling channel and not the drift channel.
-
-\textbf{Study~16. Pooling still helps against a rate-optimal delayed-bandit algorithm.} Every
-comparison so far is against action-level weighting, \textsc{EXP3-IX}, naive sharing, or the
-best-state rule. None attains the optimal rate for delayed feedback. The hybrid
-Tsallis-plus-entropy \textsc{FTRL} of \citet{zimmert2020} does, its delay term being additive
-rather than multiplicative, and the algorithms published since match that adversarial rate rather
-than improve on it, adding adaptivity to stochastic instances instead
-\citep{schlisselberg2025}. All of them read the action alone. We run it on both headline families, with the same environments, seeds and
-delay convention, under three tunings.
+$63.6$ and $38.9$ per cent at $d=10$, $50$ and $200$, the largest margins in this appendix, and the
+plug-in matches known $P$ at every delay, the paired difference never reaching two standard errors.
 
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
@@ -822,38 +800,45 @@ overlap $0.65$   &  584.1 &  673.1 &  544.0 &  51.2 \\
 overlap $0.95$   &  461.4 &  540.2 &  419.4 &  34.3 \\
 \bottomrule
 \end{tabular}\\[2pt]
-Study 16. Regret under three tunings; grid-best columns are chosen by reading these benchmarks.
+Study 14/16. Regret under three tunings, on the funnel and on study~10's matched sweep;
+grid-best columns are chosen by reading these benchmarks.
 \end{center}
 
-Observed. With \textsc{State-EXP3} at the single tuning used everywhere else here and
-\citet{zimmert2020} at the best of a six-point grid around its own value, \textsc{State-EXP3} wins
-every cell, cutting regret by $31.5$ to $67.9$ per cent on the funnel and $9.6$ to $14.6$ per cent
-on the matched sweep. With both at their grid-best, over seven multipliers for
-\citet{zimmert2020} and six for \textsc{State-EXP3}, \textsc{State-EXP3} wins every cell again and
-by more, $66.8$ to $98.9$ per cent. With \citet{zimmert2020} at its grid-best and
-\textsc{State-EXP3} left at its paper tuning, the third column against the first,
-\citet{zimmert2020} wins the funnel at $d=200$ and all three matched cells, four of six.
+Against the rate-optimal baseline, with \textsc{State-EXP3} at the single tuning used everywhere
+else here and \citet{zimmert2020} at the best of a six-point grid around its own value,
+\textsc{State-EXP3} wins every cell, cutting regret by $31.5$ to $67.9$ per cent on the funnel and
+$9.6$ to $14.6$ per cent on the matched sweep of study~10. With both at their grid-best it wins
+every cell again and by more, $66.8$ to $98.9$ per cent. With \citet{zimmert2020} alone at its
+grid-best it wins four of six.
 
-Interpretation. No column is a symmetric protocol. The two grids are finite and unequal, and
-\textsc{State-EXP3}'s grid-best sits at its top multiplier in every cell, so its own minimum may
-lie outside the range searched; the truncation runs against \textsc{State-EXP3}. Where it is not
-held to the worse tuning of the two, the state channel helps against a rate-optimal
-method, which is expected, since that method is action-level by construction and cannot read the
-state at all. Grid tuning helps \textsc{State-EXP3} far more than it helps \citet{zimmert2020},
-which is consistent with pooling cutting estimator variance and lower variance admitting a larger
-learning rate.
+Interpretation. The separation between $K$ and $\vhat$ arrives from catalogue structure rather than
+from a tuned parameter, and it does not close as the catalogue grows, which is the claim the
+Dirichlet families cannot make. Where the state-pooled variant is not held to the worse tuning of
+the two, the state channel helps against a rate-optimal method, which is expected, since that
+method cannot read the state at all; grid tuning helps it far more than it helps
+\citet{zimmert2020}, consistent with pooling cutting estimator variance and lower variance
+admitting a larger learning rate. The condition under which interleaving's bound would improve on
+the action-level rate fails at $d=50$ and $d=200$ while the single-copy variant still saves most of
+the regret, which is evidence for the open problem of Section~\ref{sec:conj} rather than for a
+theorem.
 
-Limitation. The third column against the first is a real loss and is reported as one. These are
-our own synthetic families, and a method built for adversarial worst cases is not shown at its
-best on benign instances. Every grid-best multiplier is chosen by reading these benchmarks, so
-none of the last three columns is a procedure a practitioner could run; only the first is. Eight
-paired seeds on the funnel and ten on the matched sweep.
+Limitation. \emph{No real data is used.} There is no interaction log in this environment, nothing
+here is fitted to one, and this is not a semi-synthetic benchmark in the usual sense of that
+phrase. The structure is imposed by hand from qualitative properties, so it shows that the regime
+is describable and self-consistent, not that any deployed system occupies it. The four cells of six
+lost when \citet{zimmert2020} alone is grid-tuned are a real loss and reported as one. No column is
+a symmetric protocol: the two grids are finite and unequal, and \textsc{State-EXP3}'s grid-best
+sits at its top multiplier in every cell, so its own minimum may lie outside the range searched.
+Every grid-best multiplier is chosen by reading these benchmarks, so only the first column is a
+procedure a practitioner could run. Eight paired seeds on the funnel and ten on the matched sweep.
+The arms run $m=1$, covered by Theorem~\ref{thm:m1}, and the environment has no adversarial
+component, so it exercises the pooling channel and not the drift channel.
 
-Taken together these studies cover both channels. Studies~1, 10 and~14 probe the state channel and
-are consistent with the effective dimension, rather than $|\Sset|$ or $K$, governing what pooling
-buys; study~10 had to control for task difficulty before an overlap sweep pointed that way.
-Study~14 is the only one whose matrix is not drawn from a Dirichlet and reports the largest margins
-here, on a structure imposed by hand rather than measured. Study~16 places
+Taken together these studies cover both channels. Studies~1, 10 and~14/16 probe the state channel
+and are consistent with the effective dimension, rather than $|\Sset|$ or $K$, governing what
+pooling buys; study~10 had to control for task difficulty before an overlap sweep pointed that way.
+The funnel is the only environment whose matrix is not drawn from a Dirichlet and it reports the
+largest margins here, on a structure imposed by hand rather than measured. It also places
 \textsc{State-EXP3} against a rate-optimal delayed-bandit method: ahead in every cell when both are tuned
 alike, behind in four of six when that method alone is grid-tuned.
 
