@@ -54,10 +54,10 @@ different states the actions produce rather than by how many actions there are. 
 an \emph{effective dimension} $v_t$ between $1$ and the number of states, and prove
 $\Ot(\sqrt{(d+1)V\log K})$ for a rotating algorithm and $\Ot(\sqrt{V^-}+\sqrt{dT})$ for the
 single-copy one that is actually used, for any budget fixed in advance; merging similar states
-lowers the price again, at a bias we make explicit. The idea has a limit. Even handed the exact
+lowers the price again, at a bias we make explicit. The idea has a limit. Even when handed the exact
 losses from $d$ rounds ago, no algorithm escapes
 $\Omega(\sqrt{d\mathcal E\min\{1+\log J,T/d\}})$, where $J$ counts the drifting directions and
-$\mathcal E$ bounds how far the losses move while it waits. On generated data the state channel
+$\mathcal E$ bounds how far the losses move while the learner waits. On generated data the state channel
 cuts regret by up to $79$ per cent against action-level weighting and by $32$ to $68$ per cent
 against the tuned minimax-optimal method of \citet{zimmert2020}.
 \end{abstract}
@@ -67,13 +67,13 @@ against the tuned minimax-optimal method of \citet{zimmert2020}.
 Delayed outcomes are common in sequential decision-making: a system must act now even though the
 outcome it cares about may arrive much later. In recommendation, an item is shown immediately, an
 engagement signal such as a click or browsing depth is observed soon after, and conversion or
-retention may only be known days or weeks later, so decisions are committed before their
+retention may only be known days or weeks later, so decisions are made before their
 economically relevant consequences appear. The central question is when such a signal can reduce
 the cost of learning before the final outcome arrives.
 
 The pattern is not special to recommendation: a markdown is set and sell-through is known a season
-later, staff are rostered and the service outcome lands after the shift, marketing spend commits
-before attribution resolves. A fast proxy arrives at once; the outcome the decision is judged on
+later; staff are rostered and the service outcome lands after the shift; marketing spend is
+committed before attribution resolves. A fast proxy arrives at once; the outcome the decision is judged on
 does not. Here an action is an item that could be shown, a state is what the
 user does next, and the delayed outcome is whether they eventually buy. Different items may induce similar distributions over engagement states, so
 an outcome observed after one item can carry information about many others. The difficulty scales
@@ -110,10 +110,9 @@ guarantee (Appendix~\ref{app:unknown}), and adapting to overlap and drift at onc
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig1.pdf}
-\caption{\textbf{An illustration of the two things that limit intermediate feedback, on generated
-data.} \textbf{Left,} what each state predicts about the outcome changes while the map from
+\caption{\textbf{An illustration of the two limits on intermediate feedback, on generated data.} \textbf{Left,} what each state predicts about the outcome changes while the map from
 actions to states stays fixed, so the losses from $d$ rounds earlier grow increasingly
-inaccurate; $\etwo$ of Section~\ref{sec:setting} tracks that. \textbf{Right,} more overlap
+inaccurate; $\etwo$ of Section~\ref{sec:setting} tracks it. \textbf{Right,} more overlap
 between actions allows more sharing, at matched difficulty, $K=40$, $|\Sset|=8$, $T=10000$,
 $d=50$, $20$ paired seeds, bars one standard error of the paired difference
 (Appendix~\ref{app:num}, study~10).}
@@ -127,9 +126,9 @@ action-to-state map while fixing the state-to-loss map; we do the reverse. \cite
 the optimal $\Ot(\sqrt{KT}+\sqrt{D\log K})$ for total delay $D$, and \citet{esposito2023} allow an
 unknown, possibly adversarial action-to-state map; fixing that channel is what makes its overlap
 geometry measurable through $v_t$. \emph{Stale predictions.} \citet{baron2025} bound regret by the
-inaccuracy of evolving observations, where we instead ask what delay-dependent cost is unavoidable;
+inaccuracy of evolving observations, whereas we ask what delay-dependent cost is unavoidable;
 \citet{wang2026} bound gradient prediction error without delay, and
-\citet{zhang2026impatient} share the motivation in a stochastic Bayesian model where ours is
+\citet{zhang2026impatient} share the motivation in a stochastic Bayesian model, whereas ours is
 adversarial.
 \emph{Mediator feedback} is the closest structural connection: $v_t-1$ is the $\chi^2$ mutual
 information of \citet{eldowa2024}. Our contribution is not that quantity but its role when the
@@ -147,7 +146,7 @@ $A_t\xrightarrow{\;P\;}S_t\xrightarrow{\;\theta_t\;}X_t$: the learner draws $A_t
 observes $S_t\sim P(\cdot\mid A_t)$ at once, and receives the delayed outcome only at time $t+d$, encoded as a loss
 $X_t\in[0,1]$ so that smaller is better, with
 $\Ex[X_t\mid\mathcal F_{t-1},A_t,S_t]=\theta_t(S_t)$, where $\mathcal F_{t-1}$ is everything seen
-before round $t$, and outcomes conditionally independent across rounds given the states. The conditional mean depends on $A_t$ only through $S_t$. This
+before round $t$; outcomes are conditionally independent across rounds given the states. The conditional mean depends on $A_t$ only through $S_t$. This
 \emph{state-sufficiency} assumption licenses cross-action pooling: an outcome observed at state
 $S_t$ may update every action that could have produced that state. If an action affects the outcome
 directly, in a way not represented in $S_t$, the argument no longer applies. Here $x_t$ depends only
@@ -155,15 +154,15 @@ on $\mathcal F_{t-1}$; $X_r$ may first affect the action
 distribution at round $r+d+1$, equivalently the round-$t$ decision uses outcomes only from rounds
 $r\le t-d-1$.
 
-That matrix $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and the \emph{state-loss means} $\theta_t\in[0,1]^{|\Sset|}$ are \emph{oblivious}:
+The matrix $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and the \emph{state-loss means} $\theta_t\in[0,1]^{|\Sset|}$ are \emph{oblivious}:
 chosen in advance, not reacting to the learner. Action losses are $c_t=P\theta_t$ and performance
 is the static \emph{pseudo-regret}, the gap to the best single action in hindsight,
 $\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner also receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
 function of the observables, so a lower bound surviving it is stronger, and
 \textsc{State-EXP3} never uses it. We measure how misleading $m_t$ is by $\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which stays small when
 errors are small even if frequent. The geometry of $P$ thus governs sharing across actions and the
-evolution of $\theta_t$ governs staleness across time, the two axes of Sections~\ref{sec:alg}
-and~\ref{sec:lower}. 
+evolution of $\theta_t$ governs staleness across time, the two axes of
+Section~\ref{sec:alg}. 
 
 \section{What the theory guarantees}\label{sec:alg}
 
@@ -189,12 +188,10 @@ $\Ex[R_T]\le\sqrt{2(3.3V^-+2dT)\log K}+e(d+1)\log K+d$.
 
 So $K$ is replaced by $V^-$, which counts how differently the actions behave rather than how many
 there are, and the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$. It covers the algorithm
-every experiment below runs, at rates they already satisfy. Writing $\bar v$ for the largest $v_t$
+every experiment below runs, at rates those runs already satisfy. Writing $\bar v$ for the largest $v_t$
 over all ways of playing, $V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. Rotating $d+1$
 copies gives $\Ot(\sqrt{(d+1)V\log K})$ and merging similar states lowers $V$ again at an explicit
 bias (Appendix~\ref{app:etc}); none of the three adapts to $\etwo$.
-
-
 
 \paragraph{Where this stops.}\label{sec:lower} How much does waiting cost even when the stale
 losses are free?
@@ -282,7 +279,6 @@ evidence is generated, not measured; $\bar v$ is estimated by sampling, so the g
 that at $V=|\Sset|T$; and the two bounds lie on different axes, so adapting to both at once remains
 unproved. 
 
-
 \begin{thebibliography}{99}
 \bibitem[Alon et al.(2015)]{alon2015} N.~Alon, N.~Cesa-Bianchi, O.~Dekel, and T.~Koren. Online learning with feedback graphs: beyond bandits. \emph{COLT}, PMLR 40, 2015.
 \bibitem[Auer et al.(2002)]{auer2002} P.~Auer, N.~Cesa-Bianchi, Y.~Freund, and R.~E.~Schapire. The nonstochastic multiarmed bandit problem. \emph{SIAM Journal on Computing}, 32(1):48--77, 2002.
@@ -323,7 +319,6 @@ across cooperating agents \citep{hsieh2022}, and intermediate observations in a 
 model \citep{mussi2024}. On predictors rather than delay, \citet{wei2020} bound regret in terms of a
 loss predictor's accuracy and \citet{zhang2026} give second-order path-length guarantees; both
 measure a prediction error as $\etwo$ does, without the delay that makes it stale.
-
 
 \section{The state-pooled estimator}\label{app:pool}
 
@@ -729,7 +724,6 @@ mispredicted equally. So a bound in $\etwo$ is never weaker and can be $J$ times
 why Theorem~\ref{thm:lower} is stated in $\etwo$. The two measures agree exactly when the
 prediction error is concentrated on one action.
 
-
 \section{Proofs: the lower bound}\label{app:proofs}
 
 The measure $\etwo$ is controlled by the state-loss variation $W$, and no converse bound
@@ -1032,7 +1026,6 @@ exercised and the $T/d$ saturation branch, which needs $d$ comparable to $T$, is
 lower bound quantifies over all algorithms and four policies cannot establish that. What these
 runs check is the scaling of the construction.
 
-
 \textbf{Code and environment.} The code producing every reported number and figure is at
 \expandafter\url\expandafter{\repourl}. It pins the software environment used for the reported
 numbers, python 3.14.3 with numpy 2.4.2 and matplotlib 3.10.8, states the seed count for each
@@ -1075,7 +1068,6 @@ spread across seeds is four times ours. \\
 \bottomrule
 \end{tabular}
 \end{center}
-
 
 \begin{figure}[t]
 \centering
@@ -1194,7 +1186,6 @@ phrase. The structure is imposed by hand from qualitative properties, so it show
 is describable and self-consistent, not that any deployed system occupies it. The arms run $m=1$,
 which carries no guarantee, and the environment has no adversarial component, so it exercises the
 pooling channel and not the drift channel.
-
 
 \textbf{Study~16. Pooling still helps against the strongest published algorithm.} Every
 comparison so far is against action-level weighting, \textsc{EXP3-IX}, naive sharing, or the
