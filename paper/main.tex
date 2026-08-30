@@ -219,15 +219,16 @@ The claim is about instances, so it must be checked where the number of actions 
 distinct behaviours come apart. With $K=200$ generated items and six levels of engagement the
 estimated dimension is $1.97$,
 and the state-pooled variant cuts regret against action-level weighting by $79.3$, $63.6$ and
-$38.9$ per cent at $d=10,50,200$. It is hand-structured, not fitted to data, so it shows the
-mechanism, not a deployed system. An online plug-in $\hat P_t$ stays within $0.5$ per cent of
+$38.9$ per cent at $d=10,50,200$. That setting is hand-structured, not fitted to data, so it shows
+the mechanism, not a deployed system. An online plug-in $\hat P_t$ stays within $0.5$ per cent of
 known $P$ (study~2).
 
 The advantage widens with the menu: at $|\Sset|=4$ the single copy beats action-level weighting on
 $73$, $99$ and $100$ of $100$ seeds at $K=8,40,80$, the paired gain rising from $19.3\pm3.4$ to
 $169.3\pm9.9$ (study~1).
 
-It also beats the strongest published method, the hybrid FTRL of \citet{zimmert2020}, grid-tuned.
+It also beats the minimax-optimal delayed-bandit method of \citet{zimmert2020}, tuned over a grid
+under the reported tuning protocol.
 
 \begin{center}\small
 \begin{tabular}{@{}rrrrrr@{}}
@@ -246,9 +247,7 @@ weighting and against the tuned baseline (study~16).
 These runs use the single-copy algorithm, the one Theorem~\ref{thm:m1} covers;
 Appendix~\ref{app:num} also reports the rotating variant. A best-state rule leads seven of nine
 settings, but where its assumption fails its regret grows linearly and its spread across seeds is
-four times ours. Against a minimax-optimal action-level delayed-bandit baseline the state channel
-still helps, cutting regret by $32$ to $68$ per cent on the funnel under the reported tuning
-protocol (Appendix~\ref{app:num}).
+four times ours.
 
 \begin{figure}[h]
 \centering
