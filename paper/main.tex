@@ -82,8 +82,12 @@ not with the number of actions $K$ but with how many genuinely different operati
 actions induce, so thousands of items funnelling users through a few engagement patterns stay easy
 to learn from.
 
-Bandits with intermediate observations formalize this: the learner repeatedly picks one action
-and sees the consequence of that action alone. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
+The question sits between machine learning and operations research. Exploiting the channel from
+actions to states asks what can be inferred from data; the wait before the outcome arrives is a
+constraint on the operation, which no estimator removes; and the decision commits while only the
+first of the two has been resolved. Bandits with
+intermediate observations formalize this: the learner repeatedly picks one action and sees the
+consequence of that action alone. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
 unrestricted one giving only the rate available with no intermediate observations; we fix that map and ask how much the \emph{action-to-state} structure helps.
 
 Intermediate observations face two independent limitations: whether information can be shared
@@ -100,8 +104,7 @@ on how far the losses have moved, which we measure by $\etwo=\sum_t\|c_t-m_t\|_\
 (Figure~\ref{fig:one}). Our lower bound asks
 how much regret this mismatch forces even when $m_t$ is supplied for free.
 
-An unknown action-to-state map can be estimated, with a weaker guarantee
-(Appendix~\ref{app:unknown}); adapting to overlap and drift at once remains open
+Adapting to overlap and drift at once remains open
 (Section~\ref{sec:conj}).
 
 \begin{figure}[t]
@@ -147,6 +150,8 @@ other actions' losses, where here the state's loss must still be estimated.
 
 \section{Problem formulation}\label{sec:setting}
 
+The question is whether the intermediate state can lower the cost of learning below what $K$ alone
+forces. The model that makes it precise is the following.
 There are $T$ rounds, $K$ actions, a finite state space $\Sset$, a known action-to-state matrix
 $P$, and a fixed known delay $d$; all
 logarithms are natural and $\Ot$ hides logarithmic factors. Every round follows the chain
@@ -168,9 +173,8 @@ is the static \emph{pseudo-regret}, the gap to the best single action in hindsig
 $\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner also receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
 function of the observables, so a lower bound surviving it is stronger, and
 \textsc{State-EXP3} never uses it. We measure how misleading $m_t$ is by $\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which stays small when
-errors are small even if frequent. The geometry of $P$ thus governs sharing across actions and the
-evolution of $\theta_t$ governs staleness across time, the two axes of
-Section~\ref{sec:alg}. 
+errors are small even if frequent. The geometry of $P$ governs sharing across actions and the
+evolution of $\theta_t$ governs staleness across time. 
 
 \section{What the theory guarantees}\label{sec:alg}
 
@@ -181,8 +185,8 @@ states are in Appendix~\ref{app:etc}.
 An arriving outcome need not update the action played alone. Every action can be credited by how
 likely it was to have produced the observed state. Here $P$ is known and $m_t$ is not given. For each state
 $s\in\Sset$ let $q_t(s)=\sum_{a=1}^Kx_t(a)P(s\mid a)$, and give each action $a\in\{1,\dots,K\}$ the
-estimate $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$. It is correct on average, and how noisy it is
-depends on how much the actions overlap, through the \emph{effective dimension}
+estimate $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$. It is correct on average, and its noise is governed by the
+\emph{effective dimension}
 $v_t=\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2\in[1,|\Sset|]$.
 \textsc{State-EXP3} runs $m$ copies of \textsc{EXP3} \citep{auer2002} in rotation at learning rate
 $\eta$, copy $i\in\{0,\dots,m-1\}$ taking every $m$th round, and adds $\hat c_t$ to a copy's running total once the outcome is usable. A
@@ -196,11 +200,10 @@ $\Ex[R_T]\le\sqrt{2(3.3V^-+2dT)\log K}+e(d+1)\log K+d$.
 \end{theorem}
 
 So $K$ is replaced by $V^-$, which counts how differently the actions behave rather than how many
-there are, and the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$, for the algorithm every experiment
-below runs, at rates those runs already satisfy. Writing $\bar v$ for the largest $v_t$
-over all ways of playing, $V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. Rotating $d+1$
-copies gives $\Ot(\sqrt{(d+1)V\log K})$ and merging similar states lowers $V$ again at an explicit
-bias (Appendix~\ref{app:etc}); none of the three adapts to $\etwo$.
+there are, and the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$, for the algorithm every
+experiment below runs. Writing $\bar v$ for the largest $v_t$ over all ways of playing,
+$V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. Rotating $d+1$ copies and merging
+similar states are handled in Appendix~\ref{app:etc}; none of the three adapts to $\etwo$.
 
 The proof turns on one pathwise identity. The denominator of $\hat c_t$ is the state marginal of
 the distribution supplying its numerator, so $\langle x_t,\hat c_t\rangle=X_t\le1$ on every path,
@@ -230,9 +233,8 @@ factor of two.
 
 \section{Experiments}\label{sec:num}
 
-A claim about instances is settled on instances where the two counts it separates, how many
-actions there are and how many distinct behaviours they have, come apart. The families below are
-built so they do. With $K=200$ generated items and six levels of engagement the
+A claim about instances is settled where the two counts it separates, how many actions there are
+and how many distinct behaviours they have, come apart. The families below are built so they do. With $K=200$ generated items and six levels of engagement the
 estimated dimension is $1.97$,
 and the state-pooled variant cuts regret against action-level weighting by $79.3$, $63.6$ and
 $38.9$ per cent at $d=10,50,200$. That setting is hand-structured, not fitted to data, so it shows
@@ -278,15 +280,14 @@ settings the studies treat separately: $P$ known, $P$ estimated, and states coar
 
 \section{Discussion}\label{sec:conj}
 
-Pooling helps when many actions lead to similar states, coarsening when grouped states agree, and
-old information is unreliable when what the states predict moves fast. The first is checkable
-before deployment, since $P$ is known: an estimate of $\bar v$ well below $K$ indicates the state
-channel is worth using.
+Pooling helps when many actions lead to similar states, and that is checkable before deployment,
+since $P$ is known: an estimate of $\bar v$ well below $K$ indicates the state channel is worth
+using.
 
-Theorem~\ref{thm:lower} says what no algorithm can do about the second: waiting leaves the learner
-uncertain about what the states now predict, and that uncertainty is irreducible, surviving even
-when the exact losses from $d$ rounds ago are handed over free. Two limits remain: $\bar v$ is estimated rather than
-solved, so the guarantee invoked is that at $V=|\Sset|T$, and the bounds lie on different axes. 
+Theorem~\ref{thm:lower} says what no algorithm can do about the second: the uncertainty left by
+waiting is irreducible, surviving even when the exact losses from $d$ rounds ago are handed over
+free. Two limits remain: $\bar v$ is estimated rather than solved, and the bounds lie on different
+axes. 
 
 \begin{thebibliography}{99}
 \bibitem[Alon et al.(2015)]{alon2015} N.~Alon, N.~Cesa-Bianchi, O.~Dekel, and T.~Koren. Online learning with feedback graphs: beyond bandits. \emph{COLT}, PMLR 40, 2015.
@@ -298,7 +299,6 @@ solved, so the guarantee invoked is that at $V=|\Sset|T$, and the bounds lie on 
 \bibitem[Esposito et al.(2023)]{esposito2023} E.~Esposito, S.~Masoudian, H.~Qiu, D.~van~der~Hoeven, N.~Cesa-Bianchi, and Y.~Seldin. Delayed bandits: When do intermediate observations help? \emph{ICML}, PMLR 202, 2023.
 \bibitem[Esposito et al.(2022)]{esposito2022} E.~Esposito, F.~Fusco, D.~van~der~Hoeven, and N.~Cesa-Bianchi. Learning on the edge: online learning with stochastic feedback graphs. \emph{NeurIPS}, 35, 2022.
 \bibitem[Gabbianelli et al.(2023)]{gabbianelli2023} G.~Gabbianelli, G.~Neu, and M.~Papini. Online learning with off-policy feedback. \emph{ALT}, PMLR 201, 2023.
-\bibitem[Joulani et al.(2013)]{joulani2013} P.~Joulani, A.~Gy\"orgy, and C.~Szepesv\'ari. Online learning under delayed feedback. \emph{ICML}, 2013.
 \bibitem[Thune et al.(2019)]{thune2019} T.~S.~Thune, N.~Cesa-Bianchi, and Y.~Seldin. Nonstochastic multiarmed bandits with unrestricted delays. \emph{NeurIPS}, 32, 2019.
 \bibitem[Vernade et al.(2020)]{vernade2020} C.~Vernade, A.~Gy\"orgy, and T.~Mann. Non-stationary delayed bandits with intermediate observations. \emph{ICML}, PMLR 119, 2020.
 \bibitem[Wang et al.(2026)]{wang2026} S.~Wang, A.~Barik, and V.~Y.~F.~Tan. Bandit convex optimization with gradient prediction adaptivity. \emph{arXiv:2605.22191}, 2026.
@@ -507,197 +507,6 @@ Summing over $t$ adds $2\sum_t\delta_t(g)$, and Lemma~\ref{lem:coarse} makes $V(
 a bound valid for the raw states.
 \end{proof}
 
-\section{An unknown action-to-state map}\label{app:unknown}
-
-\paragraph{The plug-in estimator.}
-The pairs $(A_t,S_t)$ arrive without delay, so $P$ is estimable from the learner's own play while
-the outcomes are still in flight. Let $N_a(t)$ count the rounds before $t$ that played $a$ and
-$N_{a,s}(t)$ those that also produced $s$, and set
-$\hat P_t(s\mid a)=(N_{a,s}(t)+\alpha)/(N_a(t)+\alpha|\Sset|)$ for a smoothing constant
-$\alpha\in(0,1]$ fixed independently of $T$, which is row-stochastic with every entry positive, so
-$\hat q_t=x_t^\top\hat P_t$ is positive too, and both are $\mathcal F_{t-1}$-measurable. Smoothing moves an entry
-from the empirical row by at most $\alpha(|\Sset|-1)/(N_a(t)+\alpha|\Sset|)$, attained when every
-observation of $a$ sits on one state, and moves the row in $\ell_1$ by at most twice that. Both
-are of lower order than the sampling term at fixed $\alpha$ and must be carried otherwise, and
-Appendix~\ref{app:num} shows the choice matters in practice. The plug-in estimate is
-$\hat c_t(a)=\hat P_t(S_t\mid a)X_t/\hat q_t(S_t)$. Write
-$\varepsilon_t=\max_a\|\hat P_t(\cdot\mid a)-P(\cdot\mid a)\|_1$ for its accuracy and
-$\rho_t=\max_{s:q_t(s)>0}|\hat q_t(s)-q_t(s)|/q_t(s)$ for the relative error it induces on the
-state distribution, states of zero probability under the play being omitted since the estimator
-never charges them.
-
-\begin{proposition}\label{prop:plugin}
-On $\{\rho_t\le\tfrac12\}$ the plug-in estimate satisfies $\hat c_t\ge0$ and
-$\sum_ax_t(a)\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]\le2\hat v_t\le2|\Sset|$, and its conditional
-mean $\bar c_t$ satisfies $\sum_ax_t(a)(\bar c_t(a)-c_t(a))=0$ exactly, for every $\hat P_t$
-and with no hypothesis at all, and $|\bar c_t(a)-c_t(a)|\le2\varepsilon_t(a)+2\rho_t$ for every $a$, where
-$\varepsilon_t(a)=\|\hat P_t(\cdot\mid a)-P(\cdot\mid a)\|_1$.
-\end{proposition}
-
-\begin{proof}
-Write $\Delta_t=\hat P_t-P$ and $\delta_t=\hat q_t-q_t=\sum_ax_t(a)\Delta_t(\cdot\mid a)$.
-Substituting these into $\bar c_t(a)=\sum_sq_t(s)\hat P_t(s\mid a)\theta_t(s)/\hat q_t(s)$ and
-cancelling gives
-$\bar c_t(a)-c_t(a)=\sum_s\theta_t(s)[q_t(s)\Delta_t(s\mid a)-P(s\mid a)\delta_t(s)]/\hat q_t(s)$,
-so with $\theta_t\in[0,1]^{|\Sset|}$,
-\[
-|\bar c_t(a)-c_t(a)|\ \le\ \sum_s\frac{q_t(s)|\Delta_t(s\mid a)|+P(s\mid a)|\delta_t(s)|}{\hat q_t(s)} .
-\]
-The play-weighted identity needs no hypothesis. By definition
-$\sum_ax_t(a)\hat P_t(s\mid a)=\hat q_t(s)$, so $\sum_ax_t(a)\hat c_t(a)=X_t$ whatever $\hat P_t$
-is, and taking conditional expectations gives
-$\sum_ax_t(a)\bar c_t(a)=\sum_sq_t(s)\theta_t(s)=\langle x_t,c_t\rangle$. On
-$\{\rho_t\le\tfrac12\}$ we have $q_t\le2\hat q_t$, and for the per-action bias the first sum of
-the display is at most $2\|\Delta_t(\cdot\mid a)\|_1=2\varepsilon_t(a)$ and the second at most
-$2\sum_sP(s\mid a)|\delta_t(s)|/q_t(s)\le2\rho_t$, because $P(\cdot\mid a)$ is a probability
-vector. The play-weighted identity does \emph{not} survive reweighting: at $x_t=(\tfrac12,\tfrac12)$,
-$P=I$, $\hat P=\bigl(\begin{smallmatrix}.9&.1\\.2&.8\end{smallmatrix}\bigr)$ and
-$\theta_t=(0,1)$ the bias is $(\tfrac19,-\tfrac19)$ with zero $x_t$-average, while weights
-$(1,0)$ leave $\tfrac1{18}$. For the second moment,
-$\sum_ax_t(a)\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]
-\le\sum_s\frac{q_t(s)}{\hat q_t(s)}\cdot\frac{\sum_ax_t(a)\hat P_t(s\mid a)^2}{\hat q_t(s)}
-\le2\hat v_t$, and $\hat v_t\le|\Sset|$ by Proposition~\ref{prop:pool} applied to $\hat P_t$.
-\end{proof}
-
-\paragraph{The warm-start guarantee.}
-\textsc{Warm-start State-EXP3} plays uniformly for $n_0$ rounds, forms $\hat P=\hat P_{n_0+1}$
-from those rounds alone, discards the cumulative estimates together with every outcome of a
-warm-start round that has not yet arrived, and then runs
-\textsc{State-EXP3} with $m=d+1$, that frozen $\hat P$, and each play mixed with the uniform
-action at rate $\gamma$. Freezing makes $\hat P$ measurable with respect to the first phase, so
-$\varepsilon$ and $\rho$ are fixed before the second phase begins, and discarding is what keeps
-the first phase's inaccurate updates out of every later distribution.
-
-\begin{theorem}\label{thm:unknown}
-Suppose $\bar p(s)\ge1/(\kappa|\Sset|)$ for every $s$, fix $0<\gamma\le\tfrac12$ and
-$1\le d\le T/2$, and take
-$n_0\ge c\,\gamma^{-2}K\kappa^2|\Sset|^2\log(K|\Sset|T)$ for a universal $c$. Then
-\textup{\textsc{Warm-start State-EXP3}} satisfies, for every $\eta>0$,
-\[
-\Ex[R_T]\ \le\ n_0+1+\gamma T+\frac{(d+1)\log K}{\eta}+2\eta|\Sset|T+T\bigl(4\bar\varepsilon+4\bar\rho\bigr),
-\]
-where $\bar\varepsilon=\Ot(\sqrt{K|\Sset|/n_0})$ and
-$\bar\rho=\Ot(\kappa|\Sset|\sqrt{K/n_0}/\gamma)\le\tfrac12$ bound $\varepsilon$ and $\rho$ on an
-event of probability at least $1-1/T$. Tuning $\eta$ and then
-$\gamma\asymp(\kappa|\Sset|)^{1/2}(K/n_0)^{1/4}$ and
-$n_0\asymp T^{4/5}(\kappa|\Sset|)^{2/5}K^{1/5}$ gives
-$\Ex[R_T]=\Ot\bigl(\sqrt{d\,|\Sset|T\log K}+(\kappa|\Sset|)^{2/5}K^{1/5}T^{4/5}\bigr)$, provided
-$T=\widetilde\Omega(K(\kappa|\Sset|)^2)$. That condition constrains $T$ against $K$, $|\Sset|$ and
-$\kappa$ only, so the hypothesis $d\le T/2$ is what carries the delay. Together they give
-$n_0\le T/2\le T-d$, and the same condition supplies the lower bound above with some
-$\gamma\le\tfrac12$. Outside that regime the tuning is vacuous and $R_T\le T$ is the
-statement.
-\end{theorem}
-
-\begin{proof}
-The first phase has losses in $[0,1]$, so it contributes at most $n_0$. Let $G$ be the event that
-$N_a(n_0+1)\ge n_0/(2K)$ for every $a$, that
-$\|\hat P(\cdot\mid a)-P(\cdot\mid a)\|_1\le\bar\varepsilon$ for every $a$, and that
-$\max_{s,a}|\hat P(s\mid a)-P(s\mid a)|\le\bar\rho\gamma/(\kappa|\Sset|)$. Uniform play gives
-$\Ex[N_a]=n_0/K$, so a multiplicative Chernoff bound, the $\ell_1$ deviation bound for a
-multinomial, Hoeffding, and a union bound over the $K|\Sset|$ entries put
-$\Pr(G^c)\le1/T$ at the stated $n_0$, the pseudo-counts adding
-$2\alpha(|\Sset|-1)/(N_a+\alpha|\Sset|)$ to each $\ell_1$ deviation and half that to each entry,
-of lower order at fixed $\alpha$. Off $G$ bound the second phase by $T$, contributing at most $1$.
-
-On $G$ the quantity $\hat P$ is measurable with respect to the first phase, and mixing gives
-$q_t(s)\ge\gamma\bar p(s)\ge\gamma/(\kappa|\Sset|)$ at every later round, so
-$\rho_t\le\kappa|\Sset|\max_{s,a}|\hat P(s\mid a)-P(s\mid a)|/\gamma\le\bar\rho\le\tfrac12$
-for every $t>n_0$ and every realization of the second phase. Proposition~\ref{prop:plugin}
-therefore applies at every such round, and conditionally on the first phase the second is exactly
-the algorithm of Theorem~\ref{thm:sexp3} driven by a nonnegative estimate with weighted second
-moment at most $2\hat v_t\le2|\Sset|$. Its proof gives
-$\Ex[\sum_{t>n_0}(\langle p_t,\bar c_t\rangle-\bar c_t(a^\star))]\le(d+1)\log K/\eta+2\eta|\Sset|T$,
-the extra factor of two coming from $p_t\le x_t/(1-\gamma)\le2x_t$. Playing $x_t$ rather than $p_t$ costs at most $\gamma$ per round since $c_t\in[0,1]^K$, so it
-remains to pass from $\bar c_t$ to $c_t$ under $p_t$. Proposition~\ref{prop:plugin} gives
-$\langle x_t,b_t\rangle=0$ for the per-action bias $b_t$, and $x_t=(1-\gamma)p_t+\gamma u$ for
-the uniform $u$, so $\langle p_t,b_t\rangle=-\tfrac{\gamma}{1-\gamma}\langle u,b_t\rangle$, which
-for $\gamma\le\tfrac12$ is at most $\max_a|b_t(a)|$ in absolute value. Each round therefore adds
-$|\langle p_t,b_t\rangle|+|b_t(a^\star)|\le2\max_a|b_t(a)|\le4\bar\varepsilon+4\bar\rho$. Collecting the four contributions gives
-the display. For the rate, balancing $\gamma T$ against $2T\bar\rho$ gives the stated $\gamma$ and
-a combined $\Ot(T(\kappa|\Sset|)^{1/2}(K/n_0)^{1/4})$, and balancing that against $n_0$ gives the
-stated $n_0$, under which $T\bar\varepsilon$ and the constraint on $n_0$ are of lower order.
-\end{proof}
-
-\paragraph{Safe blending.}
-Blending the plug-in with the action-level estimate makes the guarantee safe. Let
-$\lambda_t\in[0,1]^K$ be $\mathcal F_{t-1}$-measurable and put
-$\check g_t(a)=(1-\lambda_t(a))\tilde c_t(a)+\lambda_t(a)\hat c_t(a)$.
-
-\begin{proposition}\label{prop:blend}
-$\check g_t\ge0$, its conditional mean satisfies
-$\Ex[\check g_t(a)\mid\mathcal F_{t-1}]-c_t(a)=\lambda_t(a)\,(\bar c_t(a)-c_t(a))$
-for the plug-in's conditional mean $\bar c_t$ of Proposition~\ref{prop:plugin}, and
-\[
-\sum_ax_t(a)\Ex[\check g_t(a)^2\mid\mathcal F_{t-1}]\ \le\ (K-\Pi_t)+\hat V_t ,
-\]
-for $\Pi_t=\sum_a\lambda_t(a)$ and
-$\hat V_t=\sum_a\lambda_t(a)x_t(a)\Ex[\hat c_t(a)^2\mid\mathcal F_{t-1}]$, which satisfies
-$\hat V_t\le2\hat v_t$ on $\{\rho_t\le\tfrac12\}$ and not in general, since the step
-$q_t/\hat q_t\le2$ behind it is exactly that event. We write $V^{\mathrm{ub}}_t(\tau)$ below for a
-computable upper bound on $\hat V_t$, reserving $\hat V_t$ for the conditional expectation
-itself.
-\end{proposition}
-
-\begin{proof}
-Both parts are nonnegative and $\lambda_t(a)\in[0,1]$. The mean identity is linearity together
-with $\Ex[\tilde c_t(a)\mid\mathcal F_{t-1}]=c_t(a)$. For the second moment, $u\mapsto u^2$ is
-convex, so $\check g_t(a)^2\le(1-\lambda_t(a))\tilde c_t(a)^2+\lambda_t(a)\hat c_t(a)^2$, and
-$x_t(a)\Ex[\tilde c_t(a)^2\mid\mathcal F_{t-1}]\le1$ by Proposition~\ref{prop:pool}.
-\end{proof}
-
-So a weight of $\lambda_t(a)$ on the plug-in buys a variance saving of $\lambda_t(a)$ and pays a
-bias of $\lambda_t(a)$ times the plug-in's, and both endpoints are exact. Let $r_t(a)$ and $\hat\rho_t$ be any sequences computable from the immediate pairs that are
-\emph{simultaneously valid}, meaning $\varepsilon_t(a)\le r_t(a)$ for every $a$ and
-$\rho_t\le\hat\rho_t$ at every $t\le T$, on an event of probability at least $1-1/T$. Write
-$V^{\mathrm{ub}}_t(\tau)=2\sum_{a:r_t(a)\le\tau}x_t(a)\sum_s\hat P_t(s\mid a)^2/\hat q_t(s)$,
-which the learner can evaluate and which dominates $\hat V_t$ on $\{\rho_t\le\tfrac12\}$. \textsc{Safe-Pool State-EXP3} sets $\lambda_t\equiv0$ when
-$\hat\rho_t>\tfrac12$, and otherwise picks the best member of the candidate set
-$\{\bot\}\cup\{r_t(a):a\le K\}$, where $\bot$ stands for $\lambda_t\equiv0$ and a numerical
-candidate $\tau$ stands for $\lambda_t(a)=\mathbf 1\{r_t(a)\le\tau\}$, best meaning smallest
-\[
-\Psi_t(\tau)=\tfrac\eta2\bigl[(K-\Pi_t(\tau))+V^{\mathrm{ub}}_t(\tau)\bigr]
-+\bigl(4\tau+4\hat\rho_t\bigr)\mathbf 1\{\Pi_t(\tau)>0\},
-\qquad\Psi_t(\bot)=\tfrac\eta2K.
-\]
-Write $\Psi^\star_t$ for that smallest value. The candidate $\bot$ is listed apart from the
-numerical thresholds because a valid radius may equal zero, in which case $\tau=0$ pools the
-actions attaining it rather than abstaining, so $\bot$ rather than $\tau=0$ is what keeps
-$\tfrac\eta2K$ available on every round.
-
-\begin{theorem}\label{thm:safe}
-For every $\eta>0$, \textup{\textsc{Safe-Pool State-EXP3}} with $m=d+1$ satisfies
-\[
-\Ex[R_T]\ \le\ 1+\frac{(d+1)\log K}{\eta}
-+\Ex\Bigl[\sum_{t=1}^T\Psi^\star_t\Bigr],
-\]
-so $\eta=\sqrt{2(d+1)\log K/(KT)}$ gives $\Ex[R_T]\le1+\sqrt{2(d+1)KT\log K}$ on every instance,
-which is the guarantee of action-level exponential weights, with an improvement on each round
-whose $\Psi^\star_t$ is strictly below $\tfrac\eta2K$. The certificate is computed from the
-learner's own observations and so is random, which is why the display carries an expectation.
-The tuned bound does not, because $\Psi^\star_t\le\tfrac\eta2K$ holds on every path.
-\end{theorem}
-
-\begin{proof}
-On the validity event, of probability at least $1-1/T$ and contributing at most $1$ off it,
-pooling happens only when $\hat\rho_t\le\tfrac12$ and hence only when $\rho_t\le\tfrac12$, which
-is what makes $V^{\mathrm{ub}}_t$ dominate the conditional second moment. Proposition~\ref{prop:blend}
-then supplies a nonnegative estimate whose weighted second moment is at most
-$(K-\Pi_t)+\hat V_t$, so the argument of Appendix~\ref{app:etc} applies to the surrogate
-losses. Passing to $c_t$ adds both the played bias
-$|\sum_ax_t(a)\lambda_t(a)b_t(a)|$ and the comparator bias $\lambda_t(a^\star)|b_t(a^\star)|$,
-for $b_t=\bar c_t-c_t$.
-The cancellation of Proposition~\ref{prop:plugin} is lost under per-action weights, as the
-counterexample there shows, so each is bounded separately. On a pooled action
-$\varepsilon_t(a)\le r_t(a)\le\tau$ gives $|b_t(a)|\le2\tau+2\hat\rho_t$, and since
-$\sum_ax_t(a)\lambda_t(a)\le1$ and $\lambda_t(a^\star)\le1$ the two together are at most $4\tau+4\hat\rho_t$, charged only when something is pooled. The
-second-moment bound and the two bias terms are all functions of the observations, so the
-per-round costs they assemble into are the random $\Psi^\star_t$ and the sum is taken in
-expectation. For the tuned bound, $\bot$ belongs to the candidate set and
-$\Psi_t(\bot)=\tfrac\eta2K$, so $\Psi^\star_t\le\tfrac\eta2K$ on every path whatever the radii
-are.
-\end{proof}
-
 \section{Relation to other inaccuracy measures}\label{app:transfer}
 
 Write $\lamtwo=\sum_t\min\{1,\|c_t-m_t\|_2^2\}$ for the inaccuracy measure of \citet{baron2025}.
@@ -838,11 +647,6 @@ carry no drift and change the constant only. When the oracle is withheld, the $\
 construction is stationary and therefore lies in the present model class.
 \end{proof}
 
-The other term such constructions produce, the multiplicative $\sqrt{\min\{|\Sset|,d\}T}$, is not
-forced here; Appendix~\ref{app:sensor} records why the known route to it is unavailable in this
-model class, and that neither a matching upper bound nor a lower bound ruling it out is
-established.
-
 \begin{proposition}\label{prop:tight}
 Suppose $X_t=c_t(A_t)$. On instances whose drift is carried by a single action, $\lamtwo=\etwo$,
 so the bound of \citet{baron2025} reads $\Ot(\sqrt{KT+d\,\etwo})$ and its drift contribution
@@ -862,46 +666,6 @@ the truncation at one in $\lamtwo$ is inactive and $\lamtwo=\etwo$. The bound of
 contribution Theorem~\ref{thm:lower} matches up to the logarithmic factor at $J=1$. Its
 $\sqrt{KT}$ contribution is not matched.
 \end{proof}
-
-\section{The two-action counterexample}\label{app:counter}
-
-Take $K=2$ with the hybrid regularizer of \citet{zimmert2020}, Tsallis parameter $\beta=0.01$,
-learning rate $\eta=0.5$ and residual scale $C=1$. The iterate solves the stationarity condition
-$g(x_1)+L_1=g(x_2)+L_2$ with $x_1+x_2=1$, where
-\[
-g(x)=-\tfrac{1}{2\beta}x^{-1/2}+\tfrac{1}{\eta}\log x
-\]
-and $L_a$ is the cumulative estimate for action $a$. Suppose the cumulative estimates place
-action~1 at probability $x_1$. A single maximally negative centered residual $-C/x_1$ is then
-delivered to action~1. This is realizable in the model of Section~\ref{sec:setting}, since
-$m_t(1)=1$ and $X_t=0$ give exactly $\check c_t(1)-m_t(1)=-C/x_1$ with $C=1$. Solving the
-stationarity condition again gives the following.
-
-\begin{center}\small
-\begin{tabular}{lll}
-\toprule
-$x_1$ before & $x_1$ after & ratio \\
-\midrule
-$9.15\times10^{-3}$ & $1.46\times10^{-2}$ & $1.6$ \\
-$9.83\times10^{-4}$ & $7.39\times10^{-3}$ & $7.5$ \\
-$2.19\times10^{-4}$ & $9.98\times10^{-1}$ & $4561$ \\
-$5.80\times10^{-5}$ & $1.00$ & $17226$ \\
-$4.86\times10^{-6}$ & $1.00$ & $205641$ \\
-\bottomrule
-\end{tabular}\\[2pt]
-One step of the hybrid regulariser at $K=2$: the iterate ratio is unbounded.
-\end{center}
-
-The transition sits at $4\beta^2C^2=4\times10^{-4}$, which is where the Tsallis term
-$x^{-1/2}$ ceases to dominate the entropy term $\log x$ in $g$, so the one-step linearization
-underlying a constant-factor bound fails. The violated statement is the local-stability
-inequality asserting that $x_{t'}(a)/x_t(a)$ stays bounded by a constant for all $t'$ within $d$
-rounds of $t$. A single round refutes it, so no accumulation argument is needed. This invalidates that lemma
-and the proof route resting on it, and not every argument that might use the same regularizer. It does not refute
-the open problem of Section~\ref{sec:conj}, which concerns the regret rate and may be provable by
-other means.
-Devices that bound the residual magnitude introduce either a first-order bias dominating the
-target term or a probability floor narrowing the delay regime.
 
 \section{Numerical detail}\label{app:num}
 
@@ -1242,34 +1006,6 @@ assumes the best action reaches the single best state, which fails with linear r
 assumption does not hold. Study~16 places it against the strongest published method: ahead in every
 cell when both are tuned alike, behind in four of six when that method alone is grid-tuned.
 
-\section{A route that does not work}\label{app:additive}
-
-Theorem~\ref{thm:m1} is proved in Appendix~\ref{app:m1} by bounding a state-marginal ratio. The
-natural first attempt is different and fails, which is worth recording so the detour is not
-repeated.
-
-Run \textsc{State-EXP3} with $m=1$ and let $\tilde x_r$ be the iterate that has also absorbed the
-outstanding estimates $G_r=\sum_{s=r-d}^{r-1}\hat c_s\ge0$. The delay term
-$\Ex[\langle x_r-\tilde x_r,\hat c_r\rangle]$ is at most $\eta\sum_{s=r-d}^{r-1}\Ex[\langle
-x_r,\hat c_s\rangle]\le\eta d$ for any unbiased estimator, which is already the additive form. The
-quadratic term is where it stops: the telescoping scores $\sum_ax_{r+d}(a)\hat c_r(a)^2$ while
-Proposition~\ref{prop:pool} bounds the sum against $x_r$, and the substitution costs
-$|\Sset|/Z_r$ with $Z_r=\Ex_{a\sim x_r}[e^{-\eta G_r(a)}]$, hence an exponential moment of
-$\langle x_r,G_r\rangle$.
-
-That moment has no bound uniform over state distributions. Here
-$\langle x_r,\hat c_s\rangle=q_r(S_s)X_s/q_s(S_s)$, governed by the reciprocal probability of the
-state actually observed, whose mean is $|\Sset|$ but whose exponential moment is not uniformly
-finite: already at $|\Sset|=2$ with $q=(\varepsilon,1-\varepsilon)$,
-$\Ex[e^{\eta/q(S)}]\ge\varepsilon e^{\eta/\varepsilon}\to\infty$ while the mean stays at $2$.
-Flooring $q$ restores the moment and costs the product back, since $\eta\langle x_r,G_r\rangle\le1$
-then needs $\gamma\asymp\eta d\kappa|\Sset|$ and the mixing cost $\gamma T$ reproduces
-$\Ot(\sqrt{d\kappa|\Sset|T\log K})$. Empirically the obstruction never bites, $1/Z_r$ staying below
-$1.33$ at the tuned $\eta$ over $d\in\{10,50,200\}$, which is what suggested it was an artifact of
-the device rather than of the problem. That the ratio really can blow up, rather than merely
-resisting a bound, is shown in Appendix~\ref{app:counter}, where a two-action instance under a
-hybrid regulariser moves an iterate by a factor of $2\times10^5$ in one step.
-
 \section{Proof of Theorem~\ref{thm:m1}: additive delay without interleaving}\label{app:m1}
 
 Interleaving cannot give an additive bound. Copy $i$, which absorbs a share $V_i$ of the budget
@@ -1283,8 +1019,9 @@ $L_{t+1}-L_t=\hat c_{t-d}$, with $\hat c_r=0$ for $r<1$. The filtration $\mathca
 environment's, including outcomes not yet delivered, as in Proposition~\ref{prop:pool}; under it
 $x_t$ is $\mathcal F_{t-d-1}$-measurable, so $x_{r+d}$ is $\mathcal F_{r-1}$-measurable.
 
-\paragraph{The drift lemma.} Appendix~\ref{app:additive} priced the change of measure from $x_r$ to
-$x_{r+d}$ through $1/Z_r$. That is avoidable. The pooled estimate satisfies
+\paragraph{The drift lemma.} The natural route prices the change of measure from $x_r$ to
+$x_{r+d}$ through the normaliser $Z_r$, whose reciprocal has no uniformly bounded moment. That is
+avoidable. The pooled estimate satisfies
 \[
 \langle x_t,\hat c_t\rangle=\sum_ax_t(a)\frac{P(S_t\mid a)X_t}{q_t(S_t)}=X_t\le1
 \]
@@ -1308,8 +1045,8 @@ $x_{t+1}(a)=x_t(a)e^{-\eta\hat c_{t-d}(a)}/Z_t\le x_t(a)/Z_t\le(1+1/d)x_t(a)$.
 \end{proof}
 
 What the induction bounds is
-$\langle x_t,\hat c_{t-d}\rangle=X_{t-d}\,q_t(S_{t-d})/q_{t-d}(S_{t-d})$, the state-marginal ratio
-Appendix~\ref{app:additive} could not reach. Individual $\hat c_r(a)$ remain unbounded; only their
+$\langle x_t,\hat c_{t-d}\rangle=X_{t-d}\,q_t(S_{t-d})/q_{t-d}(S_{t-d})$, the state-marginal ratio that the
+$1/Z_r$ route could not reach. Individual $\hat c_r(a)$ remain unbounded; only their
 $x_t$-weighted mass is controlled. \citet{cesabianchi2019} prove the action-level version under
 $\eta\le1/(Ke(d+1))$ and \citet{thune2019} remove the $K$, using that their estimate is carried by
 the single action played, so the weight cancels into a same-action ratio. A pooled estimate is
@@ -1380,19 +1117,5 @@ The two bounds are numerically close on the funnel, where $\bar v\approx2$: the 
 carries $3.3(\bar v-1)+2d$ and the interleaved one $(d+1)\bar v$, and these cross near $\bar v=2$.
 The additive form gains as $\bar v$ rises toward $|\Sset|$, and it describes the algorithm that is
 actually run, which is the reason to prefer it.
-
-\section{Stationary sensors}\label{app:sensor}
-
-\begin{observation}\label{obs:sensor}
-The multiplicative term $\sqrt{\min\{|\Sset|,d\}T}$ is not forced by the known construction, and
-is absent at one endpoint of the present model class.
-\end{observation}
-
-The $\Omega(\sqrt{\min\{|\Sset|,d\}T})$ construction of \citet[Thm.~5.2]{esposito2023} re-splits
-states across actions adversarially per block, so its action-to-state map is time-varying and
-lies outside the model class of Section~\ref{sec:setting}. At $\etwo=0$ with stationary $P$ the
-problem is a stochastic delayed bandit, where delay enters additively \citep{joulani2013}. One
-route to it is therefore unavailable and the term is absent at one endpoint, but neither a
-matching upper bound for all $\etwo>0$ nor a lower bound ruling it out is established here.
 
 \end{document}
