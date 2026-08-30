@@ -96,8 +96,8 @@ across several actions.
 What the pooling costs is an \emph{effective dimension} $v_t$, measuring how distinguishable the
 action-induced state distributions are under the current play; it lies between $1$ and the number
 of states and can fall far below $K$. Theorem~\ref{thm:m1} pays $v_t$ in place of $K$ for the
-algorithm that is actually run, merging similar states lowers it again at a bias we make explicit,
-and across the families the measured gain tracks $v_t$ rather than $K$. The claim has a boundary. Waiting
+algorithm that is actually run, and across the families the measured gain tracks $v_t$ rather
+than $K$. The claim has a boundary. Waiting
 carries a cost of its own, which sharing cannot remove. Writing
 $m_t=c_{t-d}$ for the action-loss vector from $d$ rounds earlier and
 $\etwo=\sum_t\|c_t-m_t\|_\infty^2$ for how far the losses move while the learner waits,
@@ -132,7 +132,7 @@ this paper            & \cm & \cm & \cm & \cm \\
 Where this work sits: the four ingredients that separate the neighbouring settings.
 \end{center}
 
-The last row is the contribution: no prior work combines all four. \citet{eldowa2024} is closest,
+Among the closest settings summarised here, ours is the row combining all four. \citet{eldowa2024} is closest,
 and $v_t-1$ is exactly the $\chi^2$ mutual information they introduce, so that quantity is theirs;
 what is new is its role once the outcome is delayed (Appendix~\ref{app:transfer}).
 \citet{vernade2020} vary the action-to-state map while fixing the state-to-loss map, where we do
@@ -194,8 +194,7 @@ $\Ex[R_T]\le\sqrt{2(3.3V^-+2dT)\log K}+e(d+1)\log K+d$.
 So $K$ is replaced by $V^-$, which counts how differently the actions behave rather than how many
 there are, and the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$, for the algorithm every
 experiment below runs. Writing $\bar v$ for the largest $v_t$ over all ways of playing,
-$V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. Rotating $d+1$ copies and merging
-similar states are handled in Appendix~\ref{app:etc}; none of the three adapts to $\etwo$.
+$V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. Related variants are deferred to Appendix~\ref{app:etc}; none of them adapts to $\etwo$.
 
 The proof turns on one pathwise identity. The denominator of $\hat c_t$ is the state marginal of
 the distribution supplying its numerator, so $\langle x_t,\hat c_t\rangle=X_t\le1$ on every path,
@@ -270,7 +269,8 @@ answer takes. The first is exploitable and checkable before deployment, since $P
 $\bar v$ well below $K$ says whether the state channel is worth using. The second is not:
 Theorem~\ref{thm:lower} shows the uncertainty left by waiting survives even when the exact losses
 from $d$ rounds ago are handed over free. Two limits remain: $\bar v$ is estimated rather than
-solved for, and the bounds lie on different axes.
+solved for, and the bounds lie on different axes. Adapting to overlap and to drift at once, in one
+algorithm and one bound, is open.
 
 \begin{thebibliography}{99}
 \bibitem[Alon et al.(2015)]{alon2015} N.~Alon, N.~Cesa-Bianchi, O.~Dekel, and T.~Koren. Online learning with feedback graphs: beyond bandits. \emph{COLT}, PMLR 40, 2015.
@@ -456,8 +456,8 @@ $\sqrt{2(d+1)V\log K}$, and $V=\bar vT$ is admissible by the definition of $\bar
 \end{proof}
 
 The delay enters as a factor because the copies do not share their estimates, each paying
-$\log K/\eta$ over $T/(d+1)$ rounds. Sharing them is exactly the $m=1$ algorithm of
-the open problem of Section~\ref{sec:conj}.
+$\log K/\eta$ over $T/(d+1)$ rounds. Sharing them gives the $m=1$ algorithm of
+Theorem~\ref{thm:m1}, whose additive delay term avoids this penalty.
 
 \begin{proof}[Proof of Theorem~\ref{thm:rep}]
 Running the algorithm on $g$ is running it on the sensor $(\mathcal Z,P^g)$. The surrogate
@@ -627,15 +627,18 @@ $\sum_tc_t(A_t)-\min_a\sum_tc_t(a)$ on one realization of the learner and enviro
 computed from the true losses rather than the sampled outcomes; averaging it over seeds estimates
 the expected pseudo-regret the theorems bound.
 
-Each study below tests a statement the paper proves. Study~1 checks Theorem~\ref{thm:sexp3}'s
-bound on the interleaved algorithm and compares it with the single-copy one of
-Theorem~\ref{thm:m1}; studies~14 and~16 test Theorem~\ref{thm:m1} where $K$ is large and the
-states few; study~10 tests the prediction common to Theorems~\ref{thm:m1} and~\ref{thm:sexp3},
-that the gain follows the effective dimension and not $K$; and study~8 tests
-Theorem~\ref{thm:lower} on the drift channel. Theorem~\ref{thm:rep}, on coarsening, has no study
-here; it is stated and proved in Appendix~\ref{app:etc} and left untested in this submission. Studies whose
-conclusions were superseded by a later control, or that replicated one already reported, are left
-to the released code.
+The first three studies probe the state channel of the claim from increasingly controlled and
+increasingly operational angles, and the last probes its temporal boundary. Study~1 raises $K$
+with $|\Sset|$ fixed and asks whether pooling grows more valuable, which is Theorem~\ref{thm:m1}'s
+prediction; study~10 holds $K$ and the task difficulty fixed and varies the overlap instead, which
+separates that prediction from the instances simply becoming easier; study~14/16 shows the regime
+in an environment built to the shape of a funnel and measures it against a rate-optimal baseline.
+Study~8 then tests Theorem~\ref{thm:lower} on the drift channel, where pooling cannot help.
+Theorem~\ref{thm:sexp3}'s bound on the interleaved algorithm is checked inside study~1.
+Theorem~\ref{thm:rep}, on coarsening, has no study here; it is stated and proved in
+Appendix~\ref{app:etc} and left untested in this submission. Studies whose conclusions were
+superseded by a later control, or that replicated one already reported, are left to the released
+code.
 
 \textbf{Study~1. The gain grows with $K$ at fixed $|\Sset|$.} With $|\Sset|=4$, $T=10000$, $d=50$,
 drift band $0.05$ and $100$ seeds:
@@ -665,55 +668,12 @@ Interpretation. A margin that grows in $K$ while $|\Sset|$ is held fixed is the 
 separates the two estimators, since only the action-level cost scales with $K$, so the improvement
 is attributable to the state channel. Interleaving looks like a price of the analysis rather than
 of the estimator. The narrowing of the
-gap as the delay grows is what an additive delay term predicts and a multiplicative one does not,
-which is the diagnostic evidence behind the open problem of Section~\ref{sec:conj}.
+gap as the delay grows is what the additive delay term of Theorem~\ref{thm:m1} predicts and the
+multiplicative one of the interleaved bound does not.
 
 Limitation. This is one synthetic family with a fixed drift band, and a simulation cannot
 establish that a bound holds, only that sample-path pseudo-regret stayed below it in the runs
 performed.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{fig3.pdf}
-\caption{Study~8, the drift channel. \textbf{Left,} measured regret against the scale
-Theorem~\ref{thm:lower} predicts, over twelve cells in which $d$ varies $20$-fold, $\etwo$
-$100$-fold and $J$ $16$-fold. The dashed line has slope one. \textbf{Right,} the same points
-divided by that scale, grouped by which parameter the cell sweeps, with the shaded band spanning
-the observed range. \textsc{State-EXP3} appears here only as one more algorithm on the hard
-family, where it has no advantage.}
-\label{fig:drift}
-\end{figure}
-
-\textbf{Study~8. The drift bound describes the right scaling.} The construction of
-Theorem~\ref{thm:lower} at $K=40$, $T=8000$, $h=d$ and $12$ paired seeds, sweeping $d$ from $10$
-to $200$, the amplitude $\varepsilon$ from $0.02$ to $0.20$ so that $\etwo$ runs from $12$ to
-$1193$, and the drifting coordinates $J$ from $1$ to $16$. We run four policies: uniform, action-level \textsc{EXP3}, \textsc{State-EXP3},
-and the greedy policy on the exact stale vector $m_t$, the last because
-Theorem~\ref{thm:lower} claims to survive it. $\etwo$ is measured on the realized instance rather
-than predicted, so the normalization uses the quantity the theorem uses.
-
-Observed. The predicted scale $\sqrt{d\,\etwo\min\{1+\log J,T/d\}}$ ranges from $38$ to $377$
-across the grid and the measured regret tracks it (Figure~\ref{fig:drift}). Normalized, the four
-policies read $0.230$ to $0.429$, $0.228$ to $0.424$, $0.238$ to $0.417$ and $0.237$ to $0.437$,
-a spread below $1.9$ against a tenfold range in the predictor. The oracle-assisted policy has the
-largest mean ratio, $0.345$ against $0.311$, $0.314$ and $0.310$ for the three that never see
-$m_t$.
-
-Interpretation. The three arguments enter the predicted scale differently and the collapse holds
-in all three sweeps, so it is the form of the bound rather than one fitted constant that tracks
-the data. Greedy play on the exact $m_t$ sits at the top of the band rather than below it, which is what
-the bound surviving the oracle amounts to in these runs.
-
-Limitation. Every cell has $T/d>1+\log J$, so only the $1+\log J$ branch of the minimum is
-exercised and the $T/d$ saturation branch, which needs $d$ comparable to $T$, is not probed. A
-lower bound quantifies over all algorithms and four policies cannot establish that. What these
-runs check is the scaling of the construction.
-
-\textbf{Code and environment.} The code producing every reported number and figure is at
-\expandafter\url\expandafter{\repourl}. It pins the software environment used for the reported
-numbers, python 3.14.3 with numpy 2.4.2 and matplotlib 3.10.8, states the seed count for each
-study, lists one command per numbered study, and commits the stored outputs each figure reads so
-that every figure rebuilds without rerunning an experiment.
 
 \begin{figure}[t]
 \centering
@@ -818,9 +778,8 @@ the two, the state channel helps against a rate-optimal method, which is expecte
 method cannot read the state at all; grid tuning helps it far more than it helps
 \citet{zimmert2020}, consistent with pooling cutting estimator variance and lower variance
 admitting a larger learning rate. The condition under which interleaving's bound would improve on
-the action-level rate fails at $d=50$ and $d=200$ while the single-copy variant still saves most of
-the regret, which is evidence for the open problem of Section~\ref{sec:conj} rather than for a
-theorem.
+the action-level rate fails at $d=50$ and $d=200$, while the single-copy variant still saves most
+of the regret there, which is the regime Theorem~\ref{thm:m1} was proved for.
 
 Limitation. \emph{No real data is used.} There is no interaction log in this environment, nothing
 here is fitted to one, and this is not a semi-synthetic benchmark in the usual sense of that
@@ -834,13 +793,58 @@ procedure a practitioner could run. Eight paired seeds on the funnel and ten on 
 The arms run $m=1$, covered by Theorem~\ref{thm:m1}, and the environment has no adversarial
 component, so it exercises the pooling channel and not the drift channel.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig3.pdf}
+\caption{Study~8, the drift channel. \textbf{Left,} measured regret against the scale
+Theorem~\ref{thm:lower} predicts, over twelve cells in which $d$ varies $20$-fold, $\etwo$
+$100$-fold and $J$ $16$-fold. The dashed line has slope one. \textbf{Right,} the same points
+divided by that scale, grouped by which parameter the cell sweeps, with the shaded band spanning
+the observed range. \textsc{State-EXP3} appears here only as one more algorithm on the hard
+family, where it has no advantage.}
+\label{fig:drift}
+\end{figure}
+
+\textbf{Study~8. The drift bound describes the right scaling.} The construction of
+Theorem~\ref{thm:lower} at $K=40$, $T=8000$, $h=d$ and $12$ paired seeds, sweeping $d$ from $10$
+to $200$, the amplitude $\varepsilon$ from $0.02$ to $0.20$ so that $\etwo$ runs from $12$ to
+$1193$, and the drifting coordinates $J$ from $1$ to $16$. We run four policies: uniform, action-level \textsc{EXP3}, \textsc{State-EXP3},
+and the greedy policy on the exact stale vector $m_t$, the last because
+Theorem~\ref{thm:lower} claims to survive it. $\etwo$ is measured on the realized instance rather
+than predicted, so the normalization uses the quantity the theorem uses.
+
+Observed. The predicted scale $\sqrt{d\,\etwo\min\{1+\log J,T/d\}}$ ranges from $38$ to $377$
+across the grid and the measured regret tracks it (Figure~\ref{fig:drift}). Normalized, the four
+policies read $0.230$ to $0.429$, $0.228$ to $0.424$, $0.238$ to $0.417$ and $0.237$ to $0.437$,
+a spread below $1.9$ against a tenfold range in the predictor. The oracle-assisted policy has the
+largest mean ratio, $0.345$ against $0.311$, $0.314$ and $0.310$ for the three that never see
+$m_t$.
+
+Interpretation. The three arguments enter the predicted scale differently and the collapse holds
+in all three sweeps, so it is the form of the bound rather than one fitted constant that tracks
+the data. Greedy play on the exact $m_t$ sits at the top of the band rather than below it, which is what
+the bound surviving the oracle amounts to in these runs.
+
+Limitation. Every cell has $T/d>1+\log J$, so only the $1+\log J$ branch of the minimum is
+exercised and the $T/d$ saturation branch, which needs $d$ comparable to $T$, is not probed. A
+lower bound quantifies over all algorithms and four policies cannot establish that. What these
+runs check is the scaling of the construction.
+
+\textbf{Code and environment.} The code producing every reported number and figure is at
+\expandafter\url\expandafter{\repourl}. It pins the software environment used for the reported
+numbers, python 3.14.3 with numpy 2.4.2 and matplotlib 3.10.8, states the seed count for each
+study, lists one command per numbered study, and commits the stored outputs each figure reads so
+that every figure rebuilds without rerunning an experiment.
+
 Taken together these studies cover both channels. Studies~1, 10 and~14/16 probe the state channel
 and are consistent with the effective dimension, rather than $|\Sset|$ or $K$, governing what
 pooling buys; study~10 had to control for task difficulty before an overlap sweep pointed that way.
 The funnel is the only environment whose matrix is not drawn from a Dirichlet and it reports the
 largest margins here, on a structure imposed by hand rather than measured. It also places
-\textsc{State-EXP3} against a rate-optimal delayed-bandit method: ahead in every cell when both are tuned
-alike, behind in four of six when that method alone is grid-tuned.
+\textsc{State-EXP3} against a rate-optimal delayed-bandit method: ahead in every cell when both are
+tuned alike, behind in four of six when that method alone is grid-tuned. Study~8 turns to the other
+channel and finds the drift scale of Theorem~\ref{thm:lower} tracking the data, including for a
+learner handed the stale losses, which is the cost no amount of pooling reaches.
 
 \section{Proof of Theorem~\ref{thm:m1}: additive delay without interleaving}\label{app:m1}
 
