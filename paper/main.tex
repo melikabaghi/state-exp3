@@ -253,13 +253,13 @@ assumption fails its regret grows linearly, at four times our spread across seed
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig2.pdf}
-\caption{\textbf{Where pooling pays.} Row overlap against delay, in the three settings the studies
-treat separately: $P$ known, $P$ estimated, states coarsened. The gain should follow the effective
-dimension rather than the number of actions and should survive when $P$ is estimated; both hold. Relative gain $(R_{\text{action}}-R_{\text{state}})/R_{\text{action}}$, single
-copy, $K=40$, $|\Sset|=8$, $T=5000$, $12$ paired seeds; blue is a gain. $\vhat$ estimates
-$\sup_xv(x)$ for the raw map, which in the coarsened panel is not the coarsened map's dimension
-that the grouping bound charges; the dashed line compares two upper bounds for the rotating
-variant, so it is a reference, not a prediction for the variant plotted.}
+\caption{\textbf{Effective dimension, not action count.} \textbf{Left,} regret saved against
+action-level weighting as the effective dimension falls, with task difficulty held fixed so the
+sweep is not confounded by easier instances; $K=40$, $|\Sset|=8$, $T=10000$, $d=50$, $20$ paired
+seeds, bars one standard error of the paired difference (study~10). \textbf{Right,} the catalogue
+grows thirty-twofold while $\bar v$ stays between $1.4$ and $1.8$, the separation
+Theorem~\ref{thm:m1} charges for (study~14/16). $\vhat$ and $\bar v$ estimate $\sup_xv(x)$ by
+Monte Carlo.}
 \label{fig:phase}
 \end{figure}
 
@@ -632,8 +632,8 @@ bound on the interleaved algorithm and compares it with the single-copy one of
 Theorem~\ref{thm:m1}; studies~14 and~16 test Theorem~\ref{thm:m1} where $K$ is large and the
 states few; study~10 tests the prediction common to Theorems~\ref{thm:m1} and~\ref{thm:sexp3},
 that the gain follows the effective dimension and not $K$; and study~8 tests
-Theorem~\ref{thm:lower} on the drift channel. Theorem~\ref{thm:rep}, on coarsening, is exercised by
-the grouped panel of Figure~\ref{fig:phase} rather than by a study of its own. Studies whose
+Theorem~\ref{thm:lower} on the drift channel. Theorem~\ref{thm:rep}, on coarsening, has no study
+here; it is stated and proved in Appendix~\ref{app:etc} and left untested in this submission. Studies whose
 conclusions were superseded by a later control, or that replicated one already reported, are left
 to the released code.
 

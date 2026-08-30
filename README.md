@@ -49,7 +49,7 @@ that belong to appendices rather than to a numbered study.
     python3 sota_check.py                # study 16, vs tuned Zimmert-Seldin
     python3 drift_induction.py           # Appendix F, the drift induction behind Theorem 1
     python3 verify_lower.py              # the construction check closing study 7
-    python3 phase_diagram.py             # writes phase.npz for Figure 2
+    python3 phase_diagram.py             # phase.npz; the figure it fed is not in this submission
 
 Study 8 is the lower bound's own scaling study. `verify_lower.py` only reproduces the single
 construction check quoted at the end of study 7. Study 4 uses two files, and
@@ -67,7 +67,7 @@ The `.npz` files are committed, so every figure rebuilds without rerunning an ex
 | figure | builder | reads |
 |---|---|---|
 | 1 | `paper/figs/fig1.py` | `code/matched_control.npz` (study 10) |
-| 2 | `paper/figs/fig2.py` | `code/phase.npz` (`phase_diagram.py`) |
+| 2 | `paper/figs/fig2.py` | `code/matched_control.npz`, `code/funnel_vbar_scaling.npz` (studies 10, 14) |
 | 3 | `paper/figs/fig3.py` | `code/drift_scaling.npz` (study 8) |
 | 4 | `paper/figs/fig5.py` | `code/matched_control.npz`, `code/alpha_kappa.npz` (studies 10, 11) |
 | 5 | `paper/figs/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
