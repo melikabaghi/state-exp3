@@ -850,6 +850,11 @@ carry no drift and change the constant only. When the oracle is withheld, the $\
 construction is stationary and therefore lies in the present model class.
 \end{proof}
 
+The other term such constructions produce, the multiplicative $\sqrt{\min\{|\Sset|,d\}T}$, is not
+forced here; Appendix~\ref{app:sensor} records why the known route to it is unavailable in this
+model class, and that neither a matching upper bound nor a lower bound ruling it out is
+established.
+
 \begin{proposition}\label{prop:tight}
 Suppose $X_t=c_t(A_t)$. On instances whose drift is carried by a single action, $\lamtwo=\etwo$,
 so the bound of \citet{baron2025} reads $\Ot(\sqrt{KT+d\,\etwo})$ and its drift contribution
@@ -1270,7 +1275,9 @@ Flooring $q$ restores the moment and costs the product back, since $\eta\langle 
 then needs $\gamma\asymp\eta d\kappa|\Sset|$ and the mixing cost $\gamma T$ reproduces
 $\Ot(\sqrt{d\kappa|\Sset|T\log K})$. Empirically the obstruction never bites, $1/Z_r$ staying below
 $1.33$ at the tuned $\eta$ over $d\in\{10,50,200\}$, which is what suggested it was an artifact of
-the device rather than of the problem.
+the device rather than of the problem. That the ratio really can blow up, rather than merely
+resisting a bound, is shown in Appendix~\ref{app:counter}, where a two-action instance under a
+hybrid regulariser moves an iterate by a factor of $2\times10^5$ in one step.
 
 \section{Proof of Theorem~\ref{thm:m1}: additive delay without interleaving}\label{app:m1}
 
