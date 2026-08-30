@@ -88,7 +88,7 @@ def main() -> None:
             kn.append(run(P, theta, c, K, D, "known", sd))
             pl.append(run(P, theta, c, K, D, "plugin", sd))
         kap = float(np.mean(kaps))
-        # Theorem 5, the certificate for the rotating known-P variant
+        # Theorem 3, the certificate for the rotating known-P variant
         thm1 = np.sqrt(2.0 * (D + 1) * S * T * np.log(K))
         # Theorem 9, the warm-start rate, exploration term as reported in Appendix D
         thm9 = (kap * S) ** 0.4 * K ** 0.2 * T ** 0.8

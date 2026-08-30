@@ -14,12 +14,12 @@
 \usepackage{pifont}
 
 \newtheorem{theorem}{Theorem}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{conjecture}{Conjecture}
 \theoremstyle{remark}
-\newtheorem{remark}[theorem]{Remark}
-\newtheorem{observation}[theorem]{Observation}
+\newtheorem{remark}{Remark}
+\newtheorem{observation}{Observation}
 
 \newcommand{\Ex}{\mathbb{E}}
 \newcommand{\Ot}{\widetilde{O}}
@@ -46,89 +46,77 @@ Integration of Machine Learning for Uncertainty-Aware Decision-Making}
 
 \begin{abstract}
 A system often has to act long before it learns whether the act worked: a recommender sees a click
-in seconds and a purchase in days. With $K$ actions and a delay of $d$ rounds, the best rate known for
-this setting is $\Ot(\sqrt{(K+d)T})$ over $T$ rounds \citep{esposito2023}, so a longer menu is
-always more expensive to learn from. It need not be: if the outcome depends on the action only
-through the state it produced, a click or a browse or a cart, then one late outcome informs every
-action that could have produced the state observed, and the price is set by how many genuinely
-different states the actions produce rather than by how many actions there are. We measure that by
-an \emph{effective dimension} $v_t$ between $1$ and the number of states, and prove
-$\Ot(\sqrt{(d+1)V\log K})$ for a rotating algorithm and $\Ot(\sqrt{V^-}+\sqrt{dT})$ for the
-single-copy one that is actually used, for any budget fixed in advance; merging similar states
-lowers the price again, at a bias we make explicit. Even when handed the exact
-losses from $d$ rounds ago, no algorithm escapes
+in seconds and a purchase in days. For $K$ actions and a delay of $d$ rounds, the sharpest published
+rates are minimax-optimal in the delay when only the action is visible \citep{zimmert2020}, and
+$\Ot(\sqrt{(K+d)T})$ over $T$ rounds once an intermediate state is \citep{esposito2023}. Both are
+governed by the number of actions, so a longer menu is always more expensive to learn from, and
+neither adapts to instances in which many actions are effectively interchangeable. They need not
+be. If the outcome depends on the action only through the state it produced, a click or a browse or
+a cart, then one late outcome informs every action that could have produced the state observed, and
+the price is set by how many genuinely different states the actions produce. We charge each delayed
+outcome through the state and pay an \emph{effective dimension} $v_t$, between $1$ and the number of
+states, in place of $K$. For the single-copy algorithm that is actually run we prove
+$\Ot(\sqrt{V^-}+\sqrt{dT})$ for any budget fixed in advance, and $\Ot(\sqrt{(d+1)V\log K})$ for a
+rotating variant; merging similar states lowers the price again, at a bias we make explicit. The
+gain has a limit: even when handed the exact losses from $d$ rounds ago, no algorithm escapes
 $\Omega(\sqrt{d\mathcal E\min\{1+\log J,T/d\}})$, where $J$ counts the drifting directions and
-$\mathcal E$ bounds how far the losses move while the learner waits. On generated data the state channel
-cuts regret by up to $79$ per cent against action-level weighting, and on the funnel family by
-$32$ to $68$ per cent against the minimax-optimal method of \citet{zimmert2020} under the tuning
-protocol we report.
+$\mathcal E$ bounds how far the losses move while the learner waits. On generated data the state
+channel cuts regret by up to $79$ per cent against action-level weighting, and on the funnel family
+by $32$ to $68$ per cent against \citet{zimmert2020} under the tuning protocol we report. The
+guarantees assume the action-to-state map is known, and every experiment is synthetic.
 \end{abstract}
 
 \section{Introduction}
 
-Delayed outcomes are common in sequential decision-making: a system must act now even though the
-outcome it cares about may arrive much later. In recommendation, an item is shown immediately, an
-engagement signal such as a click or browsing depth is observed soon after, and conversion or
-retention may only be known days or weeks later, so decisions are made before their
-economically relevant consequences appear. The central question is when such a signal can reduce
-the cost of learning before the final outcome arrives.
+Operations commit before they learn. A markdown is set and sell-through is known a season later,
+staff are rostered and the shift's outcome lands after it, marketing spend is committed before
+attribution resolves, an item is recommended and the purchase it may cause is days away. In each
+the decision is made now and the quantity it will be judged by arrives late, while something
+cheaper arrives quickly: a fitting-room visit, a shift's first hour, a click. Whether that early
+signal can cut the cost of learning is a question between two fields. What may be inferred from the
+signal is a matter of data; the wait before the outcome resolves is a constraint on the operation,
+which no estimator removes, and the decision commits while only the first of the two is settled.
 
-The pattern is not special to recommendation: a markdown is set and sell-through is known a season
-later, staff are rostered and the shift's outcome lands later, marketing spend commits before
-attribution resolves. Here an action is an item that could be shown, a state is what the
-user does next, and the delayed outcome is whether they eventually buy. Different items may induce similar distributions over engagement states, so
-an outcome observed after one item can carry information about many others. The difficulty scales
-not with the number of actions $K$ but with how many genuinely different operational regimes those
-actions induce, so thousands of items funnelling users through a few engagement patterns stay easy
-to learn from.
+The cost of learning under delay should be set by how many genuinely different regimes the actions
+induce rather than by how many actions there are: a catalogue of
+thousands of items that funnels users through half a dozen engagement patterns should be no harder
+to learn from than a catalogue of six.
 
-The question sits between machine learning and operations research. Exploiting the channel from
-actions to states asks what can be inferred from data; the wait before the outcome arrives is a
-constraint on the operation, which no estimator removes; and the decision commits while only the
-first of the two has been resolved. Bandits with
-intermediate observations formalize this: the learner repeatedly picks one action and sees the
-consequence of that action alone. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
-unrestricted one giving only the rate available with no intermediate observations; we fix that map and ask how much the \emph{action-to-state} structure helps.
-The delayed-feedback literature has since developed along other axes: \citet{baron2025} obtain
-instance-dependent bounds when the observations themselves evolve, and \citet{levy2025} treat
-contextual actions under delay with general function approximation. In neither does an
-intermediate state carry one delayed outcome across several actions, which is the mechanism
-studied here.
+The mechanism that makes it true is that the outcome depends on the action only through the
+intermediate state it produced, so one late outcome can be charged to every action that could have
+produced the state observed rather than to the one action played. Bandits with intermediate
+observations formalize the setting: the learner picks one action and sees the consequence of that
+action alone. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
+unrestricted one giving only the rate available with no intermediate observations; we fix that map
+and ask what the \emph{action-to-state} structure buys. The delayed-feedback literature has since
+developed along other axes: \citet{baron2025} obtain instance-dependent bounds when the
+observations themselves evolve, and \citet{levy2025} treat contextual actions under delay with
+general function approximation. In neither does an intermediate state carry one delayed outcome
+across several actions.
 
-Intermediate observations face two independent limitations: whether information can be shared
-\emph{across actions}, and whether it stays useful \emph{across time}.
-
-Across actions: because similar actions reach similar states, we can \emph{pool through the state},
-charging a delayed outcome to every action that could have produced the state observed. What this costs is governed by an
-\emph{effective dimension} $v_t$, measuring how distinguishable the action-induced state
-distributions are under the current play; it can be far smaller than $K$.
-
-Across time: delay creates a second difficulty even when the learner is handed an exact
-description of the past. Let $m_t=c_{t-d}$ be the action-loss vector from $d$ rounds earlier. Its usefulness depends
-on how far the losses have moved, which we measure by $\etwo=\sum_t\|c_t-m_t\|_\infty^2$
-(Figure~\ref{fig:one}). Our lower bound asks
-how much regret this mismatch forces even when $m_t$ is supplied for free.
-
-Adapting to overlap and drift at once remains open
-(Section~\ref{sec:conj}).
+What the pooling costs is an \emph{effective dimension} $v_t$, measuring how distinguishable the
+action-induced state distributions are under the current play; it lies between $1$ and the number
+of states and can fall far below $K$. Theorem~\ref{thm:m1} pays $v_t$ in place of $K$ for the
+algorithm that is actually run, merging similar states lowers it again at a bias we make explicit,
+and across the families the measured gain tracks $v_t$ rather than $K$. The claim has a boundary. Waiting
+carries a cost of its own, which sharing cannot remove. Writing
+$m_t=c_{t-d}$ for the action-loss vector from $d$ rounds earlier and
+$\etwo=\sum_t\|c_t-m_t\|_\infty^2$ for how far the losses move while the learner waits,
+Theorem~\ref{thm:lower} bounds below the regret this forces even when $m_t$ is supplied free
+(Figure~\ref{fig:one}). Adapting to overlap and drift at once remains open
+(Section~\ref{sec:conj}). Four ingredients separate the neighbouring settings, and it is their
+combination that is new here.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig1.pdf}
-\caption{\textbf{An illustration of the two limits on intermediate feedback, on generated data.} \textbf{Left,} what each state predicts about the outcome changes while the map from
-actions to states stays fixed, so the losses from $d$ rounds earlier grow increasingly
-inaccurate; $\etwo$ of Section~\ref{sec:setting} tracks it. \textbf{Right,} more overlap
-between actions allows more sharing, at matched difficulty, $K=40$, $|\Sset|=8$, $T=10000$,
-$d=50$, $20$ paired seeds, bars one standard error of the paired difference
-(Appendix~\ref{app:num}, study~10).}
+\caption{\textbf{The claim and its boundary, on generated data.} \textbf{Left,} what
+each state predicts changes while the action-to-state map stays fixed, so losses from $d$ rounds
+earlier grow inaccurate; $\etwo$ of Section~\ref{sec:setting} tracks it. \textbf{Right,} more
+overlap allows more sharing, at matched difficulty, $K=40$, $|\Sset|=8$, $T=10000$, $d=50$, $20$
+paired seeds, bars one standard error of the paired difference (Appendix~\ref{app:num}, study~10).}
 \label{fig:one}
 \end{figure}
-
-\section{Related work}
-
-Four ingredients separate the neighbouring settings: whether the outcome is delayed, whether a
-state is seen, whether the channel producing it is known, and whether the bound is
-instance-dependent.
 
 \begin{center}\small
 \begin{tabular}{@{}lcccc@{}}
@@ -216,11 +204,10 @@ whatever $q_t(S_t)$ is. That bounds how far the play distribution moves while an
 flight, which is what the delayed cross-term needs; centring by $X_t\mathbf 1$ replaces $v_t$ by
 $v_t-1$ (Appendix~\ref{app:m1}).
 
-\paragraph{Where this stops.}\label{sec:lower} How much does waiting cost even when the stale
-losses are free?
-Theorem~\ref{thm:lower} shows a cost from time alone, not a joint overlap-drift bound: the
-construction gives each of the $J$ drifting directions a private state, removing useful pooling and
-forcing $J\le|\Sset|-1$ (Appendix~\ref{app:proofs}).
+\paragraph{Where this stops.}\label{sec:lower} Waiting carries a cost that persists even when the
+stale losses are supplied free. Theorem~\ref{thm:lower} isolates that cost from time alone: the
+construction gives each of the $J$ drifting directions a private state, which removes useful
+pooling and forces $J\le|\Sset|-1$ (Appendix~\ref{app:proofs}).
 
 \begin{theorem}\label{thm:lower}
 Fix $T$, a delay $1\le d\le T/2$, a drift budget $\mathcal E\le T/4$, and
@@ -239,14 +226,12 @@ factor of two.
 \section{Experiments}\label{sec:num}
 
 A claim about instances is settled where the two counts it separates, how many actions there are
-and how many distinct behaviours they have, come apart. The families below are built so they do. With $K=200$ generated items and six levels of engagement the
-estimated dimension is $1.97$,
-and the state-pooled variant cuts regret against action-level weighting by $79.3$, $63.6$ and
-$38.9$ per cent at $d=10,50,200$. That setting is hand-structured, not fitted to data, so it shows
-the mechanism, not a deployed system.
-
-It also beats the minimax-optimal delayed-bandit method of \citet{zimmert2020}, tuned over a grid
-under the reported tuning protocol.
+and how many distinct behaviours they have, come apart. The families below are built so they do.
+With $K=200$ generated items and six levels of engagement the estimated dimension is $1.97$, and
+the state-pooled variant cuts regret against action-level weighting by $79.3$, $63.6$ and $38.9$
+per cent at $d=10,50,200$, and against the minimax-optimal delayed-bandit method of
+\citet{zimmert2020} tuned over a grid by $67.9$, $51.4$ and $31.5$. That setting is
+hand-structured, not fitted to data, so it shows the mechanism, not a deployed system.
 
 \begin{center}\small
 \begin{tabular}{@{}rrrrrr@{}}
@@ -262,37 +247,31 @@ Funnel family, $K=200$, $|\Sset|=6$, $T=20000$, $8$ paired seeds; cuts are again
 weighting and against the tuned baseline (study~16).
 \end{center}
 
-These runs use the single-copy algorithm, the one Theorem~\ref{thm:m1} covers;
-Appendix~\ref{app:num} also reports the rotating variant. A best-state rule leads seven of nine
-settings, but where its assumption fails its regret grows linearly and its spread across seeds is
-four times ours.
+These runs use the single-copy algorithm that Theorem~\ref{thm:m1} covers; Appendix~\ref{app:num}
+also reports the rotating variant. A best-state rule leads seven of nine settings, but where its
+assumption fails its regret grows linearly, at four times our spread across seeds.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig2.pdf}
-\caption{\textbf{Where pooling pays.} The gain should follow the effective dimension rather than
-the number of actions, and should survive when $P$ is estimated rather than known. Both hold
-across the sweep. Relative gain $(R_{\text{action}}-R_{\text{state}})/R_{\text{action}}$, single
+\caption{\textbf{Where pooling pays.} Row overlap against delay, in the three settings the studies
+treat separately: $P$ known, $P$ estimated, states coarsened. The gain should follow the effective
+dimension rather than the number of actions and should survive when $P$ is estimated; both hold. Relative gain $(R_{\text{action}}-R_{\text{state}})/R_{\text{action}}$, single
 copy, $K=40$, $|\Sset|=8$, $T=5000$, $12$ paired seeds; blue is a gain. $\vhat$ estimates
-$\sup_xv(x)$ for the raw map by Monte Carlo, which for the coarsened panel is not the dimension of
-the coarsened map that the grouping bound charges. The dashed line compares two upper bounds for
-the rotating variant, so it is a reference rather than a prediction for the variant plotted.}
+$\sup_xv(x)$ for the raw map, which in the coarsened panel is not the coarsened map's dimension
+that the grouping bound charges; the dashed line compares two upper bounds for the rotating
+variant, so it is a reference, not a prediction for the variant plotted.}
 \label{fig:phase}
 \end{figure}
 
-Figure~\ref{fig:phase} sweeps row overlap against delay and marks where pooling pays, in the three
-settings the studies treat separately: $P$ known, $P$ estimated, and states coarsened.
-
 \section{Discussion}\label{sec:conj}
 
-Pooling helps when many actions lead to similar states, and that is checkable before deployment,
-since $P$ is known: an estimate of $\bar v$ well below $K$ indicates the state channel is worth
-using.
-
-Theorem~\ref{thm:lower} says what no algorithm can do about the second: the uncertainty left by
-waiting is irreducible, surviving even when the exact losses from $d$ rounds ago are handed over
-free. Two limits remain: $\bar v$ is estimated rather than solved, and the bounds lie on different
-axes. 
+Two things stand between an action and its worth: which actions resemble it, and how long the
+answer takes. The first is exploitable and checkable before deployment, since $P$ is known and an estimate of
+$\bar v$ well below $K$ says whether the state channel is worth using. The second is not:
+Theorem~\ref{thm:lower} shows the uncertainty left by waiting survives even when the exact losses
+from $d$ rounds ago are handed over free. Two limits remain: $\bar v$ is estimated rather than
+solved for, and the bounds lie on different axes.
 
 \begin{thebibliography}{99}
 \bibitem[Alon et al.(2015)]{alon2015} N.~Alon, N.~Cesa-Bianchi, O.~Dekel, and T.~Koren. Online learning with feedback graphs: beyond bandits. \emph{COLT}, PMLR 40, 2015.
@@ -480,20 +459,6 @@ The delay enters as a factor because the copies do not share their estimates, ea
 $\log K/\eta$ over $T/(d+1)$ rounds. Sharing them is exactly the $m=1$ algorithm of
 the open problem of Section~\ref{sec:conj}.
 
-\begin{lemma}[Coarsening]\label{lem:coarse}
-For every play distribution and every $g$, $v_t(g)\le v_t$.
-\end{lemma}
-
-\begin{proof}
-It suffices to merge two states, the general case following by induction on the merges, and a
-merged group of zero probability contributes nothing on either side by the convention above.
-Write $P_1,P_2$ for the two columns, $A_j=\sum_ax_t(a)P_j(a)^2$, $B_j=\sum_ax_t(a)P_j(a)$ and
-$\lambda=B_1/(B_1+B_2)$. By Cauchy--Schwarz,
-$(P_1+P_2)^2\le\lambda^{-1}P_1^2+(1-\lambda)^{-1}P_2^2$ pointwise in $a$, so
-$\sum_ax_t(a)(P_1+P_2)^2\le(B_1+B_2)(A_1/B_1+A_2/B_2)$, and dividing by the merged denominator
-$B_1+B_2$ shows the merged summand is at most $A_1/B_1+A_2/B_2$, the two it replaces.
-\end{proof}
-
 \begin{proof}[Proof of Theorem~\ref{thm:rep}]
 Running the algorithm on $g$ is running it on the sensor $(\mathcal Z,P^g)$. The surrogate
 losses below depend on $x_t$ and so are predictable rather than oblivious, but the proof of
@@ -509,8 +474,12 @@ $\theta_t$-averages lie in a common interval of length $\delta_t(g)$ and differ 
 $\delta_t(g)$. Weighting by $P^g(z\mid a)$ and summing over $z$ gives
 $|c^g_t(a)-c_t(a)|\le\delta_t(g)$ for every $a$, hence
 $\langle x_t,c_t\rangle-c_t(a^\star)\le\langle x_t,c^g_t\rangle-c^g_t(a^\star)+2\delta_t(g)$.
-Summing over $t$ adds $2\sum_t\delta_t(g)$, and Lemma~\ref{lem:coarse} makes $V(g)$ no larger than
-a bound valid for the raw states.
+Summing over $t$ adds $2\sum_t\delta_t(g)$. Merging leaves $V(g)$ no larger than a bound valid for
+the raw states: it suffices to merge two states, the general case following by induction on the
+merges. Writing $P_1,P_2$ for the two columns, $B_j=\sum_ax_t(a)P_j(a)$ and
+$\lambda=B_1/(B_1+B_2)$, Cauchy--Schwarz gives
+$(P_1+P_2)^2\le\lambda^{-1}P_1^2+(1-\lambda)^{-1}P_2^2$ pointwise in $a$, so after dividing by the
+merged denominator the merged summand is at most the two it replaces.
 \end{proof}
 
 \section{Relation to other inaccuracy measures}\label{app:transfer}
@@ -554,30 +523,13 @@ cancellation occurs within a full window and $P$ passes the increment through un
 Without the second condition the drift can lie in the kernel of $P$ and the ratio can be zero.
 \end{proof}
 
-\begin{lemma}[Information isolation]\label{lem:iso}
-If $h\le d$ then $A_t$ is independent of the signs governing its own block, and this remains true
-when the learner is provided with the exact stale action-loss vector $m_t$.
-\end{lemma}
-
-\begin{proof}[Proof of Lemma~\ref{lem:iso}]
-For $t$ in block $b$, every realized outcome usable when choosing $A_t$ comes from a round
-$r\le t-d-1$. Since $t\le bh$ and $h\le d$, we have $r\le bh-d-1<(b-1)h$, so every usable realized
-outcome depends only on signs from blocks strictly before $b$, whose joint law depends only on
-$\sigma_2,\dots,\sigma_{b-1}$. Hence by conditional
-independence $A_t$ is independent of block $b$'s signs. For the oracle, take any $h\le d$. If
-$t>d$ then $t-d\le bh-d\le(b-1)h$ by the same computation, so $m_t=c_{t-d}$ is measurable with
-respect to the signs of blocks strictly before $b$. If $t\le d$ then $m_t=c_1=\tfrac12\mathbf 1$,
-which is deterministic because block~$1$ is neutral. In both cases $m_t$ is independent of block
-$b$'s signs, so adjoining it to the learner's information leaves the conclusion intact.
-\end{proof}
-
 The construction in full. Take states $s_0,\dots,s_q$, a stationary deterministic map sending
 $a_j$ to $s_j$ for $j\le J$ and every other action to $s_0$, and independent Rademacher signs
 $\sigma_b^{(j)}$ for $2\le b\le B=\lfloor T/h\rfloor$. Set $\theta_t(s_0)=\tfrac12$ throughout,
 $\theta_t\equiv\tfrac12$ on block~$1$, and $\theta_t(s_j)=\tfrac12-\varepsilon\sigma_b^{(j)}$ on
 each later block $b$. The neutral first block makes $c_1=\tfrac12\mathbf 1$, so the
 convention $m_t=c_1$ for $t\le d$ of Section~\ref{sec:setting} supplies a constant over exactly
-the rounds that precede any usable feedback, which is what Lemma~\ref{lem:iso} needs at $b=1$. Rounds after the last complete block carry no drift, costing a constant factor.
+the rounds that precede any usable feedback, which is what the isolation step below needs at $b=1$. Rounds after the last complete block carry no drift, costing a constant factor.
 
 \begin{lemma}[Rademacher lower tail]\label{lem:rade}
 Let $S_B$ be a sum of $B\ge32$ independent Rademacher signs. For every $1\le u\le\sqrt B/32$,
@@ -585,23 +537,16 @@ $\Pr(S_B\ge u\sqrt B)\ge\tfrac u4e^{-64u^2}$.
 \end{lemma}
 
 \begin{proof}
-Write $S_B=2X-B$ with $X\sim\mathrm{Bin}(B,\tfrac12)$, so that
-$\{S_B\ge u\sqrt B\}=\{X\ge B/2+u\sqrt B/2\}$. Passing to $X$ removes the lattice gap, since $X$
-takes every integer value in $[0,B]$ whereas $S_B$ takes only those of the parity of $B$. Put
-$n=\lfloor B/2\rfloor$ and $t=\lceil u\sqrt B/2\rceil+1$, so $X\ge n+t$ implies the event, and
-$t\le u\sqrt B$ because $u\sqrt B\ge\sqrt{32}>4$.
-
-For $j\ge1$ the ratio of consecutive binomial probabilities is
-$\Pr(X=n+j)/\Pr(X=n+j-1)=(B-n-j+1)/(n+j)$. Using $(B-1)/2\le n\le B/2$, its distance from one is
-at most $(2j-1)/(n+j)\le(4j-2)/(B-1)\le8j/B$ for $B\ge2$. Restricting to $j\le B/16$ keeps
-$8j/B\le\tfrac12$, where $\log(1-x)\ge-2x$ holds, so summing over $i\le j$ gives
-$\Pr(X=n+j)\ge\Pr(X=n)e^{-16j(j+1)/(2B)}\ge\Pr(X=n)e^{-16j^2/B}$. The central term satisfies
-$\Pr(X=n)\ge1/(2\sqrt B)$ for every $B\ge2$.
-
-Sum over the $t$ integers $j\in\{t,\dots,2t-1\}$, all of which are at most $2t$ and hence at most
-$B/16$ because $u\le\sqrt B/32$ forces $2t\le2u\sqrt B\le B/16$. Each term is at least
-$e^{-64t^2/B}/(2\sqrt B)$, and $t\le u\sqrt B$ makes the exponent at most $64u^2$, so
-$\Pr(X\ge n+t)\ge t\,e^{-64u^2}/(2\sqrt B)\ge\tfrac u4e^{-64u^2}$ using $t\ge u\sqrt B/2$.
+Write $S_B=2X-B$ with $X\sim\mathrm{Bin}(B,\tfrac12)$, so the event is
+$\{X\ge B/2+u\sqrt B/2\}$; passing to $X$ removes the lattice gap, since $X$ takes every integer
+value in $[0,B]$ whereas $S_B$ takes only those of the parity of $B$. Put $n=\lfloor B/2\rfloor$
+and $t=\lceil u\sqrt B/2\rceil+1$, so $X\ge n+t$ implies the event and $t\le u\sqrt B$.
+Consecutive binomial probabilities have ratio $(B-n-j+1)/(n+j)$, whose distance from one is at
+most $8j/B$; for $j\le B/16$ that is at most $\tfrac12$, where $\log(1-x)\ge-2x$ holds, so summing
+over $i\le j$ gives $\Pr(X=n+j)\ge\Pr(X=n)e^{-16j^2/B}$ with $\Pr(X=n)\ge1/(2\sqrt B)$. Summing
+over the $t$ integers $j\in\{t,\dots,2t-1\}$, all at most $B/16$ because $u\le\sqrt B/32$, and
+using $t\ge u\sqrt B/2$, gives
+$\Pr(X\ge n+t)\ge t\,e^{-64u^2}/(2\sqrt B)\ge\tfrac u4e^{-64u^2}$.
 \end{proof}
 
 Three regimes give the maximal inequality the lower bound needs. Each $S_B^{(j)}$ is sub-Gaussian
@@ -631,8 +576,11 @@ from the maximum of $J$ independent random walks. Choosing the amplitude to make
 gives the stated scale.
 
 \begin{proof}[Proof of Theorem~\ref{thm:lower}]
-Take $h=d$ and $\varepsilon=\tfrac12\sqrt{\mathcal E/T}$. By Lemma~\ref{lem:iso} every algorithm's
-expected loss equals $T/2$, since its action is independent of the current block's signs and all states have mean
+Take $h=d$ and $\varepsilon=\tfrac12\sqrt{\mathcal E/T}$. Every outcome usable when choosing $A_t$
+comes from a round $r\le t-d-1$, and $t\le bh$ with $h\le d$ forces $r<(b-1)h$, so $A_t$ is
+independent of block $b$'s own signs; the same computation places the stale vector $m_t$ in blocks
+strictly before $b$, so handing it to the learner changes nothing. Every algorithm's
+expected loss therefore equals $T/2$, since its action is independent of the current block's signs and all states have mean
 $\tfrac12$ marginally. Its regret is therefore exactly the comparator's
 fluctuation advantage,
 $\varepsilon d\,\Ex\bigl[\max_{j\le J}\bigl(\sum_{2\le b\le B}\sigma_b^{(j)}\bigr)^{+}\bigr]$ with
@@ -653,43 +601,31 @@ carry no drift and change the constant only. When the oracle is withheld, the $\
 construction is stationary and therefore lies in the present model class.
 \end{proof}
 
-\begin{proposition}\label{prop:tight}
-Suppose $X_t=c_t(A_t)$. On instances whose drift is carried by a single action, $\lamtwo=\etwo$,
-so the bound of \citet{baron2025} reads $\Ot(\sqrt{KT+d\,\etwo})$ and its drift contribution
-$\sqrt{d\,\etwo}$ matches Theorem~\ref{thm:lower} up to logarithmic factors.
-\end{proposition}
-
-In words, single-action drift makes the Euclidean and supremum measures agree, so on that family
-the drift term of the published upper bound is unimprovable in order. Its $\sqrt{KT}$ term is not
-matched because the oracle supplies an entire stale loss vector, so the oracle-assisted problem
-need not retain bandit exploration complexity. Neither result provides an $\etwo$-adaptive upper
-bound under noisy outcomes.
-
-\begin{proof}[Proof of Proposition~\ref{prop:tight}]
-If only one coordinate of $c_t-m_t$ is nonzero then $\|c_t-m_t\|_2=\|c_t-m_t\|_\infty$. On the
-family of Section~\ref{sec:lower} that coordinate has magnitude at most $2\varepsilon\le1$, so
-the truncation at one in $\lamtwo$ is inactive and $\lamtwo=\etwo$. The bound of \citet{baron2025} then reads $\Ot(\sqrt{KT+d\etwo})$, whose $\sqrt{d\etwo}$
-contribution Theorem~\ref{thm:lower} matches up to the logarithmic factor at $J=1$. Its
-$\sqrt{KT}$ contribution is not matched.
-\end{proof}
+\begin{remark}[Where the bound is matched]\label{rem:tight}
+Suppose $X_t=c_t(A_t)$. On instances whose drift is carried by a single action only one coordinate
+of $c_t-m_t$ is nonzero, so $\|c_t-m_t\|_2=\|c_t-m_t\|_\infty$; on the family of
+Section~\ref{sec:lower} that coordinate has magnitude at most $2\varepsilon\le1$, so the truncation
+at one in $\lamtwo$ is inactive and $\lamtwo=\etwo$. The bound of \citet{baron2025} then reads
+$\Ot(\sqrt{KT+d\,\etwo})$, whose $\sqrt{d\,\etwo}$ contribution Theorem~\ref{thm:lower} matches up
+to the logarithmic factor at $J=1$, so on that family the drift term of the published upper bound
+is unimprovable in order. Its $\sqrt{KT}$ term is not matched, the oracle supplying an entire stale
+loss vector, so the oracle-assisted problem need not retain bandit exploration complexity. Neither
+result provides an $\etwo$-adaptive upper bound under noisy outcomes.
+\end{remark}
 
 \section{Numerical detail}\label{app:num}
 
 Sixteen studies were run and the seven bearing on the claim are reported here, each with an
 observation, an interpretation and a limitation. They keep their original numbers, which index the
 released scripts, so the numbering is not contiguous; the code for all sixteen is available.
-Studies 1 to 13 draw $P$ from a Dirichlet and 14 to 16 do not. \textsc{State-EXP3} is beaten in
-four of six cells of study~16 when the baseline alone is grid-tuned, and study~10 is a control for
-study~6 that reverses its conclusion. All
-policies run on the
-same environment parameters and common random-number streams, so a seed fixes everything except
-which estimator is formed, and differences are taken within a seed before averaging. Round $r$'s outcome is consumed before round $r+d+1$, matching
-Section~\ref{sec:setting}. Reported $\pm$ is one standard error of the paired difference. Throughout this appendix,
-\emph{sample-path pseudo-regret} means $\sum_tc_t(A_t)-\min_a\sum_tc_t(a)$, evaluated on one
-realization of the learner and environment randomness. Averaging it over seeds estimates the
-expected pseudo-regret that the theorems bound. We use that name rather than ``realized regret'' to
-distinguish it from regret computed from the sampled outcomes $X_t$, which is not what these
-studies report.
+Studies 1 to 13 draw $P$ from a Dirichlet and 14 to 16 do not. All policies run on the same
+environment parameters and common random-number streams, so a seed fixes everything except which
+estimator is formed, and differences are taken within a seed before averaging. Round $r$'s outcome
+is consumed before round $r+d+1$, matching Section~\ref{sec:setting}. Reported $\pm$ is one
+standard error of the paired difference. \emph{Sample-path pseudo-regret} means
+$\sum_tc_t(A_t)-\min_a\sum_tc_t(a)$ on one realization of the learner and environment randomness,
+computed from the true losses rather than the sampled outcomes; averaging it over seeds estimates
+the expected pseudo-regret the theorems bound.
 
 \textbf{Study~1. The bound holds and pooling helps.} With $|\Sset|=4$, $T=10000$, $d=50$,
 drift band $0.05$ and $100$ seeds:
@@ -715,9 +651,10 @@ $K$, by a margin growing from $19$ to $169$ as $K$ rose tenfold with $|\Sset|$ f
 interleaved variant throughout. Sweeping the delay at $K=40$ gave state-pooled $387$, $569$
 and $731$ against action-level $653$, $699$ and $773$ at $d=10$, $50$ and $200$.
 
-Interpretation. The margin growing in $K$ at fixed $|\Sset|$ is the prediction that separates the
-two estimators, so the improvement is attributable to the state channel the effective dimension attributes to it.
-Interleaving looks like a price of the analysis rather than of the estimator. The narrowing of the
+Interpretation. A margin that grows in $K$ while $|\Sset|$ is held fixed is the prediction that
+separates the two estimators, since only the action-level cost scales with $K$, so the improvement
+is attributable to the state channel. Interleaving looks like a price of the analysis rather than
+of the estimator. The narrowing of the
 gap as the delay grows is what an additive delay term predicts and a multiplicative one does not,
 which is the diagnostic evidence behind the open problem of Section~\ref{sec:conj}.
 
@@ -784,8 +721,8 @@ $m_t$.
 
 Interpretation. The three arguments enter the predicted scale differently and the collapse holds
 in all three sweeps, so it is the form of the bound rather than one fitted constant that tracks
-the data. That greedy play on the exact $m_t$ sits at the top of the band rather than below it is
-the concrete content of the claim that the bound survives the oracle.
+the data. Greedy play on the exact $m_t$ sits at the top of the band rather than below it, which is what
+the bound surviving the oracle amounts to in these runs.
 
 Limitation. Every cell has $T/d>1+\log J$, so only the $1+\log J$ branch of the minimum is
 exercised and the $T/d$ saturation branch, which needs $d$ comparable to $T$, is not probed. A
@@ -803,8 +740,8 @@ that every figure rebuilds without rerunning an experiment.
 \includegraphics[width=\textwidth]{fig5.pdf}
 \caption{\textbf{Left,} study~10. The same overlap sweep with and without holding the task
 difficulty fixed. Matching the uniform-play regret reverses the trend, supporting the interpretation that the
-decline in Study~6 is driven by task-difficulty confounding rather than by the pooling mechanism
-itself. Bars are one standard error of the paired
+decline in Study~6 is driven by task-difficulty confounding rather than by the pooling
+mechanism itself. Bars are one standard error of the paired
 difference. \textbf{Right,} regret saved against action-level weighting over the smoothing
 pseudocount and the sensor balance, $10$ paired seeds per cell, from the plug-in sensitivity study
 whose script is released with the rest.}

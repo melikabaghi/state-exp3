@@ -5,7 +5,7 @@ the overlap between the rows of P) against delay d, in three panels:
 
     known P        Theorem 1's setting
     estimated P    the plug-in of Appendix D, gamma = 0
-    grouped        the same algorithm run on a coarsening of the states, Theorem 6
+    grouped        the same algorithm run on a coarsening of the states, Theorem 4
 
 The predicted boundary is (d+1) vbar log K <= K + d, which is where the bound of Theorem 1 falls
 below the Otilde(sqrt((K+d)T)) available without a stationary sensor.  It is a comparison of two
