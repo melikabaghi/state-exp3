@@ -948,11 +948,11 @@ $K$ & state, $m=d+1$ & state, $m=1$ & action, $m=1$ & paired gain & state better
 \end{tabular}
 \end{center}
 
-Observed. Sample-path pseudo-regret for the interleaved variant stayed below
-$\sqrt{2(d+1)|\Sset|T\log K}$ in $100$ of $100$ seeds at every $K$, the bound running from $2913$
-to $4228$ against realized $455$ to $780$. The single-copy variant beat the action-level baseline at
-every $K$, by a margin growing from $19$ to $169$ as $K$ rose tenfold with $|\Sset|$ fixed, and it
-beat the interleaved variant throughout. Sweeping the delay at $K=40$ gave state-pooled $387$, $569$
+Observed. For the interleaved variant, sample-path pseudo-regret stayed below the bound
+$\sqrt{2(d+1)|\Sset|T\log K}$ in all $100$ seeds at every $K$, that bound running from $2913$ to
+$4228$ against realized $455$ to $780$. The single-copy variant beat action-level weighting at every
+$K$, by a margin growing from $19$ to $169$ as $K$ rose tenfold with $|\Sset|$ fixed, and beat the
+interleaved variant throughout. Sweeping the delay at $K=40$ gave state-pooled $387$, $569$
 and $731$ against action-level $653$, $699$ and $773$ at $d=10$, $50$ and $200$.
 
 Interpretation. The margin growing in $K$ at fixed $|\Sset|$ is the prediction that separates the
