@@ -46,7 +46,7 @@ followed by two checks that belong to appendices rather than to a numbered study
     python3 funnel.py                    # study 14, the recommendation funnel (no real data)
     python3 baselines.py                 # study 15, the wider baseline set
     python3 sota_check.py                # study 16, vs tuned Zimmert-Seldin
-    python3 drift_induction.py           # Appendix K, the drift induction behind Theorem 2
+    python3 drift_induction.py           # Appendix K, the drift induction behind Theorem 1
     python3 verify_lower.py              # the construction check closing study 7
     python3 phase_diagram.py             # writes phase.npz for Figure 2
 
@@ -96,17 +96,17 @@ The distinction matters for reading any table.
 | name | `P` | `m` | proved guarantee | in experiments |
 |---|---|---|---|---|
 | action-level EXP3 | not needed | 1 | yes, standard delayed bound | yes, the baseline |
-| `State-EXP3`, analyzed | known | `d+1` | yes, Theorem 1 | yes, studies 1 and 9 |
-| `State-EXP3`, practical | known | 1 | yes, Theorem 2 | yes, most studies |
+| `State-EXP3`, analyzed | known | `d+1` | yes, Theorem 5 (Appendix D) | yes, studies 1 and 9 |
+| `State-EXP3`, practical | known | 1 | yes, Theorem 1, in the body | yes, most studies |
 | online plug-in | estimated each round | 1 | no | yes |
 | warm-start unknown-`P` | estimated, frozen, restart | `d+1` | yes, Appendix E, conservative | no |
 | Safe-Pool | estimated | `d+1` | yes, Appendix E | yes, study 4 |
 | best-state rule | known | n/a | no | yes, study 15 |
 
 Unless a column says `m = d+1`, an experiment runs the practical `m = 1` variant, which
-Theorem 1 does not cover and Theorem 2 does. Study 1 is the direct comparison of the two.
+Theorem 1 covers and the rotating Theorem 5 does not. Study 1 is the direct comparison of the two.
 `drift_induction.py` checks, pathwise, the learning-rate condition and the drift lemma that
-Theorem 2 rests on, at the rates the funnel study actually used.
+Theorem 1 rests on, at the rates the funnel study actually used.
 
 ## Scope
 
