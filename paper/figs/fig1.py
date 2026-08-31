@@ -64,9 +64,19 @@ axB.plot(t, c, color="#111111", lw=1.4)
 axB.plot(t, m, color=C_LATE, lw=1.3, ls="--")
 axB.text(4, 0.93, "$c_t$, true loss", fontsize=6.4, color="#111111")
 axB.text(196, 0.93, "$m_t=c_{t-d}$, given", fontsize=6.4, color="#8a5a00", ha="right")
-axB.annotate("", xy=(116, c[116]), xytext=(116 - d, c[116]),
-             arrowprops=dict(arrowstyle="<->", color=C_GREY, lw=0.8))
-axB.text(116 - d / 2, c[116] + 0.05, "$d$", ha="center", fontsize=6.8, color=C_GREY)
+# the delay made explicit: the loss at t0-d is exactly the vector handed over at t0,
+# so the two marked points sit at the same height and the arrow between them spans d.
+t0 = 116
+y0 = c[t0 - d]                                     # equals m[t0] by construction
+Y_RULE = 0.850                                     # clear band above both curves
+for x, col in ((t0 - d, "#111111"), (t0, C_LATE)):
+    axB.plot([x, x], [y0, Y_RULE], color=C_GREY, lw=0.5, ls=":", zorder=1)
+    axB.plot([x], [y0], "o", color=col, ms=3.2, mew=0.0, zorder=5)
+axB.annotate("", xy=(t0, Y_RULE), xytext=(t0 - d, Y_RULE),
+             arrowprops=dict(arrowstyle="<->", color="#111111", lw=0.8))
+axB.text((2 * t0 - d) / 2, Y_RULE + 0.032, "$d$", ha="center", fontsize=6.8, color="#111111")
+axB.text(t0 - d, Y_RULE + 0.032, "$t\\!-\\!d$", ha="center", fontsize=6.0, color=C_GREY)
+axB.text(t0, Y_RULE + 0.032, "$t$", ha="center", fontsize=6.0, color=C_GREY)
 axB.set_ylim(0.10, 1.00); axB.set_xlim(0, T)
 axB.set_yticks([]); axB.set_xticks([0, 100, 200])
 axB.tick_params(labelsize=6.2, length=2, pad=1.5)

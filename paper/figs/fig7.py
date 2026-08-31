@@ -37,9 +37,9 @@ axL.set_ylabel(r"effective dimension $\bar v$", fontsize=6.6, labelpad=1.5)
 axL.tick_params(labelsize=6.0, length=2, pad=1.5, which="major")
 axL.tick_params(length=1.2, which="minor")
 axL.text(30, 260, "action count $K$", fontsize=6.0, color="#666666")
-axL.text(30, 2.9, r"$\bar v$", fontsize=7.0, color="#0173B2")
-axL.text(150, 1.05, f"{V['vbar'].min():.2f} to {V['vbar'].max():.2f}", fontsize=5.8,
-         color="#0173B2")
+axL.text(30, 6.5, r"$\bar v$, %s to %s"
+         % (f"{V['vbar'].min():.2f}", f"{V['vbar'].max():.2f}"),
+         fontsize=6.0, color="#0173B2")
 for sp in ("top", "right"):
     axL.spines[sp].set_visible(False)
 
