@@ -337,8 +337,8 @@ at time $t+d$. Then $\hat c_t(a)=P(s_1\mid a)/0.5$, so
 $\hat c_t=(1.6,\,0.8,\,0)$ against the action-level $\tilde c_t=(2,0,0)$. One observation updates
 all three actions: $a_2$ is charged although it was never played, because it had a $0.4$ chance of
 producing the state seen, and $a_3$ is charged nothing, because it could not have produced that
-state. Nothing is biased by this. With $\theta_t=(1,0)$ the true losses are $c_t=(0.8,0.4,0)$, and
-averaging $\hat c_t$ over $S_t\sim q_t$ returns exactly that. What is bought is the second moment:
+state. None of this introduces bias: with $\theta_t=(1,0)$ the true losses are
+$c_t=(0.8,0.4,0)$, and averaging $\hat c_t$ over $S_t\sim q_t$ returns exactly that. The gain is in the second moment:
 $v_t=1.44$ here, against $K=3$ for the action-level estimate, and with $\theta_t=(1,1)$ both are
 attained exactly.
 
