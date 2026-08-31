@@ -154,9 +154,9 @@ through round $t$, including outcomes generated but not yet delivered; outcomes 
 independent across rounds given the states. The conditional mean depends on $A_t$ only through $S_t$. This
 \emph{state-sufficiency} assumption licenses cross-action pooling: an outcome observed at state
 $S_t$ may update every action that could have produced that state. If an action affects the outcome
-directly, in a way not represented in $S_t$, the argument no longer applies. The learner sees less than $\mathcal F_{t-1}$: it may use only
-what has been delivered, so $X_r$ first affects the action distribution at round $r+d+1$, and
-equivalently the round-$t$ decision uses outcomes only from rounds $r\le t-d-1$. Hence $x_t$ is
+directly, in a way not represented in $S_t$, the argument no longer applies. The learner may use all states observed so far, but
+among outcomes only those from rounds $r\le t-d-1$ have been delivered. \textsc{State-EXP3} changes
+its play distribution only when an outcome arrives, so for this algorithm $x_t$ is
 $\mathcal F_{t-d-1}$-measurable.
 
 The matrix $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and the \emph{state-loss means} $\theta_t\in[0,1]^{|\Sset|}$ are \emph{oblivious}:
@@ -196,11 +196,11 @@ $V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. A rotating variant tha
 $d+1$ copies, and a version that merges similar states, are deferred to
 Appendix~\ref{app:etc}; neither adapts to $\etwo$.
 
-The proof turns on one pathwise identity. The denominator of $\hat c_t$ is the state marginal of
-the distribution supplying its numerator, so $\langle x_t,\hat c_t\rangle=X_t\le1$ on every path,
-whatever $q_t(S_t)$ is. That bounds how far the play distribution moves while an outcome is in
-flight, which is what the delayed cross-term needs; centring by $X_t\mathbf 1$ replaces $v_t$ by
-$v_t-1$ (Appendix~\ref{app:m1}).
+The proof uses one key identity. The denominator of $\hat c_t$ is exactly the probability of the
+observed state under the current play, so $\langle x_t,\hat c_t\rangle=X_t\le1$ on every path. This
+limits how far the play distribution can move while an outcome is in flight and controls the extra
+term created by delay; subtracting $X_t\mathbf 1$ in the analysis replaces $v_t$ by $v_t-1$
+(Appendix~\ref{app:m1}).
 
 \paragraph{The cost of waiting.}\label{sec:lower} Waiting carries a cost that persists even when the
 stale losses are supplied free. Theorem~\ref{thm:lower} isolates that cost from time alone: the
@@ -231,7 +231,7 @@ Figure~\ref{fig:phase} separates them in both directions: the gain rises as the 
 falls at fixed task difficulty, and the effective dimension stays nearly constant as the catalogue
 grows.
 With $K=200$ generated items and six levels of engagement the estimated dimension is $1.97$, and
-the state-pooled variant cuts regret against action-level weighting by $79.3$, $63.6$ and $38.9$
+\textsc{State-EXP3} cuts regret against action-level weighting by $79.3$, $63.6$ and $38.9$
 per cent at $d=10,50,200$, and against the rate-optimal action-only
 delayed-bandit baseline of \citet{zimmert2020} tuned over a grid by $67.9$, $51.4$ and $31.5$. That setting is
 hand-structured, not fitted to data, so it shows the mechanism, not a deployed system.
@@ -702,9 +702,10 @@ performed.
 difficulty fixed. Matching the uniform-play regret reverses the trend, supporting the interpretation that the
 decline in the unmatched sweep is driven by task-difficulty confounding rather than by the pooling
 mechanism itself. Bars are one standard error of the paired
-difference. \textbf{Right,} regret saved against action-level weighting over the smoothing
-pseudocount and the sensor balance, $10$ paired seeds per cell, from the plug-in sensitivity study
-whose script is released with the rest.}
+difference. \textbf{Right,} regret saved against action-level weighting as the
+smoothing pseudocount used to estimate $P$ and the sensor balance vary, with $10$ paired seeds per
+cell; this is the sensitivity study using an estimated (plug-in) $P$, whose script is released with
+the rest.}
 \label{fig:matched}
 \end{figure}
 
@@ -741,7 +742,7 @@ what fixing the difficulty costs.
 \caption{Study~14/16, a recommendation funnel. \textbf{Left,} the effective dimension stays near two
 while the catalogue grows thirty-twofold, so the gap between $K$ and $\vhat$ comes from the
 catalogue having categories, not from a chosen $K$. \textbf{Right,} the three arms at $T=20000$
-and $8$ paired seeds, labelled by whether the regime condition of Section~\ref{sec:alg} holds.
+and $8$ paired seeds, labelled by whether $\bar v(d+1)\log K\le K+d$ holds.
 Bars are one standard error. No real data is used anywhere in this study.}
 \label{fig:funnel}
 \end{figure}

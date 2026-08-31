@@ -1,7 +1,7 @@
 """Figure 3: does the drift lower bound describe the right scaling?
 
 Reads drift_scaling.npz, produced by code/drift_scaling.py.  Left panel plots measured regret
-against the predicted scale sqrt(d E_2 min{1 + log q, T/d}) for four policies over a grid that
+against the predicted scale sqrt(d E_2 min{1 + log J, T/d}) for four policies over a grid that
 varies d by 20x, E_2 by 100x and q by 16x.  A common slope through the origin on log-log axes is
 the collapse Theorem 3 predicts.  Right panel plots the same points normalised, one column per
 swept parameter, so a flat band is the same statement read a second way.
@@ -20,10 +20,10 @@ D = np.load(_CODE / "drift_scaling.npz")
 
 POL = [("uniform", "uniform", "#666666", "o"),
        ("exp3", "action-level EXP3", "#0173B2", "s"),
-       ("state_exp3", "State-EXP3", "#029E73", "^"),
+       ("state_exp3", "STATE-EXP3", "#029E73", "^"),
        ("greedy_hint", "greedy on the exact $m_t$", "#DE8F05", "D")]
 LBL = {"uniform": "uniform", "exp3": "action EXP3",
-       "state_exp3": "State-EXP3", "greedy_hint": "greedy on $m_t$"}
+       "state_exp3": "STATE-EXP3", "greedy_hint": "greedy on $m_t$"}
 
 FIG_W, FIG_H = 5.5, 1.62
 fig = plt.figure(figsize=(FIG_W, FIG_H))
@@ -42,7 +42,7 @@ for key, _lab, colour, marker in POL:
              label=LBL[key], zorder=3, ls="none")
 axL.set_xscale("log"); axL.set_yscale("log")
 axL.set_xlim(lo, hi)
-axL.set_xlabel(r"predicted $\sqrt{d\,E_2\min\{1+\log q,\ T/d\}}$", fontsize=6.6, labelpad=1.0)
+axL.set_xlabel(r"predicted $\sqrt{d\,E_2\min\{1+\log J,\ T/d\}}$", fontsize=6.6, labelpad=1.0)
 axL.set_ylabel("measured regret", fontsize=6.6, labelpad=1.5)
 axL.tick_params(labelsize=6.0, length=2, pad=1.5, which="major")
 axL.tick_params(length=1.2, which="minor")
@@ -60,7 +60,7 @@ d_sweep = (D["eps"] == 0.10) & (D["q"] == 4)
 e_sweep = (D["d"] == 50) & (D["q"] == 4)
 q_sweep = (D["d"] == 50) & (D["eps"] == 0.10)
 GROUPS = [("vary $d$", d_sweep, D["d"]), (r"vary $E_2$", e_sweep, D["e2"]),
-          ("vary $q$", q_sweep, D["q"])]
+          ("vary $J$", q_sweep, D["q"])]
 
 offset = 0.0
 ticks, ticklab = [], []

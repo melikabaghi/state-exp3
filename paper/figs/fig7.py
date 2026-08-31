@@ -2,7 +2,7 @@
 
 Left panel: the effective dimension stays near two while the catalogue grows thirty-twofold, so
 "many actions resolved by few states" is a property of the catalogue structure rather than of a
-chosen K.  Right panel: the three arms against delay, with the regime condition of Section 4
+chosen K.  Right panel: the three arms against delay, with the condition vbar*(d+1)*log K <= K+d
 marked, which holds only at the shortest delay because the analysed variant charges the delay
 multiplicatively.
 

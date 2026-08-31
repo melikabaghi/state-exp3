@@ -24,7 +24,7 @@ _CODE = _Path(__file__).resolve().parent.parent.parent / "code"
 M = np.load(_CODE / "matched_control.npz")
 A = np.load(_CODE / "alpha_kappa.npz")
 
-# study 6, verbatim from Appendix I, for the unmatched contrast
+# the unmatched overlap sweep, kept as the contrast the matched sweep corrects
 S6_V = np.array([2.719, 2.013, 1.532, 1.168, 1.009])
 S6_STATE = np.array([392.7, 361.1, 306.5, 199.9, 49.2])
 S6_ACTION = np.array([599.3, 528.1, 406.5, 229.2, 50.8])
@@ -42,7 +42,7 @@ se = 100.0 * M["gain_se"] / M["action"]
 axL.errorbar(M["vbar"], rel, yerr=se, fmt="o-", color="#0173B2", ms=3.2, lw=1.3,
              elinewidth=0.9, capsize=1.8, label="matched difficulty", zorder=4)
 axL.plot(S6_V, S6_REL, "s--", color="#DE8F05", ms=3.0, lw=1.2,
-         label="study 6, unmatched", zorder=3)
+         label="unmatched", zorder=3)
 axL.set_xlabel(r"effective dimension $\bar v$", fontsize=6.6, labelpad=0.8)
 axL.set_ylabel("gain over action-level (%)", fontsize=6.6, labelpad=1.5)
 axL.set_ylim(0, 40)
