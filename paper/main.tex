@@ -635,11 +635,11 @@ result provides an $\etwo$-adaptive upper bound under noisy outcomes.
 
 \section{Numerical detail}\label{app:num}
 
-Sixteen studies were run; the four that bear on the theorems are reported here as Experiments~1
-to~4, each with an observation, an interpretation and a limitation, and each named with the script
-that produces it. The code for all sixteen is available. Experiments~1 and~2 draw $P$ from a Dirichlet;
-Experiment~2 uses a hand-structured funnel map, and Experiment~3 uses the deterministic
-hard-instance map of Theorem~\ref{thm:lower}. All policies run on the same
+Sixteen studies were run; the three that bear most directly on the main claim and its boundary are
+reported here as Experiments~1 to~3, each with an observation, an interpretation and a limitation,
+and each named with the script that produces it. The code for all sixteen is available.
+Experiment~1 draws $P$ from a Dirichlet; Experiment~2 uses a hand-structured funnel map; and
+Experiment~3 uses the deterministic hard-instance map of Theorem~\ref{thm:lower}. All policies run on the same
 environment parameters and common random-number streams, so a seed fixes everything except which
 estimator is formed, and differences are taken within a seed before averaging. Round $r$'s outcome
 is consumed before round $r+d+1$, matching Section~\ref{sec:setting}. Reported $\pm$ is one
@@ -713,7 +713,7 @@ Bars are one standard error. No real data is used anywhere in this experiment.}
 
 \FloatBarrier
 
-\textbf{Experiment 2 (\texttt{funnel.py}, \texttt{sota\_check.py}). A recommendation funnel, and a rate-optimal baseline on it.} Unlike Experiments~1 and~2, this
+\textbf{Experiment 2 (\texttt{funnel.py}, \texttt{sota\_check.py}). A recommendation funnel, and a rate-optimal baseline on it.} Unlike Experiment~1, this
 experiment does not draw $P$ from a Dirichlet; the Dirichlet construction is the assumption under
 test rather than evidence for it. This
 one builds an environment to the shape of a recommendation funnel instead. Actions are $K=200$
