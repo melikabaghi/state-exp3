@@ -164,11 +164,10 @@ function of the observables, so a lower bound surviving it is stronger, and
 errors are small even if frequent. The geometry of $P$ governs sharing across actions and the
 evolution of $\theta_t$ governs staleness across time. 
 
-\section{What the theory guarantees}\label{sec:alg}
+\section{Pooling through the state}\label{sec:alg}
 
 Two results follow: the number of actions stops setting the price for the algorithm one would
-actually run, and no sharing removes the cost of waiting. A rotating variant and one for merged
-states are in Appendix~\ref{app:etc}.
+actually run, and no sharing removes the cost of waiting.
 
 An arriving outcome need not update the action played alone. Every action can be credited by how
 likely it was to have produced the observed state. Here $P$ is known and $m_t$ is not given. For each state
@@ -200,7 +199,7 @@ whatever $q_t(S_t)$ is. That bounds how far the play distribution moves while an
 flight, which is what the delayed cross-term needs; centring by $X_t\mathbf 1$ replaces $v_t$ by
 $v_t-1$ (Appendix~\ref{app:m1}).
 
-\paragraph{Where this stops.}\label{sec:lower} Waiting carries a cost that persists even when the
+\paragraph{The cost of waiting.}\label{sec:lower} Waiting carries a cost that persists even when the
 stale losses are supplied free. Theorem~\ref{thm:lower} isolates that cost from time alone: the
 construction gives each of the $J$ drifting directions a private state, which removes useful
 pooling and forces $J\le|\Sset|-1$ (Appendix~\ref{app:proofs}).
