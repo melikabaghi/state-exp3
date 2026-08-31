@@ -68,15 +68,18 @@ axB.text(196, 0.93, "$m_t=c_{t-d}$, given", fontsize=6.4, color="#8a5a00", ha="r
 # so the two marked points sit at the same height and the arrow between them spans d.
 t0 = 116
 y0 = c[t0 - d]                                     # equals m[t0] by construction
-Y_RULE = 0.850                                     # clear band above both curves
+# In the window t0-d..t0 the curves stay below 0.65, so 0.70 is the only band with room.
+# The label carries a white box so it masks the rule instead of needing space above it.
+Y_RULE = 0.700
 for x, col in ((t0 - d, "#111111"), (t0, C_LATE)):
-    axB.plot([x, x], [y0, Y_RULE], color=C_GREY, lw=0.5, ls=":", zorder=1)
-    axB.plot([x], [y0], "o", color=col, ms=3.2, mew=0.0, zorder=5)
+    axB.plot([x, x], [y0, Y_RULE], color=C_GREY, lw=0.5, ls=":", zorder=4)
+    axB.plot([x], [y0], "o", color=col, ms=3.2, mew=0.0, zorder=6)
 axB.annotate("", xy=(t0, Y_RULE), xytext=(t0 - d, Y_RULE),
-             arrowprops=dict(arrowstyle="<->", color="#111111", lw=0.8))
-axB.text((2 * t0 - d) / 2, Y_RULE + 0.032, "$d$", ha="center", fontsize=6.8, color="#111111")
-axB.text(t0 - d, Y_RULE + 0.032, "$t\\!-\\!d$", ha="center", fontsize=6.0, color=C_GREY)
-axB.text(t0, Y_RULE + 0.032, "$t$", ha="center", fontsize=6.0, color=C_GREY)
+             arrowprops=dict(arrowstyle="<->", color="#111111", lw=0.8), zorder=5)
+axB.text((2 * t0 - d) / 2, Y_RULE, "$d$", ha="center", va="center", fontsize=6.8,
+         color="#111111", zorder=7,
+         bbox=dict(facecolor="white", edgecolor="none", pad=0.7))
+
 axB.set_ylim(0.10, 1.00); axB.set_xlim(0, T)
 axB.set_yticks([]); axB.set_xticks([0, 100, 200])
 axB.tick_params(labelsize=6.2, length=2, pad=1.5)

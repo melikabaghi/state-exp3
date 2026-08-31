@@ -57,8 +57,12 @@ axR.set_xticklabels([f"$d={int(x)}$\n{'in regime' if l <= r else 'out of regime'
                      for x, l, r in zip(d, F["lhs"], F["rhs"])], fontsize=5.6)
 axR.set_ylabel("regret", fontsize=6.6, labelpad=1.5)
 axR.tick_params(labelsize=6.0, length=2, pad=1.5)
-axR.legend(fontsize=5.6, frameon=False, loc="upper left", handletextpad=0.35,
-           borderaxespad=0.2, labelspacing=0.22, handlelength=1.1)
+# the stacked legend sat on top of the tallest bar; give the axis headroom and lay it
+# out in one row above the bars instead
+_top = max(float((F[k] + F[k + "_se"]).max()) for k in ("action", "plugin", "state"))
+axR.set_ylim(0, _top * 1.30)
+axR.legend(fontsize=5.6, frameon=False, loc="upper center", ncol=3, handletextpad=0.35,
+           borderaxespad=0.1, columnspacing=1.1, handlelength=1.1)
 for sp in ("top", "right"):
     axR.spines[sp].set_visible(False)
 
