@@ -47,17 +47,18 @@ Integration of Machine Learning for Uncertainty-Aware Decision-Making}
 \begin{abstract}
 A system often has to act long before it learns whether the act worked: a recommender sees a click
 in seconds and a purchase in days. For $K$ actions and a delay of $d$ rounds, the sharpest published
-rates are minimax-optimal in the delay when only the action is visible \citep{zimmert2020}, and
-$\Ot(\sqrt{(K+d)T})$ over $T$ rounds once an intermediate state is \citep{esposito2023}. Both are
+rate is minimax-optimal in the delay when only the action is visible \citep{zimmert2020}, and is
+$\Ot(\sqrt{(K+d)T})$ over $T$ rounds once an intermediate state is visible as well
+\citep{esposito2023}. Both are
 governed by the number of actions, so a longer menu is always more expensive to learn from, and
 neither adapts to instances in which many actions are effectively interchangeable. They need not
 be. If the outcome depends on the action only through the state it produced, a click or a browse or
 a cart, then one late outcome informs every action that could have produced the state observed, and
 the price is set by how many genuinely different states the actions produce. We charge each delayed
 outcome through the state and pay an \emph{effective dimension} $v_t$, between $1$ and the number of
-states, in place of $K$. For the single-copy algorithm that is actually run we prove
-$\Ot(\sqrt{V^-}+\sqrt{dT})$ for any budget fixed in advance, so the action count leaves the leading
-term and the delay enters additively. The gain has a limit: even when handed the exact losses from $d$ rounds ago, no algorithm escapes
+states, in place of $K$. For the algorithm that is actually run we prove
+$\Ot(\sqrt{V^-}+\sqrt{dT})$, where $V^-$ is any budget on $\sum_t(v_t-1)$ fixed in advance, so the
+action count leaves the leading term and the delay enters additively. The gain has a limit: even when handed the exact losses from $d$ rounds ago, no algorithm escapes
 $\Omega(\sqrt{d\mathcal E\min\{1+\log J,T/d\}})$, where $J$ counts the drifting directions and
 $\mathcal E$ bounds how far the losses move while the learner waits. On generated data the state
 channel cuts regret by up to $79$ per cent against action-level weighting, and on the funnel family
@@ -67,9 +68,9 @@ guarantees assume the action-to-state map is known, and every experiment is synt
 
 \section{Introduction}
 
-Operations commit before they learn. A markdown is set and sell-through is known a season later,
-staff are rostered and the shift's outcome lands after it, marketing spend is committed before
-attribution resolves, an item is recommended and the purchase it may cause is days away. In each
+Operations commit before they learn. A markdown is set and sell-through is known a season later;
+staff are rostered and the shift's outcome lands after it; marketing spend is committed before
+attribution resolves; an item is recommended and the purchase it may cause is days away. In each,
 the decision is made now and the quantity it will be judged by arrives late, while something
 cheaper arrives quickly: a fitting-room visit, a shift's first hour, a click. Whether that early
 signal can cut the cost of learning is a question between two fields. What may be inferred from the
@@ -81,9 +82,9 @@ induce rather than by how many actions there are: a catalogue of
 thousands of items that funnels users through half a dozen engagement patterns should be no harder
 to learn from than a catalogue of six.
 
-The mechanism that makes it true is that the outcome depends on the action only through the
+The mechanism behind that claim is that the outcome depends on the action only through the
 intermediate state it produced, so one late outcome can be charged to every action that could have
-produced the state observed rather than to the one action played. Bandits with intermediate
+produced the state observed rather than to the one action played, pooling it across them. Bandits with intermediate
 observations formalize the setting: the learner picks one action and sees the consequence of that
 action alone. \citet{esposito2023} show that the \emph{state-to-loss} map decides the complexity, an
 unrestricted one giving only the rate available with no intermediate observations; we fix that map
@@ -101,7 +102,7 @@ than $K$. The claim has a boundary. Waiting
 carries a cost of its own, which sharing cannot remove. Writing
 $m_t=c_{t-d}$ for the action-loss vector from $d$ rounds earlier and
 $\etwo=\sum_t\|c_t-m_t\|_\infty^2$ for how far the losses move while the learner waits,
-Theorem~\ref{thm:lower} bounds below the regret this forces even when $m_t$ is supplied free
+Theorem~\ref{thm:lower} lower-bounds the regret this forces even when $m_t$ is supplied free
 (Figure~\ref{fig:one}). Adapting to overlap and drift at once remains open
 (Section~\ref{sec:conj}). Four ingredients separate the neighbouring settings, and it is their
 combination that is new here.
@@ -129,7 +130,7 @@ paired seeds, bars one standard error of the paired difference (Appendix~\ref{ap
 this paper            & \cm & \cm & \cm & \cm \\
 \bottomrule
 \end{tabular}\\[2pt]
-Where this work sits: the four ingredients that separate the neighbouring settings.
+Where this work sits.
 \end{center}
 
 \citet{eldowa2024} is closest, and $v_t-1$ is exactly the $\chi^2$ mutual information they
@@ -162,12 +163,12 @@ $\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower 
 function of the observables, so a lower bound surviving it is stronger, and
 \textsc{State-EXP3} never uses it. We measure how misleading $m_t$ is by $\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which stays small when
 errors are small even if frequent. The geometry of $P$ governs sharing across actions and the
-evolution of $\theta_t$ governs staleness across time. 
+evolution of $\theta_t$ governs staleness across time.
 
 \section{Pooling through the state}\label{sec:alg}
 
-Two results follow: the number of actions stops setting the price for the algorithm one would
-actually run, and no sharing removes the cost of waiting.
+Two results carry the claim: the number of actions stops setting the price for the algorithm one
+would actually run, and no sharing removes the cost of waiting.
 
 An arriving outcome need not update the action played alone. Every action can be credited by how
 likely it was to have produced the observed state. Here $P$ is known and $m_t$ is not given. For each state
@@ -233,7 +234,7 @@ hand-structured, not fitted to data, so it shows the mechanism, not a deployed s
 \begin{center}\small
 \begin{tabular}{@{}rrrrrr@{}}
 \toprule
-$d$ & action-level & tuned \citep{zimmert2020} & \textsc{State-EXP3} & cut & cut \\
+$d$ & action-level & tuned \citep{zimmert2020} & \textsc{State-EXP3} & cut vs action & cut vs tuned \\
 \midrule
  10 & 4577 & 2959 &  949 & $79.3\%$ & $67.9\%$ \\
  50 & 4752 & 3557 & 1728 & $63.6\%$ & $51.4\%$ \\
@@ -244,9 +245,9 @@ Funnel family, $K=200$, $|\Sset|=6$, $T=20000$, $8$ paired seeds; cuts are again
 weighting and against the tuned baseline (study~14/16).
 \end{center}
 
-These runs use the single-copy algorithm that Theorem~\ref{thm:m1} covers; Appendix~\ref{app:num}
-also reports the rotating variant. A best-state rule leads seven of nine settings, but where its
-assumption fails its regret grows linearly in $T$ where ours stays sublinear
+These runs use the algorithm Theorem~\ref{thm:m1} covers; Appendix~\ref{app:num} also reports the
+rotating variant. A best-state rule leads seven of nine settings, but where its assumption fails
+its regret grows linearly in $T$ while ours stays sublinear
 (Appendix~\ref{app:num}).
 
 \begin{figure}[t]
