@@ -149,14 +149,15 @@ logarithms are natural and $\Ot$ hides logarithmic factors. Every round follows 
 $A_t\xrightarrow{\;P\;}S_t\xrightarrow{\;\theta_t\;}X_t$: the learner draws $A_t$ from a distribution $x_t$,
 observes $S_t\sim P(\cdot\mid A_t)$ at once, and receives the delayed outcome only at time $t+d$, encoded as a loss
 $X_t\in[0,1]$ so that smaller is better, with
-$\Ex[X_t\mid\mathcal F_{t-1},A_t,S_t]=\theta_t(S_t)$, where $\mathcal F_{t-1}$ is everything seen
-before round $t$; outcomes are conditionally independent across rounds given the states. The conditional mean depends on $A_t$ only through $S_t$. This
+$\Ex[X_t\mid\mathcal F_{t-1},A_t,S_t]=\theta_t(S_t)$, where $\mathcal F_t$ is the environment's history
+through round $t$, including outcomes generated but not yet delivered; outcomes are conditionally
+independent across rounds given the states. The conditional mean depends on $A_t$ only through $S_t$. This
 \emph{state-sufficiency} assumption licenses cross-action pooling: an outcome observed at state
 $S_t$ may update every action that could have produced that state. If an action affects the outcome
-directly, in a way not represented in $S_t$, the argument no longer applies. Here $x_t$ depends only
-on $\mathcal F_{t-1}$; $X_r$ may first affect the action
-distribution at round $r+d+1$; equivalently, the round-$t$ decision uses outcomes only from
-rounds $r\le t-d-1$.
+directly, in a way not represented in $S_t$, the argument no longer applies. The learner sees less than $\mathcal F_{t-1}$: it may use only
+what has been delivered, so $X_r$ first affects the action distribution at round $r+d+1$, and
+equivalently the round-$t$ decision uses outcomes only from rounds $r\le t-d-1$. Hence $x_t$ is
+$\mathcal F_{t-d-1}$-measurable.
 
 The matrix $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and the \emph{state-loss means} $\theta_t\in[0,1]^{|\Sset|}$ are \emph{oblivious}:
 chosen in advance, not reacting to the learner. Action losses are $c_t=P\theta_t$ and performance
@@ -168,8 +169,8 @@ evolution of $\theta_t$ governs staleness across time.
 
 \section{Pooling through the state}\label{sec:alg}
 
-Two results carry the claim: the number of actions stops setting the price for the algorithm one
-would actually run, and no sharing removes the cost of waiting.
+These two sources of difficulty separate cleanly. Pooling replaces the leading action-count
+dependence by an effective dimension, while no amount of sharing removes the cost of waiting.
 
 An arriving outcome need not update the action played alone. Every action can be credited by how
 likely it was to have produced the observed state. Here $P$ is known and $m_t$ is not given. For each state
@@ -188,8 +189,8 @@ Then \textup{\textsc{State-EXP3}} with any $\eta\le1/(e(d+1))$ satisfies
 $\Ex[R_T]\le\sqrt{2(3.3V^-+2dT)\log K}+e(d+1)\log K+d$.
 \end{theorem}
 
-So $K$ is replaced by $V^-$, which counts how differently the actions behave rather than how many
-there are, and the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$, for the algorithm every
+Thus the leading action-count dependence is replaced by $V^-$, which measures how differently the
+actions behave rather than how many there are, while the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$, for the algorithm every
 experiment below runs. Writing $\bar v$ for the largest $v_t$ over all ways of playing,
 $V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. A rotating variant that interleaves
 $d+1$ copies, and a version that merges similar states, are deferred to
@@ -215,7 +216,8 @@ the best regret any algorithm can guarantee is
 $\Omega(\sqrt{KT}+\sqrt{d\,\mathcal E\min\{1+\log J,\,T/d\}})$, up to constants.
 \end{theorem}
 
-The first term is the usual cost of exploring. The second is the cost of delay: it grows with the
+The first term is the usual cost of exploring. The second is the cost of delay that pooling cannot
+remove: it grows with the
 wait, how far the losses move during it, and the number $J$ of directions the best fixed action can
 use. They come from different hard instances, so adding them overstates the truth by at most a
 factor of two.
@@ -892,7 +894,7 @@ come from a single copy.
 
 Throughout, $L_t=\sum_{r\le t-d-1}\hat c_r$ and $x_t\propto e^{-\eta L_t}$, so
 $L_{t+1}-L_t=\hat c_{t-d}$, with $\hat c_r=0$ for $r<1$. The filtration $\mathcal F_t$ is the
-environment's, including outcomes not yet delivered, as in Proposition~\ref{prop:pool}; under it
+environment's, as defined in Section~\ref{sec:setting}; under it
 $x_t$ is $\mathcal F_{t-d-1}$-measurable, so $x_{r+d}$ is $\mathcal F_{r-1}$-measurable.
 
 \paragraph{The drift lemma.} The natural route prices the change of measure from $x_r$ to
