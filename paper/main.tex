@@ -132,13 +132,9 @@ this paper            & \cm & \cm & \cm & \cm \\
 Where this work sits: the four ingredients that separate the neighbouring settings.
 \end{center}
 
-Among the closest settings summarised here, ours is the row combining all four. \citet{eldowa2024} is closest,
-and $v_t-1$ is exactly the $\chi^2$ mutual information they introduce, so that quantity is theirs;
-what is new is its role once the outcome is delayed (Appendix~\ref{app:transfer}).
-\citet{vernade2020} vary the action-to-state map while fixing the state-to-loss map, where we do
-the reverse; \citet{wang2026} and \citet{zhang2026impatient} measure a prediction error as $\etwo$
-does, without the delay; and feedback graphs \citep{alon2015,esposito2022,gabbianelli2023} reveal
-other actions' losses, where here the state's loss must still be estimated.
+\citet{eldowa2024} is closest, and $v_t-1$ is exactly the $\chi^2$ mutual information they
+introduce, so that quantity is theirs; what is new is its role once the outcome is delayed. Other
+neighbouring settings are placed in Appendix~\ref{app:transfer}.
 
 \section{Problem formulation}\label{sec:setting}
 
@@ -491,6 +487,13 @@ merged denominator the merged summand is at most the two it replaces.
 \end{proof}
 
 \section{Relation to other inaccuracy measures}\label{app:transfer}
+
+\paragraph{Neighbouring settings.} \citet{vernade2020} vary the action-to-state map while fixing
+the state-to-loss map, where we do the reverse. \citet{wang2026} and \citet{zhang2026impatient}
+measure a prediction error as $\etwo$ does, without the delay. Feedback graphs
+\citep{alon2015,esposito2022,gabbianelli2023} reveal other actions' losses outright, where here the
+state's loss must still be estimated from the one outcome that arrives.
+
 
 Write $\lamtwo=\sum_t\min\{1,\|c_t-m_t\|_2^2\}$ for the inaccuracy measure of \citet{baron2025}.
 Unlike $\etwo$, which charges only the worst action in a round, $\lamtwo$ grows with how many

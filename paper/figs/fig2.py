@@ -40,7 +40,7 @@ order = np.argsort(vb)
 axL.errorbar(vb[order], rel[order], yerr=rel_se[order], fmt="o-", color=BLUE, ms=3.2,
              lw=1.0, mew=0.0, elinewidth=0.8, capsize=1.6, zorder=3)
 axL.set_xlabel(r"effective dimension $\hat v$", fontsize=6.6, labelpad=1.2)
-axL.set_ylabel("regret saved (\\%)", fontsize=6.6, labelpad=2.0)
+axL.set_ylabel("regret saved (%)", fontsize=6.6, labelpad=2.0)
 axL.set_xlim(0.9, 3.6)
 axL.set_ylim(0, 24)
 axL.set_yticks([0, 10, 20])
