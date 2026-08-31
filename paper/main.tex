@@ -221,10 +221,12 @@ wait, how far the losses move during it, and the number $J$ of directions the be
 use. They come from different hard instances, so adding them overstates the truth by at most a
 factor of two.
 
-\section{Experiments}\label{sec:num}
+\section{Experiments}
 
 A claim about instances is settled where the two counts it separates, how many actions there are
-and how many distinct behaviours they have, come apart. The families below are built so they do.
+and how many distinct behaviours they have, come apart. The families below are built so they do,
+and Figure~\ref{fig:phase} shows the two counts coming apart in both directions: the gain rising as
+the effective dimension falls, and the effective dimension holding while the catalogue grows.
 With $K=200$ generated items and six levels of engagement the estimated dimension is $1.97$, and
 the state-pooled variant cuts regret against action-level weighting by $79.3$, $63.6$ and $38.9$
 per cent at $d=10,50,200$, and against the minimax-optimal delayed-bandit method of
@@ -247,7 +249,8 @@ weighting and against the tuned baseline (study~14/16).
 
 These runs use the single-copy algorithm that Theorem~\ref{thm:m1} covers; Appendix~\ref{app:num}
 also reports the rotating variant. A best-state rule leads seven of nine settings, but where its
-assumption fails its regret grows linearly, at four times our spread across seeds.
+assumption fails its regret grows linearly in $T$ where ours stays sublinear
+(Appendix~\ref{app:num}).
 
 \begin{figure}[t]
 \centering
@@ -792,6 +795,19 @@ Every grid-best multiplier is chosen by reading these benchmarks, so only the fi
 procedure a practitioner could run. Eight paired seeds on the funnel and ten on the matched sweep.
 The arms run $m=1$, covered by Theorem~\ref{thm:m1}, and the environment has no adversarial
 component, so it exercises the pooling channel and not the drift channel.
+
+\textbf{A heuristic baseline.} The best-state rule identifies the state with the lowest mean loss
+and plays the action most likely to reach it, ignoring every other state. Across nine settings,
+five families at $d=10$ and $50$ plus one drift cell, it leads seven and \textsc{State-EXP3} two.
+Its two losses are the spread family, built so that the best action mixes over several good states
+while a decoy action puts more mass than any other on the single best one: the rule takes the decoy
+and records $1496\pm329$ and $1495\pm327$ at $d=10$ and $50$ against our $486\pm11$ and
+$814\pm20$. Sweeping $T$ from $2500$ to $40000$ on that family and fitting regret to a power of $T$
+gives an exponent of $1.00$ for the rule, $0.58$ for \textsc{State-EXP3} and $0.67$ for
+action-level weighting, so the rule's regret grows linearly where both learners' grow sublinearly.
+Its spread across seeds averages $4.6$ times ours over the nine settings. The rule needs one state
+to be both best and reachable, and nothing in it detects when that fails, which is why the gain it
+shows on seven settings is not a gain a practitioner can rely on.
 
 \begin{figure}[t]
 \centering
