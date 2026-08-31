@@ -155,15 +155,14 @@ before round $t$; outcomes are conditionally independent across rounds given the
 $S_t$ may update every action that could have produced that state. If an action affects the outcome
 directly, in a way not represented in $S_t$, the argument no longer applies. Here $x_t$ depends only
 on $\mathcal F_{t-1}$; $X_r$ may first affect the action
-distribution at round $r+d+1$, equivalently the round-$t$ decision uses outcomes only from rounds
-$r\le t-d-1$.
+distribution at round $r+d+1$; equivalently, the round-$t$ decision uses outcomes only from
+rounds $r\le t-d-1$.
 
 The matrix $P\in[0,1]^{K\times|\Sset|}$ is row-stochastic and fixed, and the \emph{state-loss means} $\theta_t\in[0,1]^{|\Sset|}$ are \emph{oblivious}:
 chosen in advance, not reacting to the learner. Action losses are $c_t=P\theta_t$ and performance
 is the static \emph{pseudo-regret}, the gap to the best single action in hindsight,
-$\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner also receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This is not a
-function of the observables, so a lower bound surviving it is stronger, and
-\textsc{State-EXP3} never uses it. We measure how misleading $m_t$ is by $\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which stays small when
+$\Ex[R_T]=\Ex[\sum_tc_t(A_t)]-\min_a\sum_tc_t(a)$. \textbf{Oracle for the lower bound.} For Theorem~\ref{thm:lower} only, the learner also receives the \emph{stale action-loss vector} $m_t\triangleq c_{t-d}$ before choosing $A_t$, with $m_t=c_1$ for $t\le d$. This oracle information is unavailable to
+\textsc{State-EXP3}, so a lower bound that holds even when it is supplied is stronger. We measure how misleading $m_t$ is by $\etwo=\sum_t\|c_t-m_t\|_\infty^2\le T$, which stays small when
 errors are small even if frequent. The geometry of $P$ governs sharing across actions and the
 evolution of $\theta_t$ governs staleness across time.
 
