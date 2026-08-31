@@ -269,21 +269,16 @@ Monte Carlo.}
 
 \section{Discussion}\label{sec:conj}
 
-Two things stand between an action and its worth: which actions resemble it, and how long the
-answer takes. The first is exploitable and checkable before deployment, since $P$ is known and an
-estimate of $\bar v$ well below $K$ says whether the state channel is worth using, and is as useful
-when it advises against it: $\bar v$ near $|\Sset|$ means rows of $P$ close to disjoint, with
-little to share. The second is not: Theorem~\ref{thm:lower} shows the uncertainty left
-by waiting survives even when the exact losses from $d$ rounds ago are handed over free, so a long
-delay is a cost to plan around, not estimate away.
-
-The guarantees require less than the experiments run. Theorem~\ref{thm:m1} assumes $P$ known and
-the state sufficient; an action that moves the outcome by a route the state does not record breaks
-the argument rather than weakening it, and no diagnostic here detects that. Every environment is
-generated and the funnel is built by hand rather than fitted to a log, so these results show the
-regime is describable and its effect measurable, not that a deployed system occupies it. In the
-theory $\bar v$ is estimated rather than solved for, and the two bounds lie on different axes, so
-they do not meet. Adapting to overlap and to drift at once is open.
+Two things stand between an action and its worth: how much its behaviour overlaps with other
+actions, and how long the outcome takes to arrive. The first is exploitable: when $P$ is known, an
+estimate of $\bar v$ well below $K$ indicates that delayed outcomes can be pooled across actions
+and that the state channel is worth using. The second cannot be pooled away:
+Theorem~\ref{thm:lower} shows that uncertainty from waiting persists even when the exact losses
+from $d$ rounds ago are supplied for free. Thus intermediate states can remove the statistical cost
+of a large catalogue, but not the temporal cost of stale information. Two limitations remain:
+$\bar v$ is estimated rather than computed exactly, and our upper bound adapts to overlap while the
+lower bound characterises drift on a separate axis. Adapting to both overlap and drift in one
+algorithm and one guarantee remains open.
 
 \begin{thebibliography}{99}
 \bibitem[Alon et al.(2015)]{alon2015} N.~Alon, N.~Cesa-Bianchi, O.~Dekel, and T.~Koren. Online learning with feedback graphs: beyond bandits. \emph{COLT}, PMLR 40, 2015.
