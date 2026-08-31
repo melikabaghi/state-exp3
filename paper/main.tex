@@ -8,6 +8,7 @@
 \usepackage{booktabs}
 \usepackage{amsfonts,amsmath,amssymb,amsthm}
 \usepackage{graphicx}
+\usepackage{placeins}
 \graphicspath{{figs/}}
 \usepackage{microtype}
 \usepackage{xcolor}
@@ -116,7 +117,7 @@ each state predicts changes while the action-to-state map stays fixed, so losses
 earlier grow inaccurate; $\etwo$ of Section~\ref{sec:setting} tracks it. The marked points are the
 true loss at $t-d$ and the same value handed to the learner at $t$, which the rule spans. \textbf{Right,} more
 overlap allows more sharing, at matched difficulty, $K=40$, $|\Sset|=8$, $T=10000$, $d=50$, $20$
-paired seeds, bars one standard error of the paired difference (Appendix~\ref{app:num}, Experiment~2).}
+paired seeds, bars one standard error of the paired difference (Appendix~\ref{app:num}, Experiment~1).}
 \label{fig:one}
 \end{figure}
 
@@ -192,7 +193,7 @@ $\Ex[R_T]\le\sqrt{2(3.3V^-+2dT)\log K}+e(d+1)\log K+d$.
 Thus the leading action-count dependence is replaced by $V^-$, which measures how differently the
 actions behave rather than how many there are, while the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$, for the algorithm every
 experiment below runs. Writing $\bar v$ for the largest $v_t$ over all ways of playing,
-$V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. A rotating variant that interleaves
+$V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. An interleaved variant that runs
 $d+1$ copies, and a version that merges similar states, are deferred to
 Appendix~\ref{app:etc}; neither adapts to $\etwo$.
 
@@ -247,11 +248,10 @@ $d$ & action-level & tuned \citep{zimmert2020} & \textsc{State-EXP3} & cut vs ac
 \bottomrule
 \end{tabular}\\[2pt]
 Funnel family, $K=200$, $|\Sset|=6$, $T=20000$, $8$ paired seeds; cuts are against action-level
-weighting and against the tuned baseline (Experiment~3).
+weighting and against the tuned baseline (Experiment~2).
 \end{center}
 
-These runs use the algorithm Theorem~\ref{thm:m1} covers; Appendix~\ref{app:num} also reports the
-rotating variant. A best-state rule leads seven of nine settings, but where its assumption fails
+These runs use the algorithm Theorem~\ref{thm:m1} covers. A best-state rule leads seven of nine settings, but where its assumption fails
 its regret grows linearly in $T$ while ours stays sublinear
 (Appendix~\ref{app:num}).
 
@@ -261,9 +261,9 @@ its regret grows linearly in $T$ while ours stays sublinear
 \caption{\textbf{Effective dimension, not action count.} \textbf{Left,} regret saved against
 action-level weighting as the effective dimension falls, with task difficulty held fixed so the
 sweep is not confounded by easier instances; $K=40$, $|\Sset|=8$, $T=10000$, $d=50$, $20$ paired
-seeds, bars one standard error of the paired difference (Experiment~2). \textbf{Right,} the catalogue
+seeds, bars one standard error of the paired difference (Experiment~1). \textbf{Right,} the catalogue
 grows thirty-twofold while $\bar v$ stays between $1.4$ and $1.8$, the separation
-Theorem~\ref{thm:m1} charges for (Experiment~3). $\vhat$ and $\bar v$ estimate $\sup_xv(x)$ by
+Theorem~\ref{thm:m1} charges for (Experiment~2). $\vhat$ and $\bar v$ estimate $\sup_xv(x)$ by
 Monte Carlo.}
 \label{fig:phase}
 \end{figure}
@@ -543,7 +543,7 @@ cancellation occurs within a full window and $P$ passes the increment through un
 Without the second condition the drift can lie in the kernel of $P$ and the ratio can be zero.
 \end{proof}
 
-The construction in full. Take states $s_0,\dots,s_q$, a stationary deterministic map sending
+The construction in full. Take states $s_0,\dots,s_J$, a stationary deterministic map sending
 $a_j$ to $s_j$ for $j\le J$ and every other action to $s_0$, and independent Rademacher signs
 $\sigma_b^{(j)}$ for $2\le b\le B=\lfloor T/h\rfloor$. Set $\theta_t(s_0)=\tfrac12$ throughout,
 $\theta_t\equiv\tfrac12$ on block~$1$, and $\theta_t(s_j)=\tfrac12-\varepsilon\sigma_b^{(j)}$ on
@@ -637,8 +637,9 @@ result provides an $\etwo$-adaptive upper bound under noisy outcomes.
 
 Sixteen studies were run; the four that bear on the theorems are reported here as Experiments~1
 to~4, each with an observation, an interpretation and a limitation, and each named with the script
-that produces it. The code for all sixteen is available. Experiments~1, 2 and~4 draw $P$ from a
-Dirichlet and Experiment~3 does not. All policies run on the same
+that produces it. The code for all sixteen is available. Experiments~1 and~2 draw $P$ from a Dirichlet;
+Experiment~2 uses a hand-structured funnel map, and Experiment~3 uses the deterministic
+hard-instance map of Theorem~\ref{thm:lower}. All policies run on the same
 environment parameters and common random-number streams, so a seed fixes everything except which
 estimator is formed, and differences are taken within a seed before averaging. Round $r$'s outcome
 is consumed before round $r+d+1$, matching Section~\ref{sec:setting}. Reported $\pm$ is one
@@ -647,69 +648,32 @@ $\sum_tc_t(A_t)-\min_a\sum_tc_t(a)$ on one realization of the learner and enviro
 computed from the true losses rather than the sampled outcomes; averaging it over seeds estimates
 the expected pseudo-regret the theorems bound.
 
-The first three experiments probe the state channel of the claim from increasingly controlled and
-increasingly operational angles, and the last probes its temporal boundary. Experiment~1 raises $K$
-with $|\Sset|$ fixed and asks whether pooling grows more valuable, which is Theorem~\ref{thm:m1}'s
-prediction; Experiment~2 holds $K$ and the task difficulty fixed and varies the overlap instead, which
-separates that prediction from the instances simply becoming easier; Experiment~3 shows the regime
-in an environment built to the shape of a funnel and measures it against a rate-optimal baseline.
-Experiment~4 then tests Theorem~\ref{thm:lower} on the drift channel, where pooling cannot help.
-Theorem~\ref{thm:sexp3}'s bound on the interleaved algorithm is checked inside Experiment~1.
-Theorem~\ref{thm:rep}, on coarsening, has no experiment here; it is stated and proved in
-Appendix~\ref{app:etc} and left untested in this submission. Other studies whose conclusions were
+The first two experiments probe the state channel of the claim, the first under tight control and
+the second in an operational shape, and the last probes its temporal boundary. Experiment~1 holds
+$K$ and the task difficulty fixed and varies the overlap, which separates
+Theorem~\ref{thm:m1}'s prediction from the instances simply becoming easier; Experiment~2 shows the
+regime in an environment built to the shape of a funnel and measures it against a rate-optimal
+baseline. Experiment~3 then tests Theorem~\ref{thm:lower} on the drift channel, where pooling
+cannot help. Theorems~\ref{thm:sexp3} and~\ref{thm:rep}, on the interleaved algorithm and on
+coarsening, have no experiment here; both are stated and proved in Appendix~\ref{app:etc} and left
+untested in this submission. Other studies whose conclusions were
 superseded by a later control, or that replicated one already reported, are left to the released
 code.
-
-\textbf{Experiment 1 (\texttt{state\_exp3\_experiment.py}). The gain grows with $K$ at fixed $|\Sset|$.} With $|\Sset|=4$, $T=10000$, $d=50$,
-drift band $0.05$ and $100$ seeds:
-
-\begin{center}\small
-\begin{tabular}{rrrrrr}
-\toprule
-$K$ & interleaved & \textsc{State-EXP3} & action-level & paired gain & state better in \\
-\midrule
- 8 & 455.1 & 368.2 & 387.6 & $19.3\pm3.4$ &  73/100 \\
-20 & 618.3 & 493.7 & 547.5 & $53.8\pm5.6$ &  87/100 \\
-40 & 734.3 & 574.5 & 696.1 & $121.5\pm9.4$ &  99/100 \\
-80 & 780.4 & 614.8 & 784.0 & $169.3\pm9.9$ & 100/100 \\
-\bottomrule
-\end{tabular}\\[2pt]
-Experiment 1, $|\Sset|=4$, $T=10000$, $d=50$, 100 paired seeds; $\pm$ is one standard error.
-\end{center}
-
-Observed. For the interleaved variant, sample-path pseudo-regret stayed below the bound
-$\sqrt{2(d+1)|\Sset|T\log K}$ in all $100$ seeds at every $K$, that bound running from $2913$ to
-$4228$ against realized $455$ to $780$. The single-copy variant beat action-level weighting at every
-$K$, by a margin growing from $19$ to $169$ as $K$ rose tenfold with $|\Sset|$ fixed, and beat the
-interleaved variant throughout. Sweeping the delay at $K=40$ gave state-pooled $387$, $569$
-and $731$ against action-level $653$, $699$ and $773$ at $d=10$, $50$ and $200$.
-
-Interpretation. A margin that grows in $K$ while $|\Sset|$ is held fixed is the prediction that
-separates the two estimators, since only the action-level cost scales with $K$, so the improvement
-is attributable to the state channel. Interleaving looks like a price of the analysis rather than
-of the estimator. The narrowing of the
-gap as the delay grows is what the additive delay term of Theorem~\ref{thm:m1} predicts and the
-multiplicative one of the interleaved bound does not.
-
-Limitation. This is one synthetic family with a fixed drift band, and a simulation cannot
-establish that a bound holds, only that sample-path pseudo-regret stayed below it in the runs
-performed.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig5.pdf}
-\caption{\textbf{Left,} Experiment~2. The same overlap sweep with and without holding the task
+\caption{\textbf{Left,} Experiment~1. The same overlap sweep with and without holding the task
 difficulty fixed. Matching the uniform-play regret reverses the trend, supporting the interpretation that the
 decline in the unmatched sweep is driven by task-difficulty confounding rather than by the pooling
 mechanism itself. Bars are one standard error of the paired
-difference. \textbf{Right,} regret saved against action-level weighting as the
-smoothing pseudocount used to estimate $P$ and the sensor balance vary, with $10$ paired seeds per
-cell; this is the sensitivity study using an estimated (plug-in) $P$, whose script is released with
-the rest.}
+difference.}
 \label{fig:matched}
 \end{figure}
 
-\textbf{Experiment 2 (\texttt{matched\_control.py}). Overlap drives the gain, not easier tasks.}
+\FloatBarrier
+
+\textbf{Experiment 1 (\texttt{matched\_control.py}). Overlap drives the gain, not easier tasks.}
 Sweeping the overlap without further control finds the advantage falling as $\vhat$ falls, which
 read at face value contradicts Theorem~\ref{thm:m1}, whose budget $V^-$ falls with $\bar v$.
 That sweep is confounded, since raising the overlap also flattens $c_t=P\theta_t$ across actions, collapsing
@@ -739,16 +703,19 @@ what fixing the difficulty costs.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig7.pdf}
-\caption{Experiment~3, a recommendation funnel. \textbf{Left,} the effective dimension stays near two
+\caption{Experiment~2, a recommendation funnel. \textbf{Left,} the effective dimension stays near two
 while the catalogue grows thirty-twofold, so the gap between $K$ and $\vhat$ comes from the
-catalogue having categories, not from a chosen $K$. \textbf{Right,} the three arms at $T=20000$
+catalogue having categories, not from a chosen $K$. \textbf{Right,} the two arms at $T=20000$
 and $8$ paired seeds, labelled by whether $\bar v(d+1)\log K\le K+d$ holds.
 Bars are one standard error. No real data is used anywhere in this experiment.}
 \label{fig:funnel}
 \end{figure}
 
-\textbf{Experiment 3 (\texttt{funnel.py}, \texttt{sota\_check.py}). A recommendation funnel, and a rate-optimal baseline on it.} Every other experiment here
-draws $P$ from a Dirichlet, which is the assumption under test rather than evidence for it. This
+\FloatBarrier
+
+\textbf{Experiment 2 (\texttt{funnel.py}, \texttt{sota\_check.py}). A recommendation funnel, and a rate-optimal baseline on it.} Unlike Experiments~1 and~2, this
+experiment does not draw $P$ from a Dirichlet; the Dirichlet construction is the assumption under
+test rather than evidence for it. This
 one builds an environment to the shape of a recommendation funnel instead. Actions are $K=200$
 catalogue items, states are $|\Sset|=6$ ordered engagement depths, and the outcome is a delayed
 conversion. Three structural facts are imposed because funnels have them, namely that items fall
@@ -765,8 +732,7 @@ alone.
 Observed. The effective dimension is $\vhat=1.97$ against $K=200$, a hundredfold gap, and it stays
 between $1.41$ and $1.81$ as the catalogue grows from $25$ to $800$ items
 (Figure~\ref{fig:funnel}). Against action-level weighting the state-pooled variant saves $79.3$,
-$63.6$ and $38.9$ per cent at $d=10$, $50$ and $200$, the largest margins in this appendix, and the
-plug-in matches known $P$ at every delay, the paired difference never reaching two standard errors.
+$63.6$ and $38.9$ per cent at $d=10$, $50$ and $200$, the largest margins in this appendix.
 
 \begin{center}\small
 \begin{tabular}{@{}lrrrr@{}}
@@ -776,21 +742,17 @@ family, cell & \textsc{State-EXP3} & \citeauthor{zimmert2020} & same, grid-best 
 funnel, $d=10$   &  949.0 & 2959.4 & 2413.8 & 27.0 \\
 funnel, $d=50$   & 1728.1 & 3557.0 & 2556.4 & 95.9 \\
 funnel, $d=200$  & 3244.8 & 4734.7 & 2807.7 & 199.7 \\
-overlap $0.00$   &  661.5 &  731.8 &  610.4 & 202.4 \\
-overlap $0.65$   &  584.1 &  673.1 &  544.0 &  51.2 \\
-overlap $0.95$   &  461.4 &  540.2 &  419.4 &  34.3 \\
 \bottomrule
 \end{tabular}\\[2pt]
-Experiment~3. Regret under three tunings, on the funnel and on Experiment~2's matched sweep;
-grid-best columns are chosen by reading these benchmarks.
+Experiment~2. Regret on the funnel under three tunings; grid-best columns are chosen by
+reading these benchmarks.
 \end{center}
 
 Against the rate-optimal baseline, with \textsc{State-EXP3} at the single tuning used everywhere
 else here and \citet{zimmert2020} at the best of a six-point grid around its own value,
-\textsc{State-EXP3} wins every cell, cutting regret by $31.5$ to $67.9$ per cent on the funnel and
-$9.6$ to $14.6$ per cent on the matched sweep of Experiment~2. With both at their grid-best it wins
-every cell again and by more, $66.8$ to $98.9$ per cent. With \citet{zimmert2020} alone at its
-grid-best it wins four of six.
+\textsc{State-EXP3} wins all three funnel cells, cutting regret by $31.5$ to $67.9$ per cent. With
+both at their grid-best it wins all three again and by more. When only \citet{zimmert2020} is
+grid-tuned, \textsc{State-EXP3} wins at $d=10$ and $d=50$ and loses at $d=200$.
 
 Interpretation. The separation between $K$ and $\vhat$ arrives from catalogue structure rather than
 from a tuned parameter, and it does not close as the catalogue grows, which is the claim the
@@ -805,8 +767,8 @@ of the regret there, which is the regime Theorem~\ref{thm:m1} was proved for.
 Limitation. \emph{No real data is used.} There is no interaction log in this environment, nothing
 here is fitted to one, and this is not a semi-synthetic benchmark in the usual sense of that
 phrase. The structure is imposed by hand from qualitative properties, so it shows that the regime
-is describable and self-consistent, not that any deployed system occupies it. The four cells of six
-lost when \citet{zimmert2020} alone is grid-tuned are a real loss and reported as one. No column is
+is describable and self-consistent, not that any deployed system occupies it. The funnel cell at
+$d=200$ lost when \citet{zimmert2020} alone is grid-tuned is a real loss and reported as one. No column is
 a symmetric protocol: the two grids are finite and unequal, and \textsc{State-EXP3}'s grid-best
 sits at its top multiplier in every cell, so its own minimum may lie outside the range searched.
 Every grid-best multiplier is chosen by reading these benchmarks, so only the first column is a
@@ -830,7 +792,7 @@ shows on seven settings is not a gain a practitioner can rely on.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{fig3.pdf}
-\caption{Experiment~4, the drift channel. \textbf{Left,} measured regret against the scale
+\caption{Experiment~3, the drift channel. \textbf{Left,} measured regret against the scale
 Theorem~\ref{thm:lower} predicts, over twelve cells in which $d$ varies $20$-fold, $\etwo$
 $100$-fold and $J$ $16$-fold. The dashed line has slope one. \textbf{Right,} the same points
 divided by that scale, grouped by which parameter the cell sweeps, with the shaded band spanning
@@ -839,7 +801,9 @@ family, where it has no advantage.}
 \label{fig:drift}
 \end{figure}
 
-\textbf{Experiment 4 (\texttt{drift\_scaling.py}). The drift bound describes the right scaling.} The construction of
+\FloatBarrier
+
+\textbf{Experiment 3 (\texttt{drift\_scaling.py}). The drift bound describes the right scaling.} The construction of
 Theorem~\ref{thm:lower} at $K=40$, $T=8000$, $h=d$ and $12$ paired seeds, sweeping $d$ from $10$
 to $200$, the amplitude $\varepsilon$ from $0.02$ to $0.20$ so that $\etwo$ runs from $12$ to
 $1193$, and the drifting coordinates $J$ from $1$ to $16$. We run four policies: uniform, action-level \textsc{EXP3}, \textsc{State-EXP3},
@@ -870,13 +834,15 @@ numbers, python 3.14.3 with numpy 2.4.2 and matplotlib 3.10.8, states the seed c
 study, lists one command per numbered study, and commits the stored outputs each figure reads so
 that every figure rebuilds without rerunning an experiment.
 
-Taken together these experiments cover both channels. Experiments~1, 2 and~3 probe the state channel
+Taken together these experiments cover both channels. Experiments~1 and~2 probe the state channel
 and are consistent with the effective dimension, rather than $|\Sset|$ or $K$, governing what
-pooling buys; Experiment~2 had to control for task difficulty before an overlap sweep pointed that way.
-The funnel is the only environment whose matrix is not drawn from a Dirichlet and it reports the
+pooling buys; Experiment~1 had to control for task difficulty before an overlap sweep pointed that
+way.
+Among the state-channel experiments, the funnel is the only environment whose matrix is not
+drawn from a Dirichlet and it reports the
 largest margins here, on a structure imposed by hand rather than measured. It also places
 \textsc{State-EXP3} against a rate-optimal delayed-bandit method: ahead in every cell when both are
-tuned alike, behind in four of six when that method alone is grid-tuned. Experiment~4 turns to the other
+tuned alike, behind at $d=200$ when that method alone is grid-tuned. Experiment~3 turns to the other
 channel and finds the drift scale of Theorem~\ref{thm:lower} tracking the data, including for a
 learner handed the stale losses, which is the cost no amount of pooling reaches.
 

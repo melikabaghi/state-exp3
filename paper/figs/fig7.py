@@ -48,7 +48,6 @@ d = F["d"]
 w = 0.26
 idx = np.arange(len(d))
 for k, (key, lab, colour) in enumerate((("action", "action level", "#666666"),
-                                        ("plugin", "plug-in $P$", "#029E73"),
                                         ("state", "known $P$", "#0173B2"))):
     axR.bar(idx + (k - 1) * w, F[key], w, yerr=F[key + "_se"], color=colour, label=lab,
             error_kw=dict(elinewidth=0.8, capsize=1.6), zorder=3)
@@ -59,7 +58,7 @@ axR.set_ylabel("regret", fontsize=6.6, labelpad=1.5)
 axR.tick_params(labelsize=6.0, length=2, pad=1.5)
 # the stacked legend sat on top of the tallest bar; give the axis headroom and lay it
 # out in one row above the bars instead
-_top = max(float((F[k] + F[k + "_se"]).max()) for k in ("action", "plugin", "state"))
+_top = max(float((F[k] + F[k + "_se"]).max()) for k in ("action", "state"))
 axR.set_ylim(0, _top * 1.30)
 axR.legend(fontsize=5.6, frameon=False, loc="upper center", ncol=3, handletextpad=0.35,
            borderaxespad=0.1, columnspacing=1.1, handlelength=1.1)

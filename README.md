@@ -25,15 +25,14 @@ tectonic 0.16.9.
 
 ## Reproducing the paper
 
-Sixteen studies were run. The submitted paper reports four of them, renumbered as Experiments 1
-to 4 and named by script:
+Sixteen studies were run. The submitted paper reports three of them, renumbered as Experiments 1
+to 3 and named by script:
 
 | paper | script | was study |
 |---|---|---|
-| Experiment 1 | `state_exp3_experiment.py` | 1 |
-| Experiment 2 | `matched_control.py` | 10 |
-| Experiment 3 | `funnel.py`, `sota_check.py` | 14, 16 |
-| Experiment 4 | `drift_scaling.py` | 8 |
+| Experiment 1 | `matched_control.py` | 10 |
+| Experiment 2 | `funnel.py`, `sota_check.py` | 14, 16 |
+| Experiment 3 | `drift_scaling.py` | 8 |
 
 Every study's script is below, under its original number. One file per study, in the order they appear, followed by two checks
 that belong to appendices rather than to a numbered study.
@@ -78,7 +77,7 @@ The `.npz` files are committed, so every figure rebuilds without rerunning an ex
 | 1 | `paper/figs/fig1.py` | `code/matched_control.npz` (study 10) |
 | 2 | `paper/figs/fig2.py` | `code/matched_control.npz`, `code/funnel_vbar_scaling.npz` (studies 10, 14) |
 | 3 | `paper/figs/fig3.py` | `code/drift_scaling.npz` (study 8) |
-| 4 | `paper/figs/fig5.py` | `code/matched_control.npz`, `code/alpha_kappa.npz` (studies 10, 11) |
+| 3 | `paper/figs/fig5.py` | `code/matched_control.npz` (study 10) |
 | 5 | `paper/figs/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
 
 `fig4.py`, `fig6.py` and `fig8.py` still build, and their `.npz` inputs are committed, but the
