@@ -180,21 +180,23 @@ $s\in\Sset$ let $q_t(s)=\sum_{a=1}^Kx_t(a)P(s\mid a)$, and give each action $a\i
 estimate $\hat c_t(a)=P(S_t\mid a)X_t/q_t(S_t)$. It is correct on average, and its noise is governed by the
 \emph{effective dimension}
 $v_t=\sum_sq_t(s)^{-1}\sum_ax_t(a)P(s\mid a)^2\in[1,|\Sset|]$.
-\textsc{State-EXP3} runs $m$ copies of \textsc{EXP3} \citep{auer2002} in rotation at learning rate
-$\eta$, copy $i\in\{0,\dots,m-1\}$ taking every $m$th round, and adds $\hat c_t$ to a copy's running total once the outcome is usable. A
-round costs $O(K)$ (Appendix~\ref{app:pool}, with pseudocode and the $\chi^2$ reading of $v_t$).
+\textsc{State-EXP3} is \textsc{EXP3} \citep{auer2002} at learning rate $\eta$ on these estimates: it
+adds $\hat c_t$ to its running total once the outcome is usable, at round $t+d+1$. A round costs
+$O(K)$ (Appendix~\ref{app:pool}, with pseudocode and the $\chi^2$ reading of $v_t$).
 
 \begin{theorem}\label{thm:m1}
 Let $P$ be known and $(\theta_t)$ oblivious, and fix in advance any $V^-$ with
 $\sum_t(v_t-1)\le V^-$ always.
-Then \textup{\textsc{State-EXP3}} with $m=1$ and any $\eta\le1/(e(d+1))$ satisfies
+Then \textup{\textsc{State-EXP3}} with any $\eta\le1/(e(d+1))$ satisfies
 $\Ex[R_T]\le\sqrt{2(3.3V^-+2dT)\log K}+e(d+1)\log K+d$.
 \end{theorem}
 
 So $K$ is replaced by $V^-$, which counts how differently the actions behave rather than how many
 there are, and the delay enters additively at $\Ot(\sqrt{V^-}+\sqrt{dT})$, for the algorithm every
 experiment below runs. Writing $\bar v$ for the largest $v_t$ over all ways of playing,
-$V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. Related variants are deferred to Appendix~\ref{app:etc}; none of them adapts to $\etwo$.
+$V^-=(\bar v-1)T$ is admissible and depends on $P$ alone. A rotating variant that interleaves
+$d+1$ copies, and a version that merges similar states, are deferred to
+Appendix~\ref{app:etc}; neither adapts to $\etwo$.
 
 The proof turns on one pathwise identity. The denominator of $\hat c_t$ is the state marginal of
 the distribution supplying its numerator, so $\langle x_t,\hat c_t\rangle=X_t\le1$ on every path,
@@ -299,9 +301,12 @@ algorithm and one bound, is open.
 \section{The state-pooled estimator}\label{app:pool}
 
 \paragraph{The algorithm.} Inputs are the action-to-state matrix $P$, the delay $d$, the number
-of copies $m$, and the rate $\eta>0$. The interleaved setting is $m=d+1$ and the single-copy one
-is $m=1$; Theorems~\ref{thm:sexp3} and~\ref{thm:m1} cover them respectively. Round $r$'s outcome becomes usable at round $r+d+1$, which for $m=d+1$ is the next
-round belonging to the copy that played round $r$.
+of copies $m$, and the rate $\eta>0$. Setting $m=1$ gives \textsc{State-EXP3}, the algorithm of the
+body and of every experiment, covered by Theorem~\ref{thm:m1}; setting $m=d+1$ gives a distinct
+algorithm, \textsc{Interleaved-State-EXP3}, which runs $d+1$ copies in rotation with copy
+$i\in\{0,\dots,m-1\}$ taking every $m$th round, and is covered by Theorem~\ref{thm:sexp3}. Round
+$r$'s outcome becomes usable at round $r+d+1$, which for $m=d+1$ is the next round belonging to the
+copy that played round $r$.
 
 \begin{enumerate}\itemsep1pt \parskip0pt \topsep3pt
 \item Set $L_i\leftarrow(0,\dots,0)\in\mathbb R^K$ for $i=0,\dots,m-1$, and let $\mathcal P$ be
@@ -406,7 +411,7 @@ algorithm actually run. The first is the interleaved variant.
 
 \begin{theorem}\label{thm:sexp3}
 Let $P$ be known and $(\theta_t)$ oblivious. Pick before the run any fixed number $V$ with
-$\sum_tv_t\le V$ always. Then \textup{\textsc{State-EXP3}} with $m=d+1$ and the matching learning
+$\sum_tv_t\le V$ always. Then \textup{\textsc{Interleaved-State-EXP3}} at the matching learning
 rate satisfies $\Ex[R_T]\le\sqrt{2(d+1)V\log K}$. Writing $\bar v$ for the largest $v_t$ over all
 ways of playing, $V=\bar vT\le|\Sset|T$ is one such choice, and it depends on $P$ alone.
 \end{theorem}
@@ -649,7 +654,7 @@ drift band $0.05$ and $100$ seeds:
 \begin{center}\small
 \begin{tabular}{rrrrrr}
 \toprule
-$K$ & state, $m=d+1$ & state, $m=1$ & action, $m=1$ & paired gain & state better in \\
+$K$ & interleaved & \textsc{State-EXP3} & action-level & paired gain & state better in \\
 \midrule
  8 & 455.1 & 368.2 & 387.6 & $19.3\pm3.4$ &  73/100 \\
 20 & 618.3 & 493.7 & 547.5 & $53.8\pm5.6$ &  87/100 \\
