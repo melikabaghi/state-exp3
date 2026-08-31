@@ -25,8 +25,17 @@ tectonic 0.16.9.
 
 ## Reproducing the paper
 
-Sixteen studies were run. The submitted paper reports the five that test its theorems (1, 8, 10,
-14, 16), keeping their original numbers; every study's script is below. One file per study, in the order they appear, followed by two checks
+Sixteen studies were run. The submitted paper reports four of them, renumbered as Experiments 1
+to 4 and named by script:
+
+| paper | script | was study |
+|---|---|---|
+| Experiment 1 | `state_exp3_experiment.py` | 1 |
+| Experiment 2 | `matched_control.py` | 10 |
+| Experiment 3 | `funnel.py`, `sota_check.py` | 14, 16 |
+| Experiment 4 | `drift_scaling.py` | 8 |
+
+Every study's script is below, under its original number. One file per study, in the order they appear, followed by two checks
 that belong to appendices rather than to a numbered study.
 
     cd code
