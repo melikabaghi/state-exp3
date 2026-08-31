@@ -46,10 +46,10 @@ Integration of Machine Learning for Uncertainty-Aware Decision-Making}
 
 \begin{abstract}
 A system often has to act long before it learns whether the act worked: a recommender sees a click
-in seconds and a purchase in days. For $K$ actions and a delay of $d$ rounds, the sharpest published
-rate is minimax-optimal in the delay when only the action is visible \citep{zimmert2020}, and is
-$\Ot(\sqrt{(K+d)T})$ over $T$ rounds once an intermediate state is visible as well
-\citep{esposito2023}. Both are
+in seconds and a purchase in days. For $K$ actions and a delay of $d$ rounds, methods that see only the
+action already attain the minimax-optimal dependence on the delay \citep{zimmert2020}, and with an
+intermediate state visible the rate is $\Ot(\sqrt{(K+d)T})$ over $T$ rounds \citep{esposito2023}.
+Both are
 governed by the number of actions, so a longer menu is always more expensive to learn from, and
 neither adapts to instances in which many actions are effectively interchangeable. They need not
 be. If the outcome depends on the action only through the state it produced, a click or a browse or
@@ -62,7 +62,8 @@ action count leaves the leading term and the delay enters additively. The gain h
 $\Omega(\sqrt{d\mathcal E\min\{1+\log J,T/d\}})$, where $J$ counts the drifting directions and
 $\mathcal E$ bounds how far the losses move while the learner waits. On generated data the state
 channel cuts regret by up to $79$ per cent against action-level weighting, and on the funnel family
-by $32$ to $68$ per cent against \citet{zimmert2020} under the tuning protocol we report. The
+by $32$ to $68$ per cent against the rate-optimal action-only baseline of \citet{zimmert2020}
+under the tuning protocol we report. The
 guarantees assume the action-to-state map is known, and every experiment is synthetic.
 \end{abstract}
 
@@ -94,9 +95,9 @@ observations themselves evolve, and \citet{levy2025} treat contextual actions un
 general function approximation. In neither does an intermediate state carry one delayed outcome
 across several actions.
 
-What the pooling costs is an \emph{effective dimension} $v_t$, measuring how distinguishable the
-action-induced state distributions are under the current play; it lies between $1$ and the number
-of states and can fall far below $K$. Theorem~\ref{thm:m1} pays $v_t$ in place of $K$ for the
+We answer that question with an \emph{effective dimension} $v_t$, measuring how distinguishable
+the action-induced state distributions are under the current play; it lies between $1$ and the
+number of states and can fall far below $K$. Theorem~\ref{thm:m1} pays $v_t$ in place of $K$ for the
 algorithm that is actually run, and across the families the measured gain tracks $v_t$ rather
 than $K$. The claim has a boundary. Waiting
 carries a cost of its own, which sharing cannot remove. Writing
