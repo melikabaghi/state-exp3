@@ -80,9 +80,6 @@ The `.npz` files are committed, so every figure rebuilds without rerunning an ex
 | 3 | `paper/figs/fig5.py` | `code/matched_control.npz` (study 10) |
 | 5 | `paper/figs/fig7.py` | `code/funnel.npz`, `code/funnel_vbar_scaling.npz` (study 14) |
 
-`fig4.py`, `fig6.py` and `fig8.py` still build, and their `.npz` inputs are committed, but the
-studies they illustrate are not among the five the paper reports, so it no longer includes them.
-
     cd paper/figs && python3 fig1.py && python3 fig2.py && python3 fig3.py \
         && python3 fig5.py && python3 fig7.py
     cd .. && tectonic -X compile main.tex
